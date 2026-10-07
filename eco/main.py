@@ -22,6 +22,7 @@ import time
 from .dataset import generate_dataset, dataset_summary
 from .ga import GAConfig, run_ga
 from .pareto import distinct_fitness_points
+from .runtime import correlation_summary, measure_dataset
 from .report import (
     aggregate_metrics,
     format_program_report_text,
@@ -34,6 +35,7 @@ from .visualize import (
     plot_elite_heatmap_multi,
     plot_fitness_boxplot,
     plot_improvement_bar,
+    plot_cycles_vs_measured,
     plot_multi_convergence,
     plot_pareto_2d,
     plot_pareto_3d,
@@ -49,6 +51,10 @@ DEEP_DIVE_N = 20
 POP_SIZE = 30
 NUM_GENERATIONS = 50
 SEED = 42
+
+
+def _fmt(v):
+    return "n/a" if v is None else f"{v:.2f}"
 
 
 def main(kind: str = "kernels"):
@@ -74,6 +80,14 @@ def main(kind: str = "kernels"):
     results = [run_ga(p.tac, p.test_input_sets, p.expected_outputs, config) for p in programs]
     print(f"  done in {time.time() - t0:.1f}s")
 
+    # Real measured runtime of the original and best program of every
+    # program (validation only; the GA above optimized the cycle model).
+    print("Measuring real runtimes (original vs best, all programs)...")
+    t0 = time.time()
+    runtimes = measure_dataset(programs, results)
+    correlations = correlation_summary(programs, results, runtimes)
+    print(f"  done in {time.time() - t0:.1f}s")
+
     # Deep-dive subset: the 20 largest baseline programs, so there's the
     # most room to observe optimizations and trade-offs firing.
     order = sorted(range(len(programs)), key=lambda i: -programs[i].baseline_fitness.instr_count)
@@ -90,7 +104,7 @@ def main(kind: str = "kernels"):
     print(f"Writing per-program reports for {DEEP_DIVE_N} deep-dive programs...")
     all_reports = []
     for p, r in zip(deep_programs, deep_results):
-        rep = program_report(p, r)
+        rep = program_report(p, r, runtimes[p.name])
         all_reports.append(rep)
         with open(os.path.join(REPORTS_DIR, f"{p.name}_report.txt"), "w") as f:
             f.write(format_program_report_text(rep))
@@ -99,14 +113,15 @@ def main(kind: str = "kernels"):
 
     # ---- Per-program reports for every program + one summary CSV ----
     print(f"Writing reports for all {N_PROGRAMS} programs -> {ALL_REPORTS_DIR}")
-    write_all_program_reports(programs, results, ALL_REPORTS_DIR)
+    write_all_program_reports(programs, results, ALL_REPORTS_DIR, runtimes)
 
     # ---- Aggregate metrics across the full dataset ----
     print("Computing aggregate Testing & Metrics table...")
-    agg = aggregate_metrics(programs, results)
+    agg = aggregate_metrics(programs, results, runtimes, correlations)
     with open(os.path.join(REPORTS_DIR, "aggregate_metrics.json"), "w") as f:
         json.dump(agg, f, indent=2)
 
+    c = agg["correlation"]
     summary_lines = [
         "# Aggregate Testing & Metrics",
         f"- Programs evaluated: {agg['num_programs']}",
@@ -117,6 +132,24 @@ def main(kind: str = "kernels"):
         f"{agg['avg_best_cost_improvement_pct']:.1f}%  (target > 30%)",
         f"- Avg. Generations to Convergence: {agg['avg_generations_to_convergence']:.1f}",
         f"- Correctness PASS rate: {agg['pass_rate_pct']:.1f}%",
+        "",
+        "## Real measured runtime (validation; Python backend, min over timed rounds)",
+        f"- Avg. measured improvement (original vs best): {agg['avg_measured_improvement_pct']:.1f}%  "
+        f"(simulated: {agg['avg_best_cost_improvement_pct']:.1f}%)",
+        f"- Avg. measured speedup: {agg['avg_measured_speedup_x']:.2f}x per program; "
+        f"{agg['total_time_speedup_x']:.2f}x on total time",
+        f"- Programs measurably faster (> 2%): {agg['programs_measurably_faster_pct']:.1f}%",
+        f"- Optimized code still gives the expected outputs when really run: "
+        f"{agg['measured_outputs_correct_pct']:.1f}%",
+        "",
+        "## How well do simulated cycles predict real time?",
+        f"- Pooled over {c['pooled_n']} measured programs (original + best of each): "
+        f"Pearson r = {_fmt(c['pooled_pearson'])}, Spearman rho = {_fmt(c['pooled_spearman'])} "
+        "(inflated by program size)",
+        f"- Simulated vs measured *improvement %* across {c['improvement_n']} programs: "
+        f"Pearson r = {_fmt(c['improvement_pearson'])}, Spearman rho = {_fmt(c['improvement_spearman'])}",
+        f"- Within one program (ranking its final-population variants), mean Spearman rho = "
+        f"{_fmt(c['within_program_mean_spearman'])} over {c['within_program_n_programs']} programs",
     ]
     with open(os.path.join(REPORTS_DIR, "aggregate_metrics.md"), "w") as f:
         f.write("\n".join(summary_lines) + "\n")
@@ -154,8 +187,16 @@ def main(kind: str = "kernels"):
                           title=f"Cost Distribution Across Generations — {flagship_program.name}")
 
     improvement_pcts = [rep["improvement_pct_exec_time"] for rep in all_reports]
+    measured_pcts = [runtimes[p.name]["measured_improvement_pct"] for p in deep_programs]
     plot_improvement_bar([p.name for p in deep_programs], improvement_pcts,
-                          os.path.join(PLOTS_DIR, "4_improvement_bar.png"))
+                          os.path.join(PLOTS_DIR, "4_improvement_bar.png"),
+                          title="Best-Individual Improvement vs Baseline: simulated vs measured",
+                          measured_pct=measured_pcts)
+    pts = [(rt[c1], rt[c2]) for rt in runtimes.values()
+           for c1, c2 in (("baseline_cycles", "baseline_ns"), ("best_cycles", "best_ns"))]
+    plot_cycles_vs_measured([a for a, _ in pts], [b for _, b in pts],
+                             os.path.join(PLOTS_DIR, "7_cycles_vs_measured_runtime.png"),
+                             pearson_r=c["pooled_pearson"], spearman_rho=c["pooled_spearman"])
 
     plot_elite_heatmap_multi(deep_results, os.path.join(PLOTS_DIR, "5_elite_optimization_heatmap.png"))
     plot_pareto_3d(pareto_pop, pareto_front_final, os.path.join(PLOTS_DIR, "6_pareto_front_3d.png"),

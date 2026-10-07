@@ -135,6 +135,9 @@ old random generator (`eco/benchmark_generator.py`) is kept behind
 | Avg. Pareto Front Size | 24.9 individuals (avg. 1.04 distinct objective-space points) | identify trade-offs |
 | Best Cost Improvement (simulated exec_time vs. baseline) | **13.1%** | > 30% (**not met** on real kernels, see below) |
 | Avg. Generations to Convergence | 9.1 | tracked per program |
+| Measured improvement (real runtime, original vs best) | **9.7%** (avg speedup 1.13x; 1.12x on total time; 9.2-9.7% over three runs) | validation of the cycle model |
+| Optimized code correct when really run | 100.0% | — |
+| Simulated vs measured improvement % (300 programs) | Pearson r = 0.83, Spearman rho = 0.88 (0.77-0.83 / 0.83-0.88 over three runs) | model should predict speedups |
 | Correctness PASS rate | 100.0% | — |
 
 Regenerate this table with `python -m eco.main` (see
@@ -183,19 +186,25 @@ distinct front points (and says so when the richest front is a single point).
 4. `3_fitness_boxplot.png` — cost distribution across generations 1, 5,
    10, 20, 50.
 5. `4_improvement_bar.png` — best-individual improvement vs. original
-   baseline across the 20 deep-dive programs.
+   baseline across the 20 deep-dive programs, with **two bars per program**:
+   the simulated improvement (cycle model) and the measured improvement
+   (real runtime).
 6. `5_elite_optimization_heatmap.png` — which optimizations appear most
    often in elite individuals, per generation, aggregated across the 20
    deep-dive programs.
 7. `6_pareto_front_3d.png` — Pareto front in 3D (`exec_time`,
    `instr_count`, `code_size`), same program/population as plot 3.
+8. `7_cycles_vs_measured_runtime.png` — scatter of simulated cycles against
+   measured nanoseconds for all 600 measured programs (original and best of
+   each), titled with the Pearson and Spearman correlation.
 
 ## Expected output (`eco/outputs/reports/`)
 
 - `<program>_report.txt` / `deep_dive_reports.json` — per program: best/avg
   cost at generations 1, 5, 10, 20, 50, the final Pareto-optimal solutions
   and what each represents, the best-overall (weighted) individual with its
-  genome and optimized TAC, and a PASS/FAIL correctness verdict.
+  genome and optimized TAC, the original source, the simulated **and measured**
+  improvement, and a PASS/FAIL correctness verdict.
 - `all_programs/<program>_report.txt` — the same report for **every one of
   the 300 programs** (best/avg cost at generations 1, 5, 10, 20, 50, final
   Pareto solutions with what each is best at, best weighted individual with
@@ -204,7 +213,9 @@ distinct front points (and says so when the richest front is a single point).
 - `all_programs/all_programs_summary.csv` — one row per program: `program`,
   `baseline_cost` / `best_cost` (the weighted, baseline-normalized cost the
   GA minimizes, so the baseline is 1.0), `baseline_exec_time` /
-  `best_exec_time`, `improvement_pct` (exec_time vs baseline),
+  `best_exec_time`, `improvement_pct` (simulated exec_time vs baseline),
+  `measured_baseline_ns`, `measured_best_ns`, `measured_improvement_pct`,
+  `measured_speedup_x` (real runtime),
   `generations_to_convergence`, `pareto_front_size`, `distinct_points`,
   `verdict`.
 - `aggregate_metrics.md` / `.json` — the Testing & Metrics table above,
@@ -215,6 +226,7 @@ distinct front points (and says so when the richest front is a single point).
 ```
 eco/
   frontend.py             ast front end: Python source -> TAC
+  runtime.py              real runtime: TAC -> Python function, timing, correlation
   kernels.py              42 real kernel templates + dataset-record builder
   tac.py                 TAC instruction representation + pretty-printers
   interpreter.py          TAC interpreter (correctness + simulated cycles)
@@ -295,15 +307,70 @@ input domains with non-negative numerators, where the two agree.
 
 The GA's `exec_time` objective is a deterministic **simulated cycle count**
 (add/sub 1, multiply 3, divide 4, everything else 1). It is used because it
-is fast and reproducible; it is not a hardware measurement.
+is fast and reproducible, so tests and results are stable. It is not a
+hardware measurement; real time is measured separately, as validation.
+
+### Measured runtime (`eco/runtime.py`)
+
+For every program the original TAC and the final best individual are
+translated to a real Python function (one statement per TAC instruction;
+division calls the same truncating helper the interpreter uses), run in a
+loop and timed with `time.perf_counter_ns`:
+
+* a warm-up batch, then 7 timed batches of 200 passes over the 5 test-input
+  sets, with the garbage collector paused;
+* the reported time is the **minimum** batch time per call (the usual
+  low-noise estimator), averaged over the test inputs like the cycle model;
+* results are cached by a SHA-1 of the TAC (plus argument names and inputs),
+  so an identical program is timed once and always gets the same value;
+* the compiled optimized code is also checked against the ground-truth
+  outputs, so a speedup can never come from wrong code (100.0% correct).
+
+Only the Python backend exists. A C backend was not built: no C compiler is
+guaranteed to be installed (none was available here), and a ctypes call has
+a fixed overhead that would swamp kernels this small. So "measured" means
+CPython executing the generated function, not native machine code.
+
+Timing is noisy by nature. Three consecutive full runs gave measured
+improvements of 9.2%, 9.3% and 9.7% (committed outputs: 9.7%) and
+correlations that moved by a few hundredths (improvement-correlation Pearson
+0.77, 0.83, 0.83; within-program Spearman 0.50, 0.45, 0.56), which is why
+ranges are quoted below. The simulated numbers are deterministic.
+
+### How well do simulated cycles predict real time?
+
+Three views, all reported in `aggregate_metrics.md/.json`:
+
+| View | Result | Reading |
+|---|---|---|
+| Pooled: cycles vs ns over all 600 measured programs (original + best) | Pearson r = 0.70, Spearman rho = 0.66 (0.69-0.70 / 0.64-0.66) | **Moderate**, and flattered by program size: bigger programs are slower under both measures |
+| Per program: simulated improvement % vs measured improvement % (300 programs) | Pearson r = 0.83, Spearman rho = 0.88 (0.77-0.83 / 0.83-0.88) | **Good** for deciding how much an optimization helps |
+| Within one program: rank agreement across the distinct programs in its final population (170 programs with >= 3 distinct points) | mean Spearman rho = 0.56 (0.45-0.56) | **Weak to moderate**: the model only partly ranks close variants of the same program correctly |
+
+So the cycle model is a decent predictor of *whether and roughly how much*
+the search helps, but a poor fine-grained ranker of near-identical variants.
+Plausible reasons: CPython charges roughly a constant cost per statement
+regardless of operator while the model charges multiply 3 and divide 4;
+division additionally pays for a function call in the generated code; and
+`const`/`copy` statements are cheap in both but not in the same proportion.
+These mismatches are the likely reason the measured improvement (about 9-10%) is
+smaller than the simulated one (13.1%); this was not isolated by a separate
+experiment. The trade-off passes (`strength_reduction`, `multiply_fusion`)
+rely on a multiply-vs-add cost gap that CPython probably does not have (an
+extra statement costs about as much as the multiply it replaces), so their
+benefit should be expected in the model more than in measured time.
 
 ## Limitations
 
 * The kernels are **straight-line integer arithmetic**: no loops, branches,
   memory, floating point or function calls, so none of the classic
   loop/inlining/vectorization trade-offs exist here.
-* GA fitness uses a **cycle model**, not real time. Measured runtime is not
-  yet part of this report (see the measurement section when present).
-* Real kernels are often already tight; the average simulated improvement is
-  13.1% and the 30% target is not met on this dataset.
+* **GA fitness uses a cycle model.** Real time is measured only afterwards, as
+  validation, and only through a Python backend (no C/native code); the model
+  and CPython disagree on per-operation costs (see above).
+* Real kernels are often already tight: the average simulated improvement is
+  13.1% (about 9-10% measured) and the 30% target is **not met** on this dataset.
+  The earlier 54.5% was obtained on random synthetic programs written to
+  contain redundancy (`--synthetic`).
+* Timing is noisy; numbers vary by a few percent between runs.
 * The search is a single seed (42); results are not averaged over seeds.

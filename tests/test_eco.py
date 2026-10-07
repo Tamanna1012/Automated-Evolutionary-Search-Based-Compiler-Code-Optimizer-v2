@@ -246,7 +246,7 @@ def test_benchmarks_contain_tradeoff_fodder():
 import csv
 
 from eco import main as eco_main
-from eco.report import SUMMARY_COLUMNS, write_all_program_reports
+from eco.report import SUMMARY_COLUMNS, aggregate_metrics, write_all_program_reports
 
 
 def test_report_written_for_all_300_programs_plus_summary_csv(tmp_path):
@@ -397,3 +397,91 @@ def test_ga_on_a_real_kernel_stays_correct_and_improves():
     res = run_ga(prog.tac, prog.test_input_sets, prog.expected_outputs, GAConfig(pop_size=20, num_generations=15, seed=2))
     assert res.best_individual.valid
     assert res.best_individual.fitness.exec_time < prog.baseline_fitness.exec_time
+
+
+# ---------------------------------------------------------------------------
+# Real measured runtime (validation). These only check that measurement works
+# and stays correct - never exact timings, so they cannot be flaky.
+# ---------------------------------------------------------------------------
+from eco.report import program_report, format_program_report_text
+from eco.runtime import (
+    clear_cache, compile_tac, correlation_summary, measure_dataset, measure_program,
+    measure_runtime_ns, outputs_match, pearson, spearman, tac_hash, tac_to_python,
+)
+
+FAST = dict(reps=5, rounds=3)
+
+
+def test_runtime_compiled_function_matches_interpreter_including_division():
+    tac = [("input", "a", "x"), ("input", "b", "y"), ("bin", "q", "/", "a", "b"),
+           ("bin", "r", "-", "a", "b"), ("output", "q"), ("output", "r")]
+    fn = compile_tac(tac, ["x", "y"])
+    for x, y in [(7, 2), (-7, 2), (5, 0), (0, 3), (-9, -4)]:
+        assert list(fn(x, y)) == run(tac, {"x": x, "y": y}).outputs
+
+
+def test_runtime_source_has_one_statement_per_instruction():
+    src = tac_to_python(SAMPLE_TAC, ["x", "y"])
+    assert src.startswith("def prog(p_x, p_y):")
+    assert len([ln for ln in src.splitlines() if ln.startswith("    ")]) == len(SAMPLE_TAC) - 2 + 1
+
+
+def test_runtime_measurement_returns_positive_numbers_and_is_cached():
+    clear_cache()
+    first = measure_runtime_ns(SAMPLE_TAC, ["x", "y"], SAMPLE_TESTS, **FAST)
+    assert first > 0
+    assert measure_runtime_ns(SAMPLE_TAC, ["x", "y"], SAMPLE_TESTS, **FAST) == first  # cache hit, same value
+    assert tac_hash(SAMPLE_TAC) == tac_hash(list(SAMPLE_TAC))
+
+
+def test_every_kernel_template_runs_correctly_as_real_python():
+    for pid in range(len(TEMPLATE_NAMES)):
+        prog = generate_kernel_program(pid, random.Random(pid + 7))
+        assert outputs_match(prog.tac, prog.input_names, prog.test_input_sets, prog.expected_outputs)
+        assert measure_runtime_ns(prog.tac, prog.input_names, prog.test_input_sets, **FAST) > 0
+
+
+def test_optimized_code_stays_correct_when_really_run_and_report_has_measurement():
+    prog = generate_kernel_program(TEMPLATE_NAMES.index("binomial_expansion"), random.Random(3))
+    res = run_ga(prog.tac, prog.test_input_sets, prog.expected_outputs, GAConfig(pop_size=15, num_generations=8, seed=1))
+    m = measure_program(prog, res)
+    assert m["outputs_correct"] is True
+    assert m["baseline_ns"] > 0 and m["best_ns"] > 0 and m["measured_speedup_x"] > 0
+    rep = program_report(prog, res, m)
+    text = format_program_report_text(rep)
+    assert "Measured runtime" in text and "Simulated exec-time improvement" in text
+    assert "Original source:" in text
+
+
+def test_report_without_runtime_still_works():
+    prog = generate_kernel_program(0, random.Random(1))
+    res = run_ga(prog.tac, prog.test_input_sets, prog.expected_outputs, GAConfig(pop_size=8, num_generations=3, seed=1))
+    assert "Measured runtime" not in format_program_report_text(program_report(prog, res))
+
+
+def test_correlation_statistics_on_known_data():
+    assert pearson([1, 2, 3, 4], [2, 4, 6, 8]) == pytest.approx(1.0)
+    assert pearson([1, 2, 3, 4], [8, 6, 4, 2]) == pytest.approx(-1.0)
+    assert spearman([1, 2, 3, 4, 5], [1, 4, 9, 16, 25]) == pytest.approx(1.0)  # monotone, not linear
+    assert pearson([1, 1, 1], [1, 2, 3]) is None        # constant input has no correlation
+    assert spearman([1, 2], [1, 2]) is None             # too few points
+
+
+def test_dataset_measurement_and_correlation_summary_are_well_formed(tmp_path):
+    progs = [generate_kernel_program(i, random.Random(i)) for i in range(0, 42, 3)]
+    config = GAConfig(pop_size=10, num_generations=5, seed=0)
+    results = [run_ga(p.tac, p.test_input_sets, p.expected_outputs, config) for p in progs]
+    runtimes = measure_dataset(progs, results)
+    assert set(runtimes) == {p.name for p in progs}
+    assert all(r["baseline_ns"] > 0 and r["best_ns"] > 0 and r["outputs_correct"] for r in runtimes.values())
+
+    corr = correlation_summary(progs, results, runtimes)
+    assert corr["pooled_n"] == 2 * len(progs)
+    for key in ("pooled_pearson", "pooled_spearman", "improvement_pearson", "within_program_mean_spearman"):
+        assert corr[key] is None or -1.0 <= corr[key] <= 1.0
+
+    rows = write_all_program_reports(progs, results, str(tmp_path), runtimes)
+    assert all(r["measured_speedup_x"] != "" for r in rows)
+    agg = aggregate_metrics(progs, results, runtimes, corr)
+    assert agg["measured_outputs_correct_pct"] == 100.0
+    assert agg["avg_measured_speedup_x"] > 0

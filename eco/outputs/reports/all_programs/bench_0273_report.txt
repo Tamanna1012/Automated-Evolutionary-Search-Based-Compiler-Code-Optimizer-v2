@@ -12,7 +12,8 @@ Best/avg cost at checkpoint generations:
   gen  20: best=0.6710  avg=0.7238
   gen  50: best=0.6710  avg=0.6874
 Generations to convergence: 15
-Exec-time improvement vs baseline: 34.6%
+Simulated exec-time improvement vs baseline (cycle model): 34.6%
+Measured runtime (real, Python backend): baseline 247 ns/call -> best 191 ns/call = 22.8% faster (1.29x); optimized outputs correct: yes
 Pareto front: 25 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['algebraic_simplification', 'strength_reduction', 'copy_propagation', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 17.0, 'instr_count': 13, 'code_size': 56, 'arith_ops': 5}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (25 genomes tie here)
 Best-overall (weighted) individual:

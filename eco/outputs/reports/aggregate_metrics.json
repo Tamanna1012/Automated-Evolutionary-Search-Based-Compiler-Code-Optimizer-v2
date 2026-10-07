@@ -1,4 +1,19 @@
 {
+  "avg_measured_improvement_pct": 9.655796765053793,
+  "avg_measured_speedup_x": 1.132650131677295,
+  "total_time_speedup_x": 1.1162330127928068,
+  "measured_outputs_correct_pct": 100.0,
+  "programs_measurably_faster_pct": 59.666666666666664,
+  "correlation": {
+    "pooled_pearson": 0.6950831250705901,
+    "pooled_spearman": 0.6560923855899966,
+    "pooled_n": 600,
+    "improvement_pearson": 0.826285473946118,
+    "improvement_spearman": 0.8791623981107678,
+    "improvement_n": 300,
+    "within_program_mean_spearman": 0.5572416949260288,
+    "within_program_n_programs": 170
+  },
   "num_programs": 300,
   "validity_rate_pct": 100.0,
   "avg_pareto_front_size": 24.94,

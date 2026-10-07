@@ -75,6 +75,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nx4 = INPUT x4\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_e3 = _e2 + x3\n_e4 = _e3 + x4\n_k1 = 5\nmean = _e4 / _k1\n_e6 = _e2\n_e7 = _e2 + x3\n_e8 = _e7 + x4\n_e9 = _e8 / _k1\n_e10 = x0 - _e9\n_e12 = _e2\n_e13 = _e2 + x3\n_e14 = _e13 + x4\n_e15 = _e14 / _k1\n_e16 = x0 - _e15\n_e17 = _e10 * _e16\n_e19 = _e2\n_e20 = _e2 + x3\n_e21 = _e20 + x4\n_e22 = _e21 / _k1\n_e23 = x1 - _e22\n_e25 = _e2\n_e26 = _e2 + x3\n_e27 = _e26 + x4\n_e28 = _e27 / _k1\n_e29 = x1 - _e28\n_e30 = _e23 * _e29\n_e31 = _e17 + _e30\n_e33 = _e2\n_e34 = _e2 + x3\n_e35 = _e34 + x4\n_e36 = _e35 / _k1\n_e37 = x2 - _e36\n_e39 = _e2\n_e40 = _e2 + x3\n_e41 = _e40 + x4\n_e42 = _e41 / _k1\n_e43 = x2 - _e42\n_e44 = _e37 * _e43\n_e45 = _e31 + _e44\n_e47 = _e2\n_e48 = _e2 + x3\n_e49 = _e48 + x4\n_e50 = _e49 / _k1\n_e51 = x3 - _e50\n_e53 = _e2\n_e54 = _e2 + x3\n_e55 = _e54 + x4\n_e56 = _e55 / _k1\n_e57 = x3 - _e56\n_e58 = _e51 * _e57\n_e59 = _e45 + _e58\n_e61 = _e2\n_e62 = _e2 + x3\n_e63 = _e62 + x4\n_e64 = _e63 / _k1\n_e65 = x4 - _e64\n_e67 = _e2\n_e68 = _e2 + x3\n_e69 = _e68 + x4\n_e70 = _e69 / _k1\n_e71 = x4 - _e70\n_e72 = _e65 * _e71\n_e73 = _e59 + _e72\nvar = _e73 / _k1\nOUTPUT mean\nOUTPUT var"
     },
     "improvement_pct_exec_time": 7.751937984496124,
+    "runtime": {
+      "baseline_ns": 2808.9,
+      "best_ns": 2611.2,
+      "measured_improvement_pct": 7.038342411620217,
+      "measured_speedup_x": 1.0757123161764708,
+      "baseline_cycles": 129.0,
+      "best_cycles": 119.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 5,
     "verdict": "PASS"
   },
@@ -154,6 +163,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_e3 = _e2 + x3\n_k1 = 4\nmean = _e3 / _k1\n_e5 = _e2\n_e6 = _e2 + x3\n_e7 = _e6 / _k1\n_e8 = x0 - _e7\n_e10 = _e2\n_e11 = _e2 + x3\n_e12 = _e11 / _k1\n_e13 = x0 - _e12\n_e14 = _e8 * _e13\n_e16 = _e2\n_e17 = _e2 + x3\n_e18 = _e17 / _k1\n_e19 = x1 - _e18\n_e21 = _e2\n_e22 = _e2 + x3\n_e23 = _e22 / _k1\n_e24 = x1 - _e23\n_e25 = _e19 * _e24\n_e26 = _e14 + _e25\n_e28 = _e2\n_e29 = _e2 + x3\n_e30 = _e29 / _k1\n_e31 = x2 - _e30\n_e33 = _e2\n_e34 = _e2 + x3\n_e35 = _e34 / _k1\n_e36 = x2 - _e35\n_e37 = _e31 * _e36\n_e38 = _e26 + _e37\n_e40 = _e2\n_e41 = _e2 + x3\n_e42 = _e41 / _k1\n_e43 = x3 - _e42\n_e45 = _e2\n_e46 = _e2 + x3\n_e47 = _e46 / _k1\n_e48 = x3 - _e47\n_e49 = _e43 * _e48\n_e50 = _e38 + _e49\nvar = _e50 / _k1\nOUTPUT mean\nOUTPUT var"
     },
     "improvement_pct_exec_time": 8.24742268041237,
+    "runtime": {
+      "baseline_ns": 2686.3,
+      "best_ns": 2444.8,
+      "measured_improvement_pct": 8.990060678256338,
+      "measured_speedup_x": 1.0987810863874345,
+      "baseline_cycles": 97.0,
+      "best_cycles": 89.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 5,
     "verdict": "PASS"
   },
@@ -221,6 +239,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nx4 = INPUT x4\ny0 = INPUT y0\ny1 = INPUT y1\ny2 = INPUT y2\ny3 = INPUT y3\ny4 = INPUT y4\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_e3 = _e2 + x3\nsx = _e3 + x4\n_e4 = y0 + y1\n_e5 = _e4 + y2\n_e6 = _e5 + y3\nsy = _e6 + y4\n_e7 = x0 * y0\n_e8 = x1 * y1\n_e9 = _e7 + _e8\n_e10 = x2 * y2\n_e11 = _e9 + _e10\n_e12 = x3 * y3\n_e13 = _e11 + _e12\n_e14 = x4 * y4\nsxy = _e13 + _e14\n_e15 = x0 * x0\n_e16 = x1 * x1\n_e17 = _e15 + _e16\n_e18 = x2 * x2\n_e19 = _e17 + _e18\n_e20 = x3 * x3\n_e21 = _e19 + _e20\n_e22 = x4 * x4\nsxx = _e21 + _e22\n_k1 = 5\n_e23 = _k1 * sxy\n_e24 = sx * sy\nnumerator = _e23 - _e24\n_e25 = _k1 * sxx\n_e26 = sx * sx\ndenominator = _e25 - _e26\nOUTPUT numerator\nOUTPUT denominator"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 785.5,
+      "best_ns": 785.5,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 73.0,
+      "best_cycles": 73.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -288,6 +315,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nx4 = INPUT x4\ny0 = INPUT y0\ny1 = INPUT y1\ny2 = INPUT y2\ny3 = INPUT y3\ny4 = INPUT y4\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_e3 = _e2 + x3\nsx = _e3 + x4\n_e4 = y0 + y1\n_e5 = _e4 + y2\n_e6 = _e5 + y3\nsy = _e6 + y4\n_e7 = x0 * y0\n_e8 = x1 * y1\n_e9 = _e7 + _e8\n_e10 = x2 * y2\n_e11 = _e9 + _e10\n_e12 = x3 * y3\n_e13 = _e11 + _e12\n_e14 = x4 * y4\nsxy = _e13 + _e14\n_e15 = x0 * x0\n_e16 = x1 * x1\n_e17 = _e15 + _e16\n_e18 = x2 * x2\n_e19 = _e17 + _e18\n_e20 = x3 * x3\n_e21 = _e19 + _e20\n_e22 = x4 * x4\nsxx = _e21 + _e22\n_k1 = 5\n_e23 = _k1 * sxy\n_e24 = sx * sy\nnumerator = _e23 - _e24\n_e25 = _k1 * sxx\n_e26 = sx * sx\ndenominator = _e25 - _e26\nOUTPUT numerator\nOUTPUT denominator"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 744.6,
+      "best_ns": 744.6,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 73.0,
+      "best_cycles": 73.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -367,6 +403,15 @@
       "tac": "x = INPUT x\n_k1 = 1\n_k2 = 5\n_e1 = _k2 * x\n_e2 = _k1 + _e1\n_k3 = -6\n_e3 = x * x\n_e4 = _k3 * _e3\n_e5 = _e2 + _e4\n_e7 = _e3 * x\n_e9 = _e5 + _e7\n_k4 = -8\n_e11 = _e7\n_e12 = _e11 * x\n_e13 = _k4 * _e12\n_e14 = _e9 + _e13\n_e16 = _e7\n_e17 = _e16 * x\n_e18 = _e17 * x\n_e19 = _k4 * _e18\n_e20 = _e14 + _e19\n_k5 = 6\n_e22 = _e7\n_e23 = _e22 * x\n_e24 = _e23 * x\n_e25 = _e24 * x\n_e26 = _k5 * _e25\n_e27 = _e20 + _e26\n_e29 = _e7\n_e30 = _e29 * x\n_e31 = _e30 * x\n_e32 = _e31 * x\n_e33 = _e32 * x\n_e34 = _k3 * _e33\nr = _e27 + _e34\nOUTPUT r"
     },
     "improvement_pct_exec_time": 26.53061224489796,
+    "runtime": {
+      "baseline_ns": 952.9,
+      "best_ns": 798.0,
+      "measured_improvement_pct": 16.25564067583167,
+      "measured_speedup_x": 1.194110275689223,
+      "baseline_cycles": 98.0,
+      "best_cycles": 72.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 23,
     "verdict": "PASS"
   },
@@ -446,6 +491,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nx4 = INPUT x4\nw0 = INPUT w0\nw1 = INPUT w1\nw2 = INPUT w2\nw3 = INPUT w3\nw4 = INPUT w4\n_e1 = w0 * x0\n_e2 = w1 * x1\n_e3 = _e1 + _e2\n_e4 = w2 * x2\n_e5 = _e3 + _e4\n_e6 = w3 * x3\n_e7 = _e5 + _e6\n_e8 = w4 * x4\n_e9 = _e7 + _e8\n_e10 = w0 + w1\n_e11 = _e10 + w2\n_e12 = _e11 + w3\n_e13 = _e12 + w4\navg = _e9 / _e13\n_e16 = _e11 + w3\ntotal_weight = _e16 + w4\n_e21 = _e3 + _e4\n_e23 = _e21 + _e6\n_e25 = _e23 + _e8\nscaled = _e25 / total_weight\nOUTPUT avg\nOUTPUT total_weight\nOUTPUT scaled"
     },
     "improvement_pct_exec_time": 26.865671641791046,
+    "runtime": {
+      "baseline_ns": 1046.6,
+      "best_ns": 940.7,
+      "measured_improvement_pct": 10.118478884005338,
+      "measured_speedup_x": 1.1125757414691186,
+      "baseline_cycles": 67.0,
+      "best_cycles": 49.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 46,
     "verdict": "PASS"
   },
@@ -525,6 +579,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_k1 = 3\nmean = _e2 / _k1\n_e4 = _e2\n_e5 = _e2 / _k1\n_e6 = x0 - _e5\n_e8 = _e2\n_e9 = _e2 / _k1\n_e10 = x0 - _e9\n_e11 = _e6 * _e10\n_e13 = _e2\n_e14 = _e2 / _k1\n_e15 = x1 - _e14\n_e17 = _e2\n_e18 = _e2 / _k1\n_e19 = x1 - _e18\n_e20 = _e15 * _e19\n_e21 = _e11 + _e20\n_e23 = _e2\n_e24 = _e2 / _k1\n_e25 = x2 - _e24\n_e27 = _e2\n_e28 = _e2 / _k1\n_e29 = x2 - _e28\n_e30 = _e25 * _e29\n_e31 = _e21 + _e30\nvar = _e31 / _k1\nOUTPUT mean\nOUTPUT var"
     },
     "improvement_pct_exec_time": 8.695652173913043,
+    "runtime": {
+      "baseline_ns": 1912.8,
+      "best_ns": 1829.1,
+      "measured_improvement_pct": 4.3757841907151835,
+      "measured_speedup_x": 1.0457602099393144,
+      "baseline_cycles": 69.0,
+      "best_cycles": 63.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 5,
     "verdict": "PASS"
   },
@@ -604,6 +667,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_k1 = 3\nmean = _e2 / _k1\n_e4 = _e2\n_e5 = _e2 / _k1\n_e6 = x0 - _e5\n_e8 = _e2\n_e9 = _e2 / _k1\n_e10 = x0 - _e9\n_e11 = _e6 * _e10\n_e13 = _e2\n_e14 = _e2 / _k1\n_e15 = x1 - _e14\n_e17 = _e2\n_e18 = _e2 / _k1\n_e19 = x1 - _e18\n_e20 = _e15 * _e19\n_e21 = _e11 + _e20\n_e23 = _e2\n_e24 = _e2 / _k1\n_e25 = x2 - _e24\n_e27 = _e2\n_e28 = _e2 / _k1\n_e29 = x2 - _e28\n_e30 = _e25 * _e29\n_e31 = _e21 + _e30\nvar = _e31 / _k1\nOUTPUT mean\nOUTPUT var"
     },
     "improvement_pct_exec_time": 8.695652173913043,
+    "runtime": {
+      "baseline_ns": 2141.2,
+      "best_ns": 2003.7,
+      "measured_improvement_pct": 6.421632729310657,
+      "measured_speedup_x": 1.0686230473623795,
+      "baseline_cycles": 69.0,
+      "best_cycles": 63.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 5,
     "verdict": "PASS"
   },
@@ -688,6 +760,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\ny0 = INPUT y0\ny1 = INPUT y1\ny2 = INPUT y2\ny3 = INPUT y3\n_e1 = x0 + x1\n_e2 = _e1 + x2\nsx = _e2 + x3\n_e3 = y0 + y1\n_e4 = _e3 + y2\nsy = _e4 + y3\n_e5 = x0 * y0\n_e6 = x1 * y1\n_e7 = _e5 + _e6\n_e8 = x2 * y2\n_e9 = _e7 + _e8\n_e10 = x3 * y3\nsxy = _e9 + _e10\n_e11 = x0 * x0\n_e12 = x1 * x1\n_e13 = _e11 + _e12\n_e14 = x2 * x2\n_e15 = _e13 + _e14\n_e16 = x3 * x3\nsxx = _e15 + _e16\n_k1 = 4\n_e17 = _k1 * sxy\n_e18 = sx * sy\nnumerator = _e17 - _e18\n_e19 = _k1 * sxx\n_e20 = sx * sx\ndenominator = _e19 - _e20\nOUTPUT numerator\nOUTPUT denominator"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 662.6,
+      "best_ns": 662.6,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 61.0,
+      "best_cycles": 61.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -772,6 +853,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\ny0 = INPUT y0\ny1 = INPUT y1\ny2 = INPUT y2\ny3 = INPUT y3\n_e1 = x0 + x1\n_e2 = _e1 + x2\nsx = _e2 + x3\n_e3 = y0 + y1\n_e4 = _e3 + y2\nsy = _e4 + y3\n_e5 = x0 * y0\n_e6 = x1 * y1\n_e7 = _e5 + _e6\n_e8 = x2 * y2\n_e9 = _e7 + _e8\n_e10 = x3 * y3\nsxy = _e9 + _e10\n_e11 = x0 * x0\n_e12 = x1 * x1\n_e13 = _e11 + _e12\n_e14 = x2 * x2\n_e15 = _e13 + _e14\n_e16 = x3 * x3\nsxx = _e15 + _e16\n_k1 = 4\n_e17 = _k1 * sxy\n_e18 = sx * sy\nnumerator = _e17 - _e18\n_e19 = _k1 * sxx\n_e20 = sx * sx\ndenominator = _e19 - _e20\nOUTPUT numerator\nOUTPUT denominator"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 642.1,
+      "best_ns": 642.1,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 61.0,
+      "best_cycles": 61.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -856,6 +946,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\ny0 = INPUT y0\ny1 = INPUT y1\ny2 = INPUT y2\ny3 = INPUT y3\n_e1 = x0 + x1\n_e2 = _e1 + x2\nsx = _e2 + x3\n_e3 = y0 + y1\n_e4 = _e3 + y2\nsy = _e4 + y3\n_e5 = x0 * y0\n_e6 = x1 * y1\n_e7 = _e5 + _e6\n_e8 = x2 * y2\n_e9 = _e7 + _e8\n_e10 = x3 * y3\nsxy = _e9 + _e10\n_e11 = x0 * x0\n_e12 = x1 * x1\n_e13 = _e11 + _e12\n_e14 = x2 * x2\n_e15 = _e13 + _e14\n_e16 = x3 * x3\nsxx = _e15 + _e16\n_k1 = 4\n_e17 = _k1 * sxy\n_e18 = sx * sy\nnumerator = _e17 - _e18\n_e19 = _k1 * sxx\n_e20 = sx * sx\ndenominator = _e19 - _e20\nOUTPUT numerator\nOUTPUT denominator"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 626.0,
+      "best_ns": 626.0,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 61.0,
+      "best_cycles": 61.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -935,6 +1034,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nw0 = INPUT w0\nw1 = INPUT w1\nw2 = INPUT w2\nw3 = INPUT w3\n_e1 = w0 * x0\n_e2 = w1 * x1\n_e3 = _e1 + _e2\n_e4 = w2 * x2\n_e5 = _e3 + _e4\n_e6 = w3 * x3\n_e7 = _e5 + _e6\n_e8 = w0 + w1\n_e9 = _e8 + w2\n_e10 = _e9 + w3\navg = _e7 / _e10\ntotal_weight = _e9 + w3\n_e17 = _e3 + _e4\n_e19 = _e17 + _e6\nscaled = _e19 / total_weight\nOUTPUT avg\nOUTPUT total_weight\nOUTPUT scaled"
     },
     "improvement_pct_exec_time": 27.272727272727273,
+    "runtime": {
+      "baseline_ns": 919.2,
+      "best_ns": 815.6,
+      "measured_improvement_pct": 11.270670147954744,
+      "measured_speedup_x": 1.1270230505149583,
+      "baseline_cycles": 55.0,
+      "best_cycles": 40.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 46,
     "verdict": "PASS"
   },
@@ -1014,6 +1122,15 @@
       "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nw0 = INPUT w0\nw1 = INPUT w1\nw2 = INPUT w2\nw3 = INPUT w3\n_e1 = w0 * x0\n_e2 = w1 * x1\n_e3 = _e1 + _e2\n_e4 = w2 * x2\n_e5 = _e3 + _e4\n_e6 = w3 * x3\n_e7 = _e5 + _e6\n_e8 = w0 + w1\n_e9 = _e8 + w2\n_e10 = _e9 + w3\navg = _e7 / _e10\ntotal_weight = _e9 + w3\n_e17 = _e3 + _e4\n_e19 = _e17 + _e6\nscaled = _e19 / total_weight\nOUTPUT avg\nOUTPUT total_weight\nOUTPUT scaled"
     },
     "improvement_pct_exec_time": 27.272727272727273,
+    "runtime": {
+      "baseline_ns": 813.8,
+      "best_ns": 705.4,
+      "measured_improvement_pct": 13.320226099778814,
+      "measured_speedup_x": 1.153671675645024,
+      "baseline_cycles": 55.0,
+      "best_cycles": 40.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 46,
     "verdict": "PASS"
   },
@@ -1081,6 +1198,15 @@
       "tac": "a0 = INPUT a0\na1 = INPUT a1\na2 = INPUT a2\na3 = INPUT a3\na4 = INPUT a4\na5 = INPUT a5\na6 = INPUT a6\na7 = INPUT a7\nb0 = INPUT b0\nb1 = INPUT b1\nb2 = INPUT b2\nb3 = INPUT b3\nb4 = INPUT b4\nb5 = INPUT b5\nb6 = INPUT b6\nb7 = INPUT b7\n_e1 = a0 * b0\n_e2 = a1 * b1\n_e3 = _e1 + _e2\n_e4 = a2 * b2\n_e5 = _e3 + _e4\n_e6 = a3 * b3\n_e7 = _e5 + _e6\n_e8 = a4 * b4\n_e9 = _e7 + _e8\n_e10 = a5 * b5\n_e11 = _e9 + _e10\n_e12 = a6 * b6\n_e13 = _e11 + _e12\n_e14 = a7 * b7\ns = _e13 + _e14\nOUTPUT s"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 559.9,
+      "best_ns": 559.9,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 48.0,
+      "best_cycles": 48.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -1148,6 +1274,15 @@
       "tac": "a0 = INPUT a0\na1 = INPUT a1\na2 = INPUT a2\na3 = INPUT a3\nb0 = INPUT b0\nb1 = INPUT b1\nb2 = INPUT b2\nb3 = INPUT b3\n_e1 = a0 * b0\n_e2 = a1 * b1\n_e3 = _e1 + _e2\n_e4 = a2 * b2\n_e5 = _e3 + _e4\n_e6 = a3 * b3\ndot = _e5 + _e6\n_e7 = a0 * a0\n_e8 = a1 * a1\n_e9 = _e7 + _e8\n_e10 = a2 * a2\n_e11 = _e9 + _e10\n_e12 = a3 * a3\nnorm_a = _e11 + _e12\n_e13 = b0 * b0\n_e14 = b1 * b1\n_e15 = _e13 + _e14\n_e16 = b2 * b2\n_e17 = _e15 + _e16\n_e18 = b3 * b3\nnorm_b = _e17 + _e18\nOUTPUT dot\nOUTPUT norm_a\nOUTPUT norm_b"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 551.1,
+      "best_ns": 551.1,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 56.0,
+      "best_cycles": 56.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -1215,6 +1350,15 @@
       "tac": "a0 = INPUT a0\na1 = INPUT a1\na2 = INPUT a2\na3 = INPUT a3\nb0 = INPUT b0\nb1 = INPUT b1\nb2 = INPUT b2\nb3 = INPUT b3\n_e1 = a0 * b0\n_e2 = a1 * b1\n_e3 = _e1 + _e2\n_e4 = a2 * b2\n_e5 = _e3 + _e4\n_e6 = a3 * b3\ndot = _e5 + _e6\n_e7 = a0 * a0\n_e8 = a1 * a1\n_e9 = _e7 + _e8\n_e10 = a2 * a2\n_e11 = _e9 + _e10\n_e12 = a3 * a3\nnorm_a = _e11 + _e12\n_e13 = b0 * b0\n_e14 = b1 * b1\n_e15 = _e13 + _e14\n_e16 = b2 * b2\n_e17 = _e15 + _e16\n_e18 = b3 * b3\nnorm_b = _e17 + _e18\nOUTPUT dot\nOUTPUT norm_a\nOUTPUT norm_b"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 529.4,
+      "best_ns": 529.4,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 56.0,
+      "best_cycles": 56.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -1282,6 +1426,15 @@
       "tac": "a0 = INPUT a0\na1 = INPUT a1\na2 = INPUT a2\na3 = INPUT a3\nb0 = INPUT b0\nb1 = INPUT b1\nb2 = INPUT b2\nb3 = INPUT b3\n_e1 = a0 * b0\n_e2 = a1 * b1\n_e3 = _e1 + _e2\n_e4 = a2 * b2\n_e5 = _e3 + _e4\n_e6 = a3 * b3\ndot = _e5 + _e6\n_e7 = a0 * a0\n_e8 = a1 * a1\n_e9 = _e7 + _e8\n_e10 = a2 * a2\n_e11 = _e9 + _e10\n_e12 = a3 * a3\nnorm_a = _e11 + _e12\n_e13 = b0 * b0\n_e14 = b1 * b1\n_e15 = _e13 + _e14\n_e16 = b2 * b2\n_e17 = _e15 + _e16\n_e18 = b3 * b3\nnorm_b = _e17 + _e18\nOUTPUT dot\nOUTPUT norm_a\nOUTPUT norm_b"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 518.4,
+      "best_ns": 518.4,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 56.0,
+      "best_cycles": 56.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -1349,6 +1502,15 @@
       "tac": "a0 = INPUT a0\na1 = INPUT a1\na2 = INPUT a2\na3 = INPUT a3\nb0 = INPUT b0\nb1 = INPUT b1\nb2 = INPUT b2\nb3 = INPUT b3\n_e1 = a0 * b0\n_e2 = a1 * b1\n_e3 = _e1 + _e2\n_e4 = a2 * b2\n_e5 = _e3 + _e4\n_e6 = a3 * b3\ndot = _e5 + _e6\n_e7 = a0 * a0\n_e8 = a1 * a1\n_e9 = _e7 + _e8\n_e10 = a2 * a2\n_e11 = _e9 + _e10\n_e12 = a3 * a3\nnorm_a = _e11 + _e12\n_e13 = b0 * b0\n_e14 = b1 * b1\n_e15 = _e13 + _e14\n_e16 = b2 * b2\n_e17 = _e15 + _e16\n_e18 = b3 * b3\nnorm_b = _e17 + _e18\nOUTPUT dot\nOUTPUT norm_a\nOUTPUT norm_b"
     },
     "improvement_pct_exec_time": 0.0,
+    "runtime": {
+      "baseline_ns": 502.9,
+      "best_ns": 502.9,
+      "measured_improvement_pct": 0.0,
+      "measured_speedup_x": 1.0,
+      "baseline_cycles": 56.0,
+      "best_cycles": 56.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 1,
     "verdict": "PASS"
   },
@@ -1428,6 +1590,15 @@
       "tac": "x1 = INPUT x1\ny1 = INPUT y1\nx2 = INPUT x2\ny2 = INPUT y2\nx3 = INPUT x3\ny3 = INPUT y3\n_e1 = x2 - x1\n_e2 = y3 - y1\n_e3 = _e1 * _e2\n_e4 = x3 - x1\n_e5 = y2 - y1\n_e6 = _e4 * _e5\narea2 = _e3 - _e6\n_e9 = _e1 * _e1\n_e12 = _e5 * _e5\nside_ab_sq = _e9 + _e12\n_e15 = _e4 * _e4\n_e18 = _e2 * _e2\nside_ac_sq = _e15 + _e18\nOUTPUT area2\nOUTPUT side_ab_sq\nOUTPUT side_ac_sq"
     },
     "improvement_pct_exec_time": 19.047619047619047,
+    "runtime": {
+      "baseline_ns": 561.5,
+      "best_ns": 394.3,
+      "measured_improvement_pct": 29.777382012466607,
+      "measured_speedup_x": 1.4240426071519148,
+      "baseline_cycles": 42.0,
+      "best_cycles": 34.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 4,
     "verdict": "PASS"
   },
@@ -1507,6 +1678,15 @@
       "tac": "ax = INPUT ax\nay = INPUT ay\naz = INPUT az\nbx = INPUT bx\nby = INPUT by\nbz = INPUT bz\n_e1 = ay * bz\n_e2 = az * by\ncx = _e1 - _e2\n_e3 = az * bx\n_e4 = ax * bz\ncy = _e3 - _e4\n_e5 = ax * by\n_e6 = ay * bx\ncz = _e5 - _e6\n_e13 = cx * cx\n_e14 = cy * cy\n_e15 = _e13 + _e14\n_e16 = cz * cz\nnorm_sq = _e15 + _e16\nOUTPUT cx\nOUTPUT cy\nOUTPUT cz\nOUTPUT norm_sq"
     },
     "improvement_pct_exec_time": 25.0,
+    "runtime": {
+      "baseline_ns": 602.1,
+      "best_ns": 485.4,
+      "measured_improvement_pct": 19.382162431489792,
+      "measured_speedup_x": 1.2404202719406676,
+      "baseline_cycles": 56.0,
+      "best_cycles": 42.0,
+      "outputs_correct": true
+    },
     "generations_to_convergence": 46,
     "verdict": "PASS"
   }

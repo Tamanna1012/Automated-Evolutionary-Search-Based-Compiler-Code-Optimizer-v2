@@ -121,14 +121,24 @@ def plot_fitness_boxplot(result: GAResult, out_path: str,
 
 
 def plot_improvement_bar(program_names: List[str], improvements_pct: List[float], out_path: str,
-                          title: str = "Best-Individual Improvement vs Baseline"):
-    fig, ax = plt.subplots(figsize=(10, 5))
-    colors = ["#1f6f43" if v >= 0 else "#c0392b" for v in improvements_pct]
-    ax.bar(range(len(program_names)), improvements_pct, color=colors)
-    ax.set_xticks(range(len(program_names)))
+                          title: str = "Best-Individual Improvement vs Baseline",
+                          measured_pct: List[float] = None):
+    """Bar chart of improvement per program. With ``measured_pct`` it shows two
+    bars per program: the simulated (cycle model) and the measured (real time)."""
+    fig, ax = plt.subplots(figsize=(11, 5))
+    x = list(range(len(program_names)))
+    if measured_pct is None:
+        colors = ["#1f6f43" if v >= 0 else "#c0392b" for v in improvements_pct]
+        ax.bar(x, improvements_pct, color=colors)
+    else:
+        w = 0.4
+        ax.bar([i - w / 2 for i in x], improvements_pct, width=w, color="#1f6f43", label="simulated (cycle model)")
+        ax.bar([i + w / 2 for i in x], measured_pct, width=w, color="#2a6fb0", label="measured (real runtime)")
+        ax.legend(loc="upper left")
+    ax.set_xticks(x)
     ax.set_xticklabels(program_names, rotation=60, ha="right", fontsize=7)
     ax.axhline(0, color="black", linewidth=0.8)
-    ax.set_ylabel("exec_time improvement vs baseline (%)")
+    ax.set_ylabel("improvement vs baseline (%)")
     ax.set_title(title)
     ax.grid(alpha=0.25, axis="y")
     _savefig(fig, out_path)
@@ -183,4 +193,22 @@ def plot_elite_heatmap(result: GAResult, out_path: str,
     ax.set_xlabel("Generation")
     ax.set_title(title)
     fig.colorbar(im, ax=ax, label="share of elite genome slots")
+    _savefig(fig, out_path)
+
+
+def plot_cycles_vs_measured(cycles: List[float], measured_ns: List[float], out_path: str,
+                             pearson_r=None, spearman_rho=None,
+                             title: str = "Simulated cycles vs measured runtime"):
+    """Scatter of cycle-model cost against measured time for every measured program."""
+    fig, ax = plt.subplots(figsize=(6.5, 5))
+    ax.scatter(cycles, measured_ns, s=14, alpha=0.5, color="#2a6fb0")
+    ax.set_xlabel("simulated exec_time (cycles per call)")
+    ax.set_ylabel("measured runtime (ns per call)")
+    note = []
+    if pearson_r is not None:
+        note.append(f"Pearson r = {pearson_r:.2f}")
+    if spearman_rho is not None:
+        note.append(f"Spearman rho = {spearman_rho:.2f}")
+    ax.set_title(title + (f"\n({', '.join(note)}, n={len(cycles)})" if note else ""))
+    ax.grid(alpha=0.25)
     _savefig(fig, out_path)
