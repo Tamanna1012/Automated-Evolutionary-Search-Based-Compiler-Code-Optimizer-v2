@@ -209,9 +209,18 @@ are embedded as JSON and drawn with inline SVG; light/dark follows the system).
   the original Python source, the TAC before and after, the best genome,
   baseline-vs-best table (including measured ns), its convergence curve and a
   Pareto scatter of its final population with selectable axes and the front table.
+* **Live optimizer**: type (or pick) your own straight-line Python function, set
+  the input range, generations, population and seed, and press *Optimize live*.
+  The real project code (`ast` front end, genetic algorithm, Pareto analysis,
+  verification) runs **inside your browser** through Pyodide (Python compiled to
+  WebAssembly), so nothing is uploaded; it shows baseline-vs-best metrics, the
+  winning genome, the convergence curve, an output check against your original
+  function, the TAC before/after and the Pareto front. The Python engine
+  (about 10 MB) is downloaded once from the jsDelivr CDN, so this tab needs
+  internet on first use; the rest of the page is fully offline.
 * **Features**: what the system implements, with this run's values (the limitations are documented in this README and the project explanation, not on the dashboard).
 
-`eco/dashboard.py` builds the data, `eco/dashboard_template.html` is the page. A copy is written to `docs/index.html` for GitHub Pages (Settings > Pages > branch `main`, folder `/docs`).
+`eco/dashboard.py` builds the data, `eco/dashboard_template.html` is the page, `eco/live.py` is the entry point the Live optimizer calls (the dashboard embeds the dependency-free `eco` modules it needs). A copy is written to `docs/index.html` for GitHub Pages (Settings > Pages > branch `main`, folder `/docs`).
 
 ## Plots (`eco/outputs/plots/`)
 
@@ -280,6 +289,7 @@ eco/
   visualize.py                the six required plots
   dashboard.py            builds eco/outputs/dashboard.html (data + template)
   dashboard_template.html the interactive results page
+  live.py                  live optimization of a user function (runs in the browser)
   main.py                      end-to-end experiment driver
   outputs/
     plots/                  generated PNGs

@@ -14,8 +14,23 @@ from typing import Dict, List
 from .report import program_report
 from .tac import tac_to_text
 
-TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "dashboard_template.html")
+HERE = os.path.dirname(__file__)
+TEMPLATE_PATH = os.path.join(HERE, "dashboard_template.html")
 PLACEHOLDER = "/*__DASHBOARD_DATA__*/null"
+LIVE_PLACEHOLDER = "/*__LIVE_SOURCES__*/null"
+# The modules the "Live optimizer" tab runs in the browser (via Pyodide). They
+# have no third-party dependencies; the real experiment code is what runs.
+LIVE_FILES = ["__init__", "tac", "interpreter", "metrics", "individual", "optimizations",
+              "pareto", "ga", "frontend", "live"]
+
+
+def live_sources() -> dict:
+    """Source text of the eco modules shipped inside the page for live optimization."""
+    out = {}
+    for name in LIVE_FILES:
+        with open(os.path.join(HERE, name + ".py"), encoding="utf-8") as f:
+            out[name + ".py"] = f.read().replace("\r\n", "\n")
+    return out
 
 
 def build_dashboard_data(programs, results, runtimes: Dict[str, dict], aggregate: dict, meta: dict) -> dict:
@@ -61,8 +76,11 @@ def write_dashboard(data: dict, out_path: str) -> str:
         template = f.read()
     if PLACEHOLDER not in template:
         raise ValueError("dashboard template is missing its data placeholder")
-    payload = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")  # never close the script tag early
+    if LIVE_PLACEHOLDER not in template:
+        raise ValueError("dashboard template is missing its live-sources placeholder")
+    safe = lambda obj: json.dumps(obj, separators=(",", ":")).replace("</", "<\\/")  # never close the script tag early
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    html = template.replace(PLACEHOLDER, safe(data), 1).replace(LIVE_PLACEHOLDER, safe(live_sources()), 1)
     with open(out_path, "w", encoding="utf-8") as f:
-        f.write(template.replace(PLACEHOLDER, payload, 1))
+        f.write(html)
     return out_path

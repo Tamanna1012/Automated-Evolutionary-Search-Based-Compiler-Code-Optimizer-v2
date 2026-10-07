@@ -80,6 +80,14 @@ svg .lbl{fill:var(--text)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .checks{width:100%;border-collapse:collapse;font-size:13px}
 .checks td,.checks th{padding:7px 9px;border-bottom:1px solid var(--grid);text-align:left;vertical-align:top}
+textarea{width:100%;min-height:210px;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:10px;font:12.5px/1.45 ui-monospace,Consolas,Menlo,monospace;resize:vertical;color:var(--text)}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 18px;font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.55;cursor:wait}
+.field{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted)}
+.field input{width:90px}
+.status{color:var(--muted);font-size:13px;margin-left:6px}
+.errbox{background:var(--bad-bg);border:1px solid var(--bad);color:var(--bad);border-radius:8px;padding:8px 12px;margin-top:10px}
+td.ok{color:var(--good);font-weight:700}
 footer{max-width:1280px;margin:0 auto;padding:0 24px 24px;color:var(--muted);font-size:12px}
 </style>
 </head>
@@ -94,17 +102,20 @@ footer{max-width:1280px;margin:0 auto;padding:0 24px 24px;color:var(--muted);fon
 <nav id="nav">
   <button data-tab="overview" class="active">Overview</button>
   <button data-tab="explorer">Program explorer</button>
+  <button data-tab="live">Live optimizer</button>
   <button data-tab="brief">Features</button>
 </nav>
 <main>
   <section class="tab active" id="tab-overview"></section>
   <section class="tab" id="tab-explorer"></section>
+  <section class="tab" id="tab-live"></section>
   <section class="tab" id="tab-brief"></section>
 </main>
 <footer>All numbers on this page come from the experiment run that generated it (<span id="gen"></span>). Simulated = cycle model used by the GA; measured = real timing of the generated Python function.</footer>
 
 <script>
 const DATA = /*__DASHBOARD_DATA__*/null;
+const LIVE_SRC = /*__LIVE_SOURCES__*/null;
 </script>
 <script>
 (function(){
@@ -396,10 +407,143 @@ function brief(){
       h("tbody",{}, rows.map(([r,v])=>h("tr",{}, h("td",{},r), h("td",{},String(v))))))));
 }
 
+// ------------------------------------------------------------------ live optimizer (Pyodide)
+const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+const SAMPLES = {
+  "Variance (mean written inline)": {lo:1, hi:20, src:
+`def variance3(a, b, c):
+    mean = (a + b + c) // 3
+    var = ((a - (a + b + c) // 3) * (a - (a + b + c) // 3) + (b - (a + b + c) // 3) * (b - (a + b + c) // 3) + (c - (a + b + c) // 3) * (c - (a + b + c) // 3)) // 3
+    return mean, var`},
+  "Quadratic discriminant": {lo:-15, hi:15, src:
+`def discriminant(a, b, c):
+    d = b * b - 4 * a * c
+    two_a = 2 * a
+    root_hi = -b + d
+    root_lo = -b - d
+    return d, root_hi, root_lo, two_a`},
+  "Compound interest (3 years)": {lo:1, hi:20, src:
+`def compound(principal):
+    p1 = principal * (100 + 5) // 100
+    p2 = p1 * (100 + 5) // 100
+    p3 = p2 * (100 + 5) // 100
+    gain = p3 - principal
+    return p3, gain`},
+  "Polynomial with repeated powers": {lo:-9, hi:9, src:
+`def poly(x):
+    r = 3 + 5 * x + 2 * (x * x) + 4 * (x * x * x) + 7 * (x * x * x * x)
+    return r`},
+  "Distance squared (inline)": {lo:-15, hi:15, src:
+`def dist2(x1, y1, x2, y2):
+    d2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
+    scaled = d2 * 3
+    return d2, scaled`},
+};
+let enginePromise = null;
+function loadEngine(setStatus){
+  if (enginePromise) return enginePromise;
+  enginePromise = (async () => {
+    setStatus("Downloading the Python engine (about 10 MB, first time only)...");
+    await new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = PYODIDE_URL + "pyodide.js"; s.onload = res; s.onerror = () => rej(new Error("could not download the Python engine - check your internet connection"));
+      document.head.append(s);
+    });
+    setStatus("Starting Python...");
+    const py = await loadPyodide({indexURL: PYODIDE_URL});
+    py.FS.mkdirTree("/home/pyodide/eco");
+    for (const [name, src] of Object.entries(LIVE_SRC)) py.FS.writeFile("/home/pyodide/eco/" + name, src);
+    py.runPython("import sys\nif '/home/pyodide' not in sys.path: sys.path.insert(0, '/home/pyodide')\nfrom eco.live import optimize_json");
+    return py.globals.get("optimize_json");
+  })().catch(e => { enginePromise = null; throw e; });
+  return enginePromise;
+}
+function live(){
+  const root = $("#tab-live");
+  const first = Object.keys(SAMPLES)[0];
+  const ta = h("textarea",{spellcheck:"false"}); ta.value = SAMPLES[first].src;
+  const num = (v, w) => h("input",{type:"number",value:v,style:"width:"+(w||80)+"px"});
+  const lo = num(SAMPLES[first].lo), hi = num(SAMPLES[first].hi), gens = num(30,70), pop = num(30,70), seed = num(42,70);
+  const sample = h("select",{onchange:e=>{const s=SAMPLES[e.target.value]; ta.value=s.src; lo.value=s.lo; hi.value=s.hi;}}, Object.keys(SAMPLES).map(k=>h("option",{value:k},k)));
+  const status = h("span",{class:"status"}, "");
+  const btn = h("button",{class:"btn"}, "Optimize live");
+  const out = h("div",{style:"margin-top:12px"});
+  const field = (l, el) => h("label",{class:"field"}, l, el);
+  btn.addEventListener("click", async () => {
+    btn.disabled = true; out.replaceChildren();
+    try {
+      const fn = await loadEngine(t => status.textContent = t);
+      status.textContent = "Running the genetic algorithm...";
+      await new Promise(r => setTimeout(r, 40));
+      const t0 = performance.now();
+      const res = JSON.parse(fn(JSON.stringify({source: ta.value, lo:+lo.value, hi:+hi.value, gens:+gens.value, pop:+pop.value, seed:+seed.value})));
+      status.textContent = res.ok ? "Done in " + ((performance.now()-t0)/1000).toFixed(1) + " s (computed in your browser)." : "";
+      out.replaceChildren(res.ok ? renderLive(res) : h("div",{class:"errbox"}, res.error));
+    } catch (e) {
+      status.textContent = "";
+      out.replaceChildren(h("div",{class:"errbox"}, String(e.message || e)));
+    }
+    btn.disabled = false;
+  });
+  root.append(h("div",{class:"card"},
+    h("h2",{},"Optimize your own function, live"),
+    h("p",{class:"hint"},"Type a straight-line Python function (integers, + - * //, assignments, return one or several values). It is compiled to three-address code, 5 random test inputs are drawn from the range you set, the genetic algorithm evolves optimization sequences, and every result is verified against your original function. All of it runs in your browser; nothing is uploaded."),
+    h("div",{class:"row"}, h("span",{class:"muted"},"Example:"), sample),
+    ta,
+    h("div",{class:"row",style:"margin-top:10px;align-items:flex-end"},
+      field("input min", lo), field("input max", hi), field("generations", gens), field("population", pop), field("seed", seed), btn, status),
+    h("p",{class:"hint"},"Use a positive input range if your function uses // (Python floors, the optimizer truncates toward zero). The Python engine is downloaded once from a public CDN."),
+    out));
+}
+function renderLive(r){
+  const b = r.baseline, a = r.best;
+  const tile = (v,l) => h("div",{class:"card kpi"}, h("div",{class:"v"}, v), h("div",{class:"l"}, l));
+  const px = h("select",{onchange:draw}, OBJ.map(([k,t])=>h("option",{value:k},t)));
+  const py = h("select",{onchange:draw}, OBJ.map(([k,t],i)=>h("option",{value:k,selected:i===1?"selected":null},t)));
+  const pbox = h("div",{});
+  function draw(){
+    const xi = OBJ.findIndex(o=>o[0]===px.value), yi = OBJ.findIndex(o=>o[0]===py.value);
+    const pts = r.population.filter(q=>q[5]).map(q=>({x:q[xi],y:q[yi],front:!!q[4]}));
+    pbox.replaceChildren(scatter(pts, OBJ[xi][1], OBJ[yi][1], {xd:xi?0:1,yd:yi?0:1}), legend([["var(--muted)","dominated (valid)"],["var(--bad)","Pareto front"]]));
+  }
+  const wrap = h("div",{},
+    h("div",{class:"grid kpis"},
+      tile(fmt(r.improvement_pct)+"%","exec_time improvement (simulated)"),
+      tile(b.instr_count+" → "+a.instr_count,"instructions"),
+      tile(fmt(b.exec_time,1)+" → "+fmt(a.exec_time,1),"cycles per run"),
+      tile(b.arith_ops+" → "+a.arith_ops,"arithmetic ops"),
+      tile(b.code_size+" → "+a.code_size,"code size"),
+      tile(r.verdict,"output check vs your function")),
+    h("div",{class:"card",style:"margin-bottom:12px"},
+      h("div",{}, "Best genome: ", r.genome.length ? r.genome.map(g=>h("span",{class:"chip"},g)) : h("span",{class:"chip"},"(unchanged original)")),
+      h("div",{class:"muted",style:"margin-top:4px"}, `weighted cost ${fmt(r.best_cost,3)} (original = 1.000) | converged at generation ${r.generations_to_convergence} of ${r.settings.gens} | ${r.front_size} non-dominated, ${r.distinct_points} distinct Pareto point(s)`)),
+    h("div",{class:"grid two",style:"margin-bottom:12px"},
+      h("div",{class:"card"}, h("h2",{},"Convergence curve"), h("p",{class:"hint"},"Weighted cost per generation (lower is better)."),
+        lineChart([{values:r.hist_avg,color:"var(--muted)"},{values:r.hist_best,color:"var(--good)"}],"generation","weighted cost"),
+        legend([["var(--good)","best cost"],["var(--muted)","average cost"]])),
+      h("div",{class:"card"}, h("h2",{},"Correctness check"), h("p",{class:"hint"},"The optimized code is run on the same inputs as your original function."),
+        h("div",{class:"scroll"}, h("table",{class:"t",style:"min-width:420px"},
+          h("thead",{}, h("tr",{}, h("th",{},"inputs"), h("th",{},"your function"), h("th",{},"optimized"), h("th",{},"match"))),
+          h("tbody",{}, r.checks.map(c=>h("tr",{}, h("td",{style:"text-align:left"}, r.args.map(x=>x+"="+c.inputs[x]).join(", ")),
+            h("td",{}, "["+c.expected.join(", ")+"]"), h("td",{}, "["+c.optimized.join(", ")+"]"), h("td",{class:c.match?"ok":"fail"}, c.match?"yes":"NO"))))))) ),
+    h("div",{class:"card",style:"margin-bottom:12px"}, h("h2",{},"Three-address code"),
+      h("div",{class:"cols"},
+        h("div",{}, h("p",{class:"hint"},`before (${r.tac_before.length} instructions)`), h("pre",{}, r.tac_before.join("\n"))),
+        h("div",{}, h("p",{class:"hint"},`after (${r.tac_after.length} instructions)`), h("pre",{}, r.tac_after.join("\n"))))),
+    h("div",{class:"card"}, h("h2",{},"Pareto analysis of the final population"),
+      h("div",{class:"row"}, px, h("span",{class:"muted"},"vs"), py), pbox,
+      h("div",{class:"scroll"}, h("table",{class:"t",style:"margin-top:8px;min-width:560px"},
+        h("thead",{}, h("tr",{}, h("th",{},"best at"), h("th",{},"genome"), h("th",{},"time"), h("th",{},"instr"), h("th",{},"size"), h("th",{},"ops"), h("th",{},"ties"))),
+        h("tbody",{}, r.pareto.map(e=>h("tr",{}, h("td",{style:"text-align:left"},e.label), h("td",{style:"text-align:left"},e.genome.join(" > ")||"(none)"),
+          h("td",{},fmt(e.fitness.exec_time,1)), h("td",{},e.fitness.instr_count), h("td",{},e.fitness.code_size), h("td",{},e.fitness.arith_ops), h("td",{},e.tied))))))));
+  draw();
+  return wrap;
+}
+
 // ------------------------------------------------------------------ boot
 $("#subtitle").textContent = `${M.dataset} | ${P.length} programs | population ${M.population_size} | ${M.generations} generations | seed ${M.seed}`;
 $("#gen").textContent = M.dataset + ", seed " + M.seed;
-overview(); explorer(); brief();
+overview(); explorer(); live(); brief();
 document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));
   document.querySelectorAll("section.tab").forEach(s=>s.classList.toggle("active",s.id==="tab-"+b.dataset.tab));
