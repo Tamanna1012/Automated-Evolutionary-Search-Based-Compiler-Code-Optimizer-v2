@@ -1,4 +1,4 @@
-=== bench_0015 (dot_product) ===
+=== bench_0015 (dot_product, plain spelling) ===
 Original source:
     def dot_product(a0, a1, a2, a3, a4, a5, a6, a7, b0, b1, b2, b3, b4, b5, b6, b7):
         s = a0 * b0 + a1 * b1 + a2 * b2 + a3 * b3 + a4 * b4 + a5 * b5 + a6 * b6 + a7 * b7
@@ -12,7 +12,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=1.0000  avg=1.0000
 Generations to convergence: 1
 Simulated exec-time improvement vs baseline (cycle model): 0.0%
-Measured runtime (real, Python backend): baseline 552 ns/call -> best 552 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 597 ns/call -> best 597 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
 Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
   genome=[]  fitness={'exec_time': 48.0, 'instr_count': 32, 'code_size': 125, 'arith_ops': 15}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:

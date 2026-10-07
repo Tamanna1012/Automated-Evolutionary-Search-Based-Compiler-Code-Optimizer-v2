@@ -569,3 +569,40 @@ def _same_outputs_multi(tac_a, tac_b, names):
         inputs = {n: rng.randint(-9, 9) for n in names}
         ra, rb = run(tac_a, inputs), run(tac_b, inputs)
         assert ra.ok and rb.ok and ra.outputs == rb.outputs
+
+
+# ---------------------------------------------------------------------------
+# Spelling labels (tidy / naive / plain)
+# ---------------------------------------------------------------------------
+ALWAYS_NAIVE = {"difference_of_squares", "triangle_area_twice", "weighted_average",
+                "temperature_conversions", "linear_interpolation", "cross_product_3d"}
+RANDOM_SPELLING = {"distance_sq_2d", "variance_of_values", "simple_interest", "income_tax",
+                   "speed_distance_time", "mean_of_values", "kinetic_and_potential_energy"}
+
+
+def test_every_program_has_a_spelling_label_matching_its_kernel_class():
+    progs = generate_dataset(300, seed=42)
+    seen = {}
+    for p in progs:
+        assert p.spelling in ("plain", "tidy", "naive")
+        seen.setdefault(p.kernel, set()).add(p.spelling)
+    for kernel, labels in seen.items():
+        if kernel in ALWAYS_NAIVE:
+            assert labels == {"naive"}, kernel
+        elif kernel in RANDOM_SPELLING:
+            assert labels <= {"tidy", "naive"} and labels, kernel
+        else:
+            assert labels == {"plain"}, kernel
+    assert any(len(seen[k]) == 2 for k in RANDOM_SPELLING)  # both spellings really occur
+
+
+def test_spelling_reaches_reports_csv_and_aggregate(tmp_path):
+    progs = [generate_kernel_program(i, random.Random(i)) for i in range(0, 42, 5)]
+    results = [run_ga(p.tac, p.test_input_sets, p.expected_outputs, GAConfig(pop_size=8, num_generations=3, seed=0))
+               for p in progs]
+    rows = write_all_program_reports(progs, results, str(tmp_path))
+    assert [r["spelling"] for r in rows] == [p.spelling for p in progs]
+    first = (tmp_path / f"{progs[0].name}_report.txt").read_text(encoding="utf-8").splitlines()[0]
+    assert f"{progs[0].spelling} spelling" in first
+    agg = aggregate_metrics(progs, results)
+    assert sum(v["programs"] for v in agg["improvement_by_spelling"].values()) == len(progs)

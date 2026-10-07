@@ -1,4 +1,4 @@
-=== bench_0077 (speed_distance_time) ===
+=== bench_0077 (speed_distance_time, naive spelling) ===
 Original source:
     def speed_distance_time(distance, time, extra):
         speed = distance // time
@@ -14,7 +14,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.5985  avg=0.6327
 Generations to convergence: 6
 Simulated exec-time improvement vs baseline (cycle model): 45.8%
-Measured runtime (real, Python backend): baseline 775 ns/call -> best 336 ns/call = 56.6% faster (2.30x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 802 ns/call -> best 357 ns/call = 55.5% faster (2.25x); optimized outputs correct: yes
 Pareto front: 20 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['dead_code_elimination', 'cse', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 13.0, 'instr_count': 8, 'code_size': 30, 'arith_ops': 3}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (20 genomes tie here)
 Best-overall (weighted) individual:

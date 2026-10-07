@@ -1,4 +1,4 @@
-=== bench_0050 (distance_sq_3d) ===
+=== bench_0050 (distance_sq_3d, plain spelling) ===
 Original source:
     def distance_sq_3d(x1, y1, z1, x2, y2, z2):
         d2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1)
@@ -12,7 +12,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.8033  avg=0.8300
 Generations to convergence: 4
 Simulated exec-time improvement vs baseline (cycle model): 12.5%
-Measured runtime (real, Python backend): baseline 290 ns/call -> best 241 ns/call = 16.9% faster (1.20x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 350 ns/call -> best 304 ns/call = 13.0% faster (1.15x); optimized outputs correct: yes
 Pareto front: 23 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['cse', 'strength_reduction', 'copy_propagation', 'cse', 'dead_code_elimination']  fitness={'exec_time': 21.0, 'instr_count': 15, 'code_size': 63, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
 Best-overall (weighted) individual:

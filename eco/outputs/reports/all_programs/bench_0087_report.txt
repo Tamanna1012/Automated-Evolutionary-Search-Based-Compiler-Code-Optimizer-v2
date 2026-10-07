@@ -1,4 +1,4 @@
-=== bench_0087 (quadratic_value_and_slope) ===
+=== bench_0087 (quadratic_value_and_slope, plain spelling) ===
 Original source:
     def quadratic_value_and_slope(a, b, c, x):
         y = a * x * x + b * x + c
@@ -13,7 +13,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.9382  avg=0.9479
 Generations to convergence: 1
 Simulated exec-time improvement vs baseline (cycle model): 12.0%
-Measured runtime (real, Python backend): baseline 313 ns/call -> best 309 ns/call = 1.2% faster (1.01x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 293 ns/call -> best 293 ns/call = 0.1% faster (1.00x); optimized outputs correct: yes
 Pareto front: 25 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['cse', 'constant_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 22.0, 'instr_count': 14, 'code_size': 62, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (25 genomes tie here)
 Best-overall (weighted) individual:

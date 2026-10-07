@@ -1,4 +1,4 @@
-=== bench_0002 (poly_with_derivative) ===
+=== bench_0002 (poly_with_derivative, plain spelling) ===
 Original source:
     def poly_with_derivative(x):
         x2 = x * x
@@ -15,7 +15,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.8159  avg=0.8377
 Generations to convergence: 11
 Simulated exec-time improvement vs baseline (cycle model): 22.5%
-Measured runtime (real, Python backend): baseline 414 ns/call -> best 365 ns/call = 11.9% faster (1.14x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 448 ns/call -> best 422 ns/call = 6.0% faster (1.06x); optimized outputs correct: yes
 Pareto front: 18 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['constant_folding', 'cse', 'constant_folding', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 31.0, 'instr_count': 19, 'code_size': 94, 'arith_ops': 11}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (18 genomes tie here)
 Best-overall (weighted) individual:

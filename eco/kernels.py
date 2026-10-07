@@ -15,6 +15,13 @@ compiles an instance with the ``ast`` front end, runs the ORIGINAL Python
 source on each test input set to get ground-truth outputs, and checks that
 the TAC interpreter agrees before the program is admitted to the dataset.
 
+Spelling labels. Some kernels exist in two spellings of the same function
+(a "tidy" one that names an intermediate and a "naive" one that recomputes it
+inline), chosen at random per instance; six kernels were written with extra
+redundant lines in every instance ("naive"); the rest have a single form
+("plain"). The label travels with every program (``BenchmarkProgram.spelling``)
+into the reports and the summary CSV so results can be split by it.
+
 Integer-division kernels use ``//`` and positive input domains with
 non-negative numerators, where Python's floor division and the TAC
 interpreter's truncating division coincide.
@@ -40,6 +47,7 @@ class KernelInstance:
     source: str
     arg_names: List[str]
     domain: Tuple[int, int]
+    style: str = "plain"   # "plain" | "tidy" | "naive"
 
 
 def _lit(v: int) -> str:
@@ -57,10 +65,10 @@ def _coef(rng: random.Random) -> int:
 
 
 def _fn(kernel: str, args: Sequence[str], lines: Sequence[str], ret: str,
-        domain: Tuple[int, int] = SIGNED) -> KernelInstance:
+        domain: Tuple[int, int] = SIGNED, style: str = "plain") -> KernelInstance:
     body = "".join(f"    {ln}\n" for ln in lines)
     source = f"def {kernel}({', '.join(args)}):\n{body}    return {ret}\n"
-    return KernelInstance(kernel, source, list(args), domain)
+    return KernelInstance(kernel, source, list(args), domain, style)
 
 
 def _names(prefix: str, n: int) -> List[str]:
@@ -119,18 +127,19 @@ def binomial_expansion(rng):
 def difference_of_squares(rng):
     lines = ["factored = (a + b) * (a - b)", "expanded = a * a - b * b",
              "residual = (a + b) * (a - b) - (a * a - b * b)"]  # identity self-check, always 0
-    return _fn("difference_of_squares", ["a", "b"], lines, "factored, expanded, residual")
+    return _fn("difference_of_squares", ["a", "b"], lines, "factored, expanded, residual", style="naive")
 
 
 # ------------------------------------------------------------------- geometry
 def distance_sq_2d(rng):
     scale = rng.randint(2, 9)
-    if rng.random() < 0.5:
+    tidy = rng.random() < 0.5
+    if tidy:
         lines = ["dx = x2 - x1", "dy = y2 - y1", "d2 = dx * dx + dy * dy"]
     else:
         lines = ["d2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)"]
     lines.append(f"scaled = d2 * {scale}")
-    return _fn("distance_sq_2d", ["x1", "y1", "x2", "y2"], lines, "d2, scaled")
+    return _fn("distance_sq_2d", ["x1", "y1", "x2", "y2"], lines, "d2, scaled", style="tidy" if tidy else "naive")
 
 
 def distance_sq_3d(rng):
@@ -150,7 +159,7 @@ def triangle_area_twice(rng):
              "side_ab_sq = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)",
              "side_ac_sq = (x3 - x1) * (x3 - x1) + (y3 - y1) * (y3 - y1)"]
     return _fn("triangle_area_twice", ["x1", "y1", "x2", "y2", "x3", "y3"], lines,
-               "area2, side_ab_sq, side_ac_sq")
+               "area2, side_ab_sq, side_ac_sq", style="naive")
 
 
 def rectangle_properties(rng):
@@ -173,7 +182,8 @@ def sphere_properties(rng):
 def cross_product_3d(rng):
     lines = ["cx = ay * bz - az * by", "cy = az * bx - ax * bz", "cz = ax * by - ay * bx",
              "norm_sq = (ay * bz - az * by) * (ay * bz - az * by) + cy * cy + cz * cz"]
-    return _fn("cross_product_3d", ["ax", "ay", "az", "bx", "by", "bz"], lines, "cx, cy, cz, norm_sq")
+    return _fn("cross_product_3d", ["ax", "ay", "az", "bx", "by", "bz"], lines, "cx, cy, cz, norm_sq",
+               style="naive")
 
 
 def dot_product(rng):
@@ -239,24 +249,26 @@ def mean_of_values(rng):
     xs = _names("x", n)
     total = " + ".join(xs)
     lines = [f"total = {total}", f"mean = total // {n}"]
-    if rng.random() < 0.5:
-        lines.append(f"remainder = {total} - mean * {n}")
-    else:
+    tidy = rng.random() >= 0.5   # keeps the original random stream (inline sum was < 0.5)
+    if tidy:
         lines.append(f"remainder = total - mean * {n}")
-    return _fn("mean_of_values", xs, lines, "mean, remainder", POSITIVE)
+    else:
+        lines.append(f"remainder = {total} - mean * {n}")
+    return _fn("mean_of_values", xs, lines, "mean, remainder", POSITIVE, style="tidy" if tidy else "naive")
 
 
 def variance_of_values(rng):
     n = rng.randint(3, 6)
     xs = _names("x", n)
     total = " + ".join(xs)
-    if rng.random() < 0.5:
+    tidy = rng.random() < 0.5
+    if tidy:
         dev = " + ".join(f"({x} - mean) * ({x} - mean)" for x in xs)
         lines = [f"total = {total}", f"mean = total // {n}", f"var = ({dev}) // {n}"]
     else:  # recompute the mean inline instead of naming it
         dev = " + ".join(f"({x} - ({total}) // {n}) * ({x} - ({total}) // {n})" for x in xs)
         lines = [f"mean = ({total}) // {n}", f"var = ({dev}) // {n}"]
-    return _fn("variance_of_values", xs, lines, "mean, var", POSITIVE)
+    return _fn("variance_of_values", xs, lines, "mean, var", POSITIVE, style="tidy" if tidy else "naive")
 
 
 def weighted_average(rng):
@@ -266,7 +278,7 @@ def weighted_average(rng):
     wsum = " + ".join(ws)
     lines = [f"avg = ({num}) // ({wsum})", f"total_weight = {wsum}",
              f"scaled = ({num}) // total_weight"]
-    return _fn("weighted_average", xs + ws, lines, "avg, total_weight, scaled", POSITIVE)
+    return _fn("weighted_average", xs + ws, lines, "avg, total_weight, scaled", POSITIVE, style="naive")
 
 
 def sum_and_sum_of_squares(rng):
@@ -309,24 +321,27 @@ def compound_interest(rng):
 
 def simple_interest(rng):
     months = rng.choice([6, 12, 12, 24])
-    if rng.random() < 0.5:
+    tidy = rng.random() < 0.5
+    if tidy:
         lines = ["interest = principal * rate * years // 100", "total = principal + interest",
                  f"monthly = total // {months}"]
     else:
         lines = ["interest = principal * rate * years // 100",
                  "total = principal + principal * rate * years // 100",
                  f"monthly = (principal + principal * rate * years // 100) // {months}"]
-    return _fn("simple_interest", ["principal", "rate", "years"], lines, "interest, total, monthly", POSITIVE)
+    return _fn("simple_interest", ["principal", "rate", "years"], lines, "interest, total, monthly", POSITIVE,
+               style="tidy" if tidy else "naive")
 
 
 def income_tax(rng):
     rate, surcharge = rng.randint(5, 30), rng.randint(1, 10)
     lines = [f"tax = income * {rate} // 100 + income * {surcharge} // 100"]
-    if rng.random() < 0.5:
+    tidy = rng.random() < 0.5
+    if tidy:
         lines.append("net = income - tax")
     else:
         lines.append(f"net = income - (income * {rate} // 100 + income * {surcharge} // 100)")
-    return _fn("income_tax", ["income"], lines, "tax, net", POSITIVE)
+    return _fn("income_tax", ["income"], lines, "tax, net", POSITIVE, style="tidy" if tidy else "naive")
 
 
 def discount_chain(rng):
@@ -346,7 +361,8 @@ def body_mass_index(rng):
 def temperature_conversions(rng):
     lines = ["fahrenheit = c * 9 // 5 + 32", "kelvin = c + 273", "reaumur = c * 4 // 5",
              "rankine = c * 9 // 5 + 32 + 460"]
-    return _fn("temperature_conversions", ["c"], lines, "fahrenheit, kelvin, reaumur, rankine", POSITIVE)
+    return _fn("temperature_conversions", ["c"], lines, "fahrenheit, kelvin, reaumur, rankine", POSITIVE,
+               style="naive")
 
 
 def length_conversions(rng):
@@ -355,12 +371,14 @@ def length_conversions(rng):
 
 
 def speed_distance_time(rng):
-    if rng.random() < 0.5:
+    tidy = rng.random() < 0.5
+    if tidy:
         lines = ["speed = distance // time", "later = speed * extra", "total = distance + later"]
     else:
         lines = ["speed = distance // time", "later = distance // time * extra",
                  "total = distance + distance // time * extra"]
-    return _fn("speed_distance_time", ["distance", "time", "extra"], lines, "speed, total", POSITIVE)
+    return _fn("speed_distance_time", ["distance", "time", "extra"], lines, "speed, total", POSITIVE,
+               style="tidy" if tidy else "naive")
 
 
 # -------------------------------------------------------------------- physics
@@ -368,9 +386,10 @@ def kinetic_and_potential_energy(rng):
     g = rng.choice([10, 10, 98])
     div = 1 if g == 10 else 10
     lines = ["ke = m * v * v // 2", f"pe = m * {g} * h // {div}"]
-    lines.append("mechanical = ke + pe" if rng.random() < 0.5
-                 else f"mechanical = m * v * v // 2 + m * {g} * h // {div}")
-    return _fn("kinetic_and_potential_energy", ["m", "v", "h"], lines, "mechanical, ke", POSITIVE)
+    tidy = rng.random() < 0.5
+    lines.append("mechanical = ke + pe" if tidy else f"mechanical = m * v * v // 2 + m * {g} * h // {div}")
+    return _fn("kinetic_and_potential_energy", ["m", "v", "h"], lines, "mechanical, ke", POSITIVE,
+               style="tidy" if tidy else "naive")
 
 
 def projectile_position(rng):
@@ -391,7 +410,7 @@ def uniform_acceleration(rng):
 
 def linear_interpolation(rng):
     lines = ["y = (y0 * (20 - t) + y1 * t) // 20", "mirror = (y1 * (20 - t) + y0 * t) // 20"]
-    return _fn("linear_interpolation", ["y0", "y1", "t"], lines, "y, mirror", POSITIVE)
+    return _fn("linear_interpolation", ["y0", "y1", "t"], lines, "y, mirror", POSITIVE, style="naive")
 
 
 def rgb_to_gray(rng):
@@ -451,4 +470,5 @@ def generate_kernel_program(prog_id: int, rng: random.Random) -> BenchmarkProgra
         expected_outputs=expected,
         baseline_fitness=base_eval.fitness,
         kernel=inst.kernel,
+        spelling=inst.style,
     )

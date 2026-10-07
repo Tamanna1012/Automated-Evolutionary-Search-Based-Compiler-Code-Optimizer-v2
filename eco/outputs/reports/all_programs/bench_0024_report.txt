@@ -1,4 +1,4 @@
-=== bench_0024 (weighted_average) ===
+=== bench_0024 (weighted_average, naive spelling) ===
 Original source:
     def weighted_average(x0, x1, x2, x3, x4, w0, w1, w2, w3, w4):
         avg = (w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3 + w4 * x4) // (w0 + w1 + w2 + w3 + w4)
@@ -14,7 +14,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.5823  avg=0.6507
 Generations to convergence: 10
 Simulated exec-time improvement vs baseline (cycle model): 40.3%
-Measured runtime (real, Python backend): baseline 1089 ns/call -> best 621 ns/call = 43.0% faster (1.75x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 1046 ns/call -> best 598 ns/call = 42.8% faster (1.75x); optimized outputs correct: yes
 Pareto front: 24 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['constant_folding', 'constant_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 40.0, 'instr_count': 27, 'code_size': 113, 'arith_ops': 14}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (24 genomes tie here)
 Best-overall (weighted) individual:

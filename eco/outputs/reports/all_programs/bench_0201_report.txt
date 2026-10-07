@@ -1,4 +1,4 @@
-=== bench_0201 (temperature_conversions) ===
+=== bench_0201 (temperature_conversions, naive spelling) ===
 Original source:
     def temperature_conversions(c):
         fahrenheit = c * 9 // 5 + 32
@@ -15,7 +15,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.7878  avg=0.8164
 Generations to convergence: 3
 Simulated exec-time improvement vs baseline (cycle model): 22.2%
-Measured runtime (real, Python backend): baseline 880 ns/call -> best 671 ns/call = 23.7% faster (1.31x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 861 ns/call -> best 631 ns/call = 26.7% faster (1.37x); optimized outputs correct: yes
 Pareto front: 22 non-dominated individuals, 2 distinct objective-space point(s):
   genome=['dead_code_elimination', 'cse', 'strength_reduction', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 26.0, 'instr_count': 18, 'code_size': 82, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions
   genome=['dead_code_elimination', 'cse', 'copy_propagation', 'cse', 'dead_code_elimination']  fitness={'exec_time': 28.0, 'instr_count': 18, 'code_size': 80, 'arith_ops': 7}  -> fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)

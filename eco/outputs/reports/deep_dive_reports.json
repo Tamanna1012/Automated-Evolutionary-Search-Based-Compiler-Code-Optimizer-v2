@@ -2,6 +2,7 @@
   {
     "program": "bench_0023",
     "kernel": "variance_of_values",
+    "spelling": "naive",
     "source_code": "def variance_of_values(x0, x1, x2, x3, x4):\n    mean = (x0 + x1 + x2 + x3 + x4) // 5\n    var = ((x0 - (x0 + x1 + x2 + x3 + x4) // 5) * (x0 - (x0 + x1 + x2 + x3 + x4) // 5) + (x1 - (x0 + x1 + x2 + x3 + x4) // 5) * (x1 - (x0 + x1 + x2 + x3 + x4) // 5) + (x2 - (x0 + x1 + x2 + x3 + x4) // 5) * (x2 - (x0 + x1 + x2 + x3 + x4) // 5) + (x3 - (x0 + x1 + x2 + x3 + x4) // 5) * (x3 - (x0 + x1 + x2 + x3 + x4) // 5) + (x4 - (x0 + x1 + x2 + x3 + x4) // 5) * (x4 - (x0 + x1 + x2 + x3 + x4) // 5)) // 5\n    return mean, var\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -76,10 +77,10 @@
     },
     "improvement_pct_exec_time": 65.89147286821705,
     "runtime": {
-      "baseline_ns": 3507.0,
-      "best_ns": 836.9,
-      "measured_improvement_pct": 76.13629883090961,
-      "measured_speedup_x": 4.190464810610587,
+      "baseline_ns": 3151.6,
+      "best_ns": 817.5,
+      "measured_improvement_pct": 74.06079451707069,
+      "measured_speedup_x": 3.8551681957186545,
       "baseline_cycles": 129.0,
       "best_cycles": 44.0,
       "outputs_correct": true
@@ -90,6 +91,7 @@
   {
     "program": "bench_0149",
     "kernel": "variance_of_values",
+    "spelling": "naive",
     "source_code": "def variance_of_values(x0, x1, x2, x3):\n    mean = (x0 + x1 + x2 + x3) // 4\n    var = ((x0 - (x0 + x1 + x2 + x3) // 4) * (x0 - (x0 + x1 + x2 + x3) // 4) + (x1 - (x0 + x1 + x2 + x3) // 4) * (x1 - (x0 + x1 + x2 + x3) // 4) + (x2 - (x0 + x1 + x2 + x3) // 4) * (x2 - (x0 + x1 + x2 + x3) // 4) + (x3 - (x0 + x1 + x2 + x3) // 4) * (x3 - (x0 + x1 + x2 + x3) // 4)) // 4\n    return mean, var\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -164,10 +166,10 @@
     },
     "improvement_pct_exec_time": 61.855670103092784,
     "runtime": {
-      "baseline_ns": 2379.6,
-      "best_ns": 621.8,
-      "measured_improvement_pct": 73.86955790889225,
-      "measured_speedup_x": 3.826954004503056,
+      "baseline_ns": 2372.8,
+      "best_ns": 685.2,
+      "measured_improvement_pct": 71.12272420768711,
+      "measured_speedup_x": 3.4629305312317573,
       "baseline_cycles": 97.0,
       "best_cycles": 37.0,
       "outputs_correct": true
@@ -178,6 +180,7 @@
   {
     "program": "bench_0110",
     "kernel": "regression_slope_parts",
+    "spelling": "plain",
     "source_code": "def regression_slope_parts(x0, x1, x2, x3, x4, y0, y1, y2, y3, y4):\n    sx = x0 + x1 + x2 + x3 + x4\n    sy = y0 + y1 + y2 + y3 + y4\n    sxy = x0 * y0 + x1 * y1 + x2 * y2 + x3 * y3 + x4 * y4\n    sxx = x0 * x0 + x1 * x1 + x2 * x2 + x3 * x3 + x4 * x4\n    numerator = 5 * sxy - sx * sy\n    denominator = 5 * sxx - sx * sx\n    return numerator, denominator\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -240,8 +243,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 776.6,
-      "best_ns": 776.6,
+      "baseline_ns": 718.3,
+      "best_ns": 718.3,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 73.0,
@@ -254,6 +257,7 @@
   {
     "program": "bench_0236",
     "kernel": "regression_slope_parts",
+    "spelling": "plain",
     "source_code": "def regression_slope_parts(x0, x1, x2, x3, x4, y0, y1, y2, y3, y4):\n    sx = x0 + x1 + x2 + x3 + x4\n    sy = y0 + y1 + y2 + y3 + y4\n    sxy = x0 * y0 + x1 * y1 + x2 * y2 + x3 * y3 + x4 * y4\n    sxx = x0 * x0 + x1 * x1 + x2 * x2 + x3 * x3 + x4 * x4\n    numerator = 5 * sxy - sx * sy\n    denominator = 5 * sxx - sx * sx\n    return numerator, denominator\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -316,8 +320,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 878.9,
-      "best_ns": 878.9,
+      "baseline_ns": 906.5,
+      "best_ns": 906.5,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 73.0,
@@ -330,6 +334,7 @@
   {
     "program": "bench_0043",
     "kernel": "naive_poly",
+    "spelling": "plain",
     "source_code": "def naive_poly(x):\n    r = 1 + 5 * x + (-6) * (x*x) + 1 * (x*x*x) + (-8) * (x*x*x*x) + (-8) * (x*x*x*x*x) + 6 * (x*x*x*x*x*x) + (-6) * (x*x*x*x*x*x*x)\n    return r\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -404,10 +409,10 @@
     },
     "improvement_pct_exec_time": 48.97959183673469,
     "runtime": {
-      "baseline_ns": 863.7,
-      "best_ns": 529.0,
-      "measured_improvement_pct": 38.75188144031493,
-      "measured_speedup_x": 1.6327032136105861,
+      "baseline_ns": 1034.7,
+      "best_ns": 657.0,
+      "measured_improvement_pct": 36.50333429979705,
+      "measured_speedup_x": 1.5748858447488585,
       "baseline_cycles": 98.0,
       "best_cycles": 50.0,
       "outputs_correct": true
@@ -418,6 +423,7 @@
   {
     "program": "bench_0024",
     "kernel": "weighted_average",
+    "spelling": "naive",
     "source_code": "def weighted_average(x0, x1, x2, x3, x4, w0, w1, w2, w3, w4):\n    avg = (w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3 + w4 * x4) // (w0 + w1 + w2 + w3 + w4)\n    total_weight = w0 + w1 + w2 + w3 + w4\n    scaled = (w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3 + w4 * x4) // total_weight\n    return avg, total_weight, scaled\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -492,10 +498,10 @@
     },
     "improvement_pct_exec_time": 40.298507462686565,
     "runtime": {
-      "baseline_ns": 1089.4,
-      "best_ns": 621.1,
-      "measured_improvement_pct": 42.9869653020011,
-      "measured_speedup_x": 1.7539848655611014,
+      "baseline_ns": 1046.5,
+      "best_ns": 598.4,
+      "measured_improvement_pct": 42.818920210224555,
+      "measured_speedup_x": 1.7488302139037435,
       "baseline_cycles": 67.0,
       "best_cycles": 40.0,
       "outputs_correct": true
@@ -506,6 +512,7 @@
   {
     "program": "bench_0065",
     "kernel": "variance_of_values",
+    "spelling": "naive",
     "source_code": "def variance_of_values(x0, x1, x2):\n    mean = (x0 + x1 + x2) // 3\n    var = ((x0 - (x0 + x1 + x2) // 3) * (x0 - (x0 + x1 + x2) // 3) + (x1 - (x0 + x1 + x2) // 3) * (x1 - (x0 + x1 + x2) // 3) + (x2 - (x0 + x1 + x2) // 3) * (x2 - (x0 + x1 + x2) // 3)) // 3\n    return mean, var\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -580,10 +587,10 @@
     },
     "improvement_pct_exec_time": 56.52173913043478,
     "runtime": {
-      "baseline_ns": 1771.7,
-      "best_ns": 592.3,
-      "measured_improvement_pct": 66.56883219506689,
-      "measured_speedup_x": 2.9912206652034445,
+      "baseline_ns": 2202.4,
+      "best_ns": 729.4,
+      "measured_improvement_pct": 66.88158372684344,
+      "measured_speedup_x": 3.0194680559363865,
       "baseline_cycles": 69.0,
       "best_cycles": 30.0,
       "outputs_correct": true
@@ -594,6 +601,7 @@
   {
     "program": "bench_0107",
     "kernel": "variance_of_values",
+    "spelling": "naive",
     "source_code": "def variance_of_values(x0, x1, x2):\n    mean = (x0 + x1 + x2) // 3\n    var = ((x0 - (x0 + x1 + x2) // 3) * (x0 - (x0 + x1 + x2) // 3) + (x1 - (x0 + x1 + x2) // 3) * (x1 - (x0 + x1 + x2) // 3) + (x2 - (x0 + x1 + x2) // 3) * (x2 - (x0 + x1 + x2) // 3)) // 3\n    return mean, var\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -668,10 +676,10 @@
     },
     "improvement_pct_exec_time": 56.52173913043478,
     "runtime": {
-      "baseline_ns": 2091.3,
-      "best_ns": 695.0,
-      "measured_improvement_pct": 66.76708267584756,
-      "measured_speedup_x": 3.009064748201439,
+      "baseline_ns": 1755.5,
+      "best_ns": 678.4,
+      "measured_improvement_pct": 61.355739105667894,
+      "measured_speedup_x": 2.5877063679245285,
       "baseline_cycles": 69.0,
       "best_cycles": 30.0,
       "outputs_correct": true
@@ -682,6 +690,7 @@
   {
     "program": "bench_0068",
     "kernel": "regression_slope_parts",
+    "spelling": "plain",
     "source_code": "def regression_slope_parts(x0, x1, x2, x3, y0, y1, y2, y3):\n    sx = x0 + x1 + x2 + x3\n    sy = y0 + y1 + y2 + y3\n    sxy = x0 * y0 + x1 * y1 + x2 * y2 + x3 * y3\n    sxx = x0 * x0 + x1 * x1 + x2 * x2 + x3 * x3\n    numerator = 4 * sxy - sx * sy\n    denominator = 4 * sxx - sx * sx\n    return numerator, denominator\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -761,8 +770,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 677.9,
-      "best_ns": 677.9,
+      "baseline_ns": 744.7,
+      "best_ns": 744.7,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 61.0,
@@ -775,6 +784,7 @@
   {
     "program": "bench_0152",
     "kernel": "regression_slope_parts",
+    "spelling": "plain",
     "source_code": "def regression_slope_parts(x0, x1, x2, x3, y0, y1, y2, y3):\n    sx = x0 + x1 + x2 + x3\n    sy = y0 + y1 + y2 + y3\n    sxy = x0 * y0 + x1 * y1 + x2 * y2 + x3 * y3\n    sxx = x0 * x0 + x1 * x1 + x2 * x2 + x3 * x3\n    numerator = 4 * sxy - sx * sy\n    denominator = 4 * sxx - sx * sx\n    return numerator, denominator\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -854,8 +864,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 605.5,
-      "best_ns": 605.5,
+      "baseline_ns": 608.3,
+      "best_ns": 608.3,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 61.0,
@@ -868,6 +878,7 @@
   {
     "program": "bench_0194",
     "kernel": "regression_slope_parts",
+    "spelling": "plain",
     "source_code": "def regression_slope_parts(x0, x1, x2, x3, y0, y1, y2, y3):\n    sx = x0 + x1 + x2 + x3\n    sy = y0 + y1 + y2 + y3\n    sxy = x0 * y0 + x1 * y1 + x2 * y2 + x3 * y3\n    sxx = x0 * x0 + x1 * x1 + x2 * x2 + x3 * x3\n    numerator = 4 * sxy - sx * sy\n    denominator = 4 * sxx - sx * sx\n    return numerator, denominator\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -947,8 +958,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 704.9,
-      "best_ns": 704.9,
+      "baseline_ns": 582.5,
+      "best_ns": 582.5,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 61.0,
@@ -961,6 +972,7 @@
   {
     "program": "bench_0150",
     "kernel": "weighted_average",
+    "spelling": "naive",
     "source_code": "def weighted_average(x0, x1, x2, x3, w0, w1, w2, w3):\n    avg = (w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3) // (w0 + w1 + w2 + w3)\n    total_weight = w0 + w1 + w2 + w3\n    scaled = (w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3) // total_weight\n    return avg, total_weight, scaled\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -1035,10 +1047,10 @@
     },
     "improvement_pct_exec_time": 40.0,
     "runtime": {
-      "baseline_ns": 801.1,
-      "best_ns": 471.9,
-      "measured_improvement_pct": 41.09349644239172,
-      "measured_speedup_x": 1.6976054248781522,
+      "baseline_ns": 863.5,
+      "best_ns": 493.3,
+      "measured_improvement_pct": 42.87203242617255,
+      "measured_speedup_x": 1.7504561118994526,
       "baseline_cycles": 55.0,
       "best_cycles": 33.0,
       "outputs_correct": true
@@ -1049,6 +1061,7 @@
   {
     "program": "bench_0192",
     "kernel": "weighted_average",
+    "spelling": "naive",
     "source_code": "def weighted_average(x0, x1, x2, x3, w0, w1, w2, w3):\n    avg = (w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3) // (w0 + w1 + w2 + w3)\n    total_weight = w0 + w1 + w2 + w3\n    scaled = (w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3) // total_weight\n    return avg, total_weight, scaled\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -1123,10 +1136,10 @@
     },
     "improvement_pct_exec_time": 40.0,
     "runtime": {
-      "baseline_ns": 988.0,
-      "best_ns": 582.9,
-      "measured_improvement_pct": 41.002024291497975,
-      "measured_speedup_x": 1.694973408817979,
+      "baseline_ns": 1013.4,
+      "best_ns": 499.0,
+      "measured_improvement_pct": 50.75981843299783,
+      "measured_speedup_x": 2.0308617234468938,
       "baseline_cycles": 55.0,
       "best_cycles": 33.0,
       "outputs_correct": true
@@ -1137,6 +1150,7 @@
   {
     "program": "bench_0015",
     "kernel": "dot_product",
+    "spelling": "plain",
     "source_code": "def dot_product(a0, a1, a2, a3, a4, a5, a6, a7, b0, b1, b2, b3, b4, b5, b6, b7):\n    s = a0 * b0 + a1 * b1 + a2 * b2 + a3 * b3 + a4 * b4 + a5 * b5 + a6 * b6 + a7 * b7\n    return s\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -1199,8 +1213,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 552.2,
-      "best_ns": 552.2,
+      "baseline_ns": 597.3,
+      "best_ns": 597.3,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 48.0,
@@ -1213,6 +1227,7 @@
   {
     "program": "bench_0016",
     "kernel": "cosine_similarity_parts",
+    "spelling": "plain",
     "source_code": "def cosine_similarity_parts(a0, a1, a2, a3, b0, b1, b2, b3):\n    dot = a0 * b0 + a1 * b1 + a2 * b2 + a3 * b3\n    norm_a = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3\n    norm_b = b0 * b0 + b1 * b1 + b2 * b2 + b3 * b3\n    return dot, norm_a, norm_b\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -1275,8 +1290,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 555.1,
-      "best_ns": 555.1,
+      "baseline_ns": 604.5,
+      "best_ns": 604.5,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1289,6 +1304,7 @@
   {
     "program": "bench_0100",
     "kernel": "cosine_similarity_parts",
+    "spelling": "plain",
     "source_code": "def cosine_similarity_parts(a0, a1, a2, a3, b0, b1, b2, b3):\n    dot = a0 * b0 + a1 * b1 + a2 * b2 + a3 * b3\n    norm_a = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3\n    norm_b = b0 * b0 + b1 * b1 + b2 * b2 + b3 * b3\n    return dot, norm_a, norm_b\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -1351,8 +1367,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 530.5,
-      "best_ns": 530.5,
+      "baseline_ns": 504.8,
+      "best_ns": 504.8,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1365,6 +1381,7 @@
   {
     "program": "bench_0142",
     "kernel": "cosine_similarity_parts",
+    "spelling": "plain",
     "source_code": "def cosine_similarity_parts(a0, a1, a2, a3, b0, b1, b2, b3):\n    dot = a0 * b0 + a1 * b1 + a2 * b2 + a3 * b3\n    norm_a = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3\n    norm_b = b0 * b0 + b1 * b1 + b2 * b2 + b3 * b3\n    return dot, norm_a, norm_b\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -1427,8 +1444,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 499.5,
-      "best_ns": 499.5,
+      "baseline_ns": 557.1,
+      "best_ns": 557.1,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1441,6 +1458,7 @@
   {
     "program": "bench_0184",
     "kernel": "cosine_similarity_parts",
+    "spelling": "plain",
     "source_code": "def cosine_similarity_parts(a0, a1, a2, a3, b0, b1, b2, b3):\n    dot = a0 * b0 + a1 * b1 + a2 * b2 + a3 * b3\n    norm_a = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3\n    norm_b = b0 * b0 + b1 * b1 + b2 * b2 + b3 * b3\n    return dot, norm_a, norm_b\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -1503,8 +1521,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 432.1,
-      "best_ns": 432.1,
+      "baseline_ns": 582.0,
+      "best_ns": 582.0,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1517,6 +1535,7 @@
   {
     "program": "bench_0010",
     "kernel": "triangle_area_twice",
+    "spelling": "naive",
     "source_code": "def triangle_area_twice(x1, y1, x2, y2, x3, y3):\n    area2 = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)\n    side_ab_sq = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)\n    side_ac_sq = (x3 - x1) * (x3 - x1) + (y3 - y1) * (y3 - y1)\n    return area2, side_ab_sq, side_ac_sq\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -1591,10 +1610,10 @@
     },
     "improvement_pct_exec_time": 19.047619047619047,
     "runtime": {
-      "baseline_ns": 558.2,
-      "best_ns": 401.5,
-      "measured_improvement_pct": 28.072375492654967,
-      "measured_speedup_x": 1.3902864259028644,
+      "baseline_ns": 618.4,
+      "best_ns": 435.3,
+      "measured_improvement_pct": 29.608667529107368,
+      "measured_speedup_x": 1.4206294509533655,
       "baseline_cycles": 42.0,
       "best_cycles": 34.0,
       "outputs_correct": true
@@ -1605,6 +1624,7 @@
   {
     "program": "bench_0014",
     "kernel": "cross_product_3d",
+    "spelling": "naive",
     "source_code": "def cross_product_3d(ax, ay, az, bx, by, bz):\n    cx = ay * bz - az * by\n    cy = az * bx - ax * bz\n    cz = ax * by - ay * bx\n    norm_sq = (ay * bz - az * by) * (ay * bz - az * by) + cy * cy + cz * cz\n    return cx, cy, cz, norm_sq\n",
     "num_test_sets": 5,
     "baseline_fitness": {
@@ -1679,10 +1699,10 @@
     },
     "improvement_pct_exec_time": 25.0,
     "runtime": {
-      "baseline_ns": 576.1,
-      "best_ns": 479.9,
-      "measured_improvement_pct": 16.69848984551294,
-      "measured_speedup_x": 1.2004584288393416,
+      "baseline_ns": 626.8,
+      "best_ns": 525.5,
+      "measured_improvement_pct": 16.16145500957243,
+      "measured_speedup_x": 1.1927687916270218,
       "baseline_cycles": 56.0,
       "best_cycles": 42.0,
       "outputs_correct": true

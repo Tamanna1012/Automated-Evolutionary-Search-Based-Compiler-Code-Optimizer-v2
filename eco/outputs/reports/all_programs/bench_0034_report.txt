@@ -1,4 +1,4 @@
-=== bench_0034 (length_conversions) ===
+=== bench_0034 (length_conversions, plain spelling) ===
 Original source:
     def length_conversions(km):
         meters = km * 1000
@@ -14,7 +14,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.6510  avg=0.6984
 Generations to convergence: 2
 Simulated exec-time improvement vs baseline (cycle model): 36.0%
-Measured runtime (real, Python backend): baseline 301 ns/call -> best 215 ns/call = 28.5% faster (1.40x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 330 ns/call -> best 230 ns/call = 30.3% faster (1.44x); optimized outputs correct: yes
 Pareto front: 26 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['cse', 'constant_propagation', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 16.0, 'instr_count': 10, 'code_size': 41, 'arith_ops': 3}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (26 genomes tie here)
 Best-overall (weighted) individual:

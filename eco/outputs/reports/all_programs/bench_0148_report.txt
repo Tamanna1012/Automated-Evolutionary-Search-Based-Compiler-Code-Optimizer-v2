@@ -1,4 +1,4 @@
-=== bench_0148 (mean_of_values) ===
+=== bench_0148 (mean_of_values, tidy spelling) ===
 Original source:
     def mean_of_values(x0, x1, x2, x3, x4, x5, x6):
         total = x0 + x1 + x2 + x3 + x4 + x5 + x6
@@ -14,7 +14,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=1.0000  avg=1.0024
 Generations to convergence: 1
 Simulated exec-time improvement vs baseline (cycle model): 0.0%
-Measured runtime (real, Python backend): baseline 370 ns/call -> best 370 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 471 ns/call -> best 471 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
 Pareto front: 29 non-dominated individuals, 1 distinct objective-space point(s):
   genome=[]  fitness={'exec_time': 24.0, 'instr_count': 19, 'code_size': 78, 'arith_ops': 9}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (29 genomes tie here)
 Best-overall (weighted) individual:

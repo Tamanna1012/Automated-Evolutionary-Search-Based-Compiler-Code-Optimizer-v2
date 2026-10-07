@@ -1,4 +1,4 @@
-=== bench_0231 (affine_transform_2d) ===
+=== bench_0231 (affine_transform_2d, plain spelling) ===
 Original source:
     def affine_transform_2d(x, y):
         x2 = 4 * x + (-3) * y + 0
@@ -13,7 +13,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.8140  avg=0.8361
 Generations to convergence: 15
 Simulated exec-time improvement vs baseline (cycle model): 26.9%
-Measured runtime (real, Python backend): baseline 316 ns/call -> best 288 ns/call = 8.7% faster (1.09x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 322 ns/call -> best 311 ns/call = 3.2% faster (1.03x); optimized outputs correct: yes
 Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['strength_reduction', 'cse', 'copy_propagation', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 19.0, 'instr_count': 15, 'code_size': 67, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:

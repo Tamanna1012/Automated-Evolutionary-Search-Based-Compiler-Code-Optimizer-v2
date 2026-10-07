@@ -1,18 +1,32 @@
 {
-  "avg_measured_improvement_pct": 12.204500805118768,
-  "avg_measured_speedup_x": 1.20062536210781,
-  "total_time_speedup_x": 1.2096139969492423,
+  "avg_measured_improvement_pct": 12.174741454668181,
+  "avg_measured_speedup_x": 1.20007322006132,
+  "total_time_speedup_x": 1.2047198189919728,
   "measured_outputs_correct_pct": 100.0,
-  "programs_measurably_faster_pct": 61.666666666666664,
+  "programs_measurably_faster_pct": 59.666666666666664,
   "correlation": {
-    "pooled_pearson": 0.6505122479477282,
-    "pooled_spearman": 0.6153167357269729,
+    "pooled_pearson": 0.6588613420305247,
+    "pooled_spearman": 0.6277636907258387,
     "pooled_n": 600,
-    "improvement_pearson": 0.8968123278220471,
-    "improvement_spearman": 0.9159012096427239,
+    "improvement_pearson": 0.8950379941032939,
+    "improvement_spearman": 0.900219023463685,
     "improvement_n": 300,
-    "within_program_mean_spearman": 0.6282888396761122,
+    "within_program_mean_spearman": 0.51577414709619,
     "within_program_n_programs": 184
+  },
+  "improvement_by_spelling": {
+    "naive": {
+      "programs": 67,
+      "avg_improvement_pct": 29.476949954093442
+    },
+    "plain": {
+      "programs": 209,
+      "avg_improvement_pct": 12.520531115191252
+    },
+    "tidy": {
+      "programs": 24,
+      "avg_improvement_pct": 3.2587561686539157
+    }
   },
   "num_programs": 300,
   "validity_rate_pct": 100.0,

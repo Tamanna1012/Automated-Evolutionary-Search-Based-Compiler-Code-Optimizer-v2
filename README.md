@@ -137,7 +137,7 @@ old random generator (`eco/benchmark_generator.py`) is kept behind
 | Avg. Generations to Convergence | 4.1 | tracked per program |
 | Measured improvement (real runtime, original vs best) | **12.2%** (avg speedup 1.20x; 1.21x on total time; 12.2-12.3% over three runs) | validation of the cycle model |
 | Optimized code correct when really run | 100.0% | — |
-| Simulated vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.92 | model should predict speedups |
+| Simulated vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.90 | model should predict speedups |
 | Correctness PASS rate | 100.0% | — |
 
 Regenerate this table with `python -m eco.main` (see
@@ -158,6 +158,10 @@ distinct Pareto points per program with `--synthetic`):
   `binomial_expansion` 39%, `variance_of_values` 38%. Per-kernel numbers are
   in `all_programs/all_programs_summary.csv`. The target is not reached by
   changing the kernels: no kernel was edited to chase it.
+* **Part of the headline comes from naive-spelled kernels.** The
+  67 naive-spelled programs average 29.5%, the other
+  233 average 11.6% (see "Which kernels are naive spelling
+  variants").
 * **The CSE upgrade helped, but only where there is redundancy.** The old CSE
   matched expressions by variable *name* and rewrote only one level of a
   nested repeat per application, so a kernel that recomputes its mean inline
@@ -296,6 +300,35 @@ spelling (for example naming the mean versus recomputing it inline). Nothing
 was added to the code purely to give the optimizer something to do, and many
 kernels (see above) have nothing to optimize.
 
+### Which kernels are "naive spelling" variants
+
+Some kernels were deliberately written, or randomly rendered, in a redundant
+("naive") style: an intermediate is recomputed inline instead of being named,
+or extra lines reuse subexpressions. This is common in real code, but it is a
+choice I made, it gives the optimizer more to remove, and it raises the headline
+numbers, so it is labelled. Every program carries a `spelling` field
+(`all_programs_summary.csv` column `spelling`; also in each report header):
+
+| Spelling | Kernels |
+|---|---|
+| **naive** (always) | `difference_of_squares` (adds an identity self-check), `triangle_area_twice` (side lengths recompute the edge differences), `weighted_average` (repeats the numerator and the weight sum), `temperature_conversions` (a 4th conversion repeats `c*9//5+32`), `linear_interpolation` (a mirrored blend repeats `20 - t`), `cross_product_3d` (a norm recomputes a component) |
+| **tidy / naive** (random, 50/50 per instance) | `distance_sq_2d`, `variance_of_values`, `simple_interest`, `income_tax`, `speed_distance_time`, `mean_of_values`, `kinetic_and_potential_energy`. *Tidy* names the intermediate (`dx = x2 - x1`, `mean = ...`); *naive* writes it out again inline |
+| **plain** | the other 29 kernels, written in a single form (several, such as `binomial_expansion`, `naive_poly`, `length_conversions` and the circle/sphere formulas, still repeat subexpressions by nature of the formula; others like `dot_product` and `determinant_3x3` have none) |
+
+Result by spelling label (this run):
+
+| Label | Programs | Avg. simulated improvement |
+|---|---|---|
+| naive | 67 | 29.5% |
+| plain | 209 | 12.5% |
+| tidy | 24 | 3.3% |
+| tidy + plain (no deliberately naive spelling) | 233 | 11.6% |
+
+So about a fifth of the dataset is naive-spelled and those programs improve
+more than twice as much as the rest; the 15.6% headline would be
+11.6% without them. The labels do not change the dataset or any
+result; they only make the composition visible.
+
 ### Front end (`eco/frontend.py`)
 
 A small compiler built on Python's `ast` module turns one function into TAC.
@@ -345,11 +378,11 @@ guaranteed to be installed (none was available here), and a ctypes call has
 a fixed overhead that would swamp kernels this small. So "measured" means
 CPython executing the generated function, not native machine code.
 
-Timing is noisy by nature. Three consecutive full runs with the current
-code gave measured improvements of 12.3%, 12.3% and 12.2% (committed
-outputs: 12.2%), pooled Pearson 0.66/0.66/0.65, improvement-correlation
-Spearman 0.91/0.92/0.92 and within-program Spearman 0.61/0.63/0.63. The
-simulated numbers are deterministic. (With the previous CSE the measured
+Timing is noisy by nature. Four consecutive full runs with the current
+code gave measured improvements of 12.3%, 12.3%, 12.2% and 12.2% (committed
+outputs: the last), pooled Pearson 0.66/0.66/0.65/0.66,
+improvement-correlation Spearman 0.91/0.92/0.92/0.90 and within-program
+Spearman 0.61/0.63/0.63/0.52. The simulated numbers are deterministic. (With the previous CSE the measured
 improvement had varied between 9.2% and 9.7% and the within-program Spearman
 between 0.45 and 0.56, so timing-derived values should be read to within a
 few hundredths.)
@@ -360,9 +393,9 @@ Three views, all reported in `aggregate_metrics.md/.json`:
 
 | View | Result | Reading |
 |---|---|---|
-| Pooled: cycles vs ns over all 600 measured programs (original + best) | Pearson r = 0.65, Spearman rho = 0.62 (0.65-0.66 / 0.62-0.63) | **Moderate**, and flattered by program size: bigger programs are slower under both measures |
-| Per program: simulated improvement % vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.92 | **Good** for deciding how much an optimization helps |
-| Within one program: rank agreement across the distinct programs in its final population (184 programs with >= 3 distinct points) | mean Spearman rho = 0.63 (0.61-0.63) | **Moderate**: the model ranks close variants of the same program only partly correctly |
+| Pooled: cycles vs ns over all 600 measured programs (original + best) | Pearson r = 0.66, Spearman rho = 0.63 (0.65-0.66 / 0.62-0.63 over four runs) | **Moderate**, and flattered by program size: bigger programs are slower under both measures |
+| Per program: simulated improvement % vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.90 (0.90 / 0.90-0.92 over four runs) | **Good** for deciding how much an optimization helps |
+| Within one program: rank agreement across the distinct programs in its final population (184 programs with >= 3 distinct points) | mean Spearman rho = 0.52 (0.52-0.63 over four runs) | **Moderate and noisy**: the model ranks close variants of the same program only partly correctly, and this number moves most between runs because the variants differ by tiny amounts |
 
 So the cycle model is a good predictor of *whether and roughly how much*
 the search helps, but only a moderate fine-grained ranker of near-identical

@@ -133,6 +133,10 @@ def main(kind: str = "kernels"):
         f"- Avg. Generations to Convergence: {agg['avg_generations_to_convergence']:.1f}",
         f"- Correctness PASS rate: {agg['pass_rate_pct']:.1f}%",
         "",
+        "## Simulated improvement by kernel spelling",
+        *[f"- {k}: {v['programs']} programs, avg {v['avg_improvement_pct']:.1f}%"
+          for k, v in agg["improvement_by_spelling"].items()],
+        "",
         "## Real measured runtime (validation; Python backend, min over timed rounds)",
         f"- Avg. measured improvement (original vs best): {agg['avg_measured_improvement_pct']:.1f}%  "
         f"(simulated: {agg['avg_best_cost_improvement_pct']:.1f}%)",

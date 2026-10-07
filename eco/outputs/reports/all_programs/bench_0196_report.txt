@@ -1,4 +1,4 @@
-=== bench_0196 (compound_interest) ===
+=== bench_0196 (compound_interest, plain spelling) ===
 Original source:
     def compound_interest(principal):
         p0 = principal
@@ -16,7 +16,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.7638  avg=0.8011
 Generations to convergence: 7
 Simulated exec-time improvement vs baseline (cycle model): 12.9%
-Measured runtime (real, Python backend): baseline 870 ns/call -> best 825 ns/call = 5.1% faster (1.05x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 776 ns/call -> best 736 ns/call = 5.1% faster (1.05x); optimized outputs correct: yes
 Pareto front: 18 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['dead_code_elimination', 'cse', 'constant_folding', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 27.0, 'instr_count': 12, 'code_size': 58, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (18 genomes tie here)
 Best-overall (weighted) individual:

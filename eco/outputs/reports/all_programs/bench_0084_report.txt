@@ -1,4 +1,4 @@
-=== bench_0084 (horner_poly) ===
+=== bench_0084 (horner_poly, plain spelling) ===
 Original source:
     def horner_poly(x):
         r = 5
@@ -16,7 +16,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=1.0000  avg=1.0275
 Generations to convergence: 1
 Simulated exec-time improvement vs baseline (cycle model): 0.0%
-Measured runtime (real, Python backend): baseline 366 ns/call -> best 366 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 334 ns/call -> best 334 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
 Pareto front: 27 non-dominated individuals, 1 distinct objective-space point(s):
   genome=[]  fitness={'exec_time': 23.0, 'instr_count': 15, 'code_size': 73, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (27 genomes tie here)
 Best-overall (weighted) individual:

@@ -1,4 +1,4 @@
-=== bench_0023 (variance_of_values) ===
+=== bench_0023 (variance_of_values, naive spelling) ===
 Original source:
     def variance_of_values(x0, x1, x2, x3, x4):
         mean = (x0 + x1 + x2 + x3 + x4) // 5
@@ -13,7 +13,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.3107  avg=0.3971
 Generations to convergence: 3
 Simulated exec-time improvement vs baseline (cycle model): 65.9%
-Measured runtime (real, Python backend): baseline 3507 ns/call -> best 837 ns/call = 76.1% faster (4.19x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 3152 ns/call -> best 818 ns/call = 74.1% faster (3.86x); optimized outputs correct: yes
 Pareto front: 23 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['cse', 'copy_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 44.0, 'instr_count': 28, 'code_size': 140, 'arith_ops': 20}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
 Best-overall (weighted) individual:

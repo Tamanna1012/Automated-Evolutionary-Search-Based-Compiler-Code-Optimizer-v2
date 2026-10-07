@@ -1,4 +1,4 @@
-=== bench_0198 (income_tax) ===
+=== bench_0198 (income_tax, naive spelling) ===
 Original source:
     def income_tax(income):
         tax = income * 20 // 100 + income * 2 // 100
@@ -13,7 +13,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.5777  avg=0.6048
 Generations to convergence: 28
 Simulated exec-time improvement vs baseline (cycle model): 48.6%
-Measured runtime (real, Python backend): baseline 1048 ns/call -> best 564 ns/call = 46.2% faster (1.86x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 994 ns/call -> best 531 ns/call = 46.6% faster (1.87x); optimized outputs correct: yes
 Pareto front: 25 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['strength_reduction', 'cse', 'constant_folding', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 19.0, 'instr_count': 11, 'code_size': 52, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (25 genomes tie here)
 Best-overall (weighted) individual:

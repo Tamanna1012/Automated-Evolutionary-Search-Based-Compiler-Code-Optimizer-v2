@@ -1,4 +1,4 @@
-=== bench_0061 (matrix_vector) ===
+=== bench_0061 (matrix_vector, plain spelling) ===
 Original source:
     def matrix_vector(m00, m01, m10, m11, v0, v1):
         y0 = m00 * v0 + m01 * v1
@@ -13,7 +13,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=1.0000  avg=1.0000
 Generations to convergence: 1
 Simulated exec-time improvement vs baseline (cycle model): 0.0%
-Measured runtime (real, Python backend): baseline 217 ns/call -> best 217 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 273 ns/call -> best 273 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
 Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
   genome=[]  fitness={'exec_time': 22.0, 'instr_count': 14, 'code_size': 54, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:

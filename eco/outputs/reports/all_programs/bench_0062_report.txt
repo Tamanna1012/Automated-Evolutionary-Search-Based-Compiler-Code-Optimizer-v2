@@ -1,4 +1,4 @@
-=== bench_0062 (trace_and_frobenius) ===
+=== bench_0062 (trace_and_frobenius, plain spelling) ===
 Original source:
     def trace_and_frobenius(m00, m01, m02, m10, m11, m12, m20, m21, m22):
         trace = m00 + m11 + m22
@@ -13,7 +13,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=1.0000  avg=1.0000
 Generations to convergence: 1
 Simulated exec-time improvement vs baseline (cycle model): 0.0%
-Measured runtime (real, Python backend): baseline 462 ns/call -> best 462 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 581 ns/call -> best 581 ns/call = 0.0% faster (1.00x); optimized outputs correct: yes
 Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
   genome=[]  fitness={'exec_time': 48.0, 'instr_count': 30, 'code_size': 138, 'arith_ops': 19}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:

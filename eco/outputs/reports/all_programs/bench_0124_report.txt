@@ -1,4 +1,4 @@
-=== bench_0124 (linear_interpolation) ===
+=== bench_0124 (linear_interpolation, naive spelling) ===
 Original source:
     def linear_interpolation(y0, y1, t):
         y = (y0 * (20 - t) + y1 * t) // 20
@@ -13,7 +13,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.9313  avg=0.9416
 Generations to convergence: 4
 Simulated exec-time improvement vs baseline (cycle model): 3.3%
-Measured runtime (real, Python backend): baseline 559 ns/call -> best 562 ns/call = -0.5% faster (1.00x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 558 ns/call -> best 520 ns/call = 6.9% faster (1.07x); optimized outputs correct: yes
 Pareto front: 24 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['cse', 'multiply_fusion', 'copy_propagation', 'dead_code_elimination', 'constant_folding']  fitness={'exec_time': 29.0, 'instr_count': 15, 'code_size': 70, 'arith_ops': 9}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (24 genomes tie here)
 Best-overall (weighted) individual:

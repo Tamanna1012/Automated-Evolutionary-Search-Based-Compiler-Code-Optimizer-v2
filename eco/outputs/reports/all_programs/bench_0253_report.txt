@@ -1,4 +1,4 @@
-=== bench_0253 (naive_poly) ===
+=== bench_0253 (naive_poly, plain spelling) ===
 Original source:
     def naive_poly(x):
         r = (-8) + (-4) * x + (-8) * (x*x) + 9 * (x*x*x) + (-9) * (x*x*x*x) + 3 * (x*x*x*x*x)
@@ -12,7 +12,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.7284  avg=0.7551
 Generations to convergence: 4
 Simulated exec-time improvement vs baseline (cycle model): 31.6%
-Measured runtime (real, Python backend): baseline 616 ns/call -> best 482 ns/call = 21.6% faster (1.28x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 664 ns/call -> best 537 ns/call = 19.1% faster (1.24x); optimized outputs correct: yes
 Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['cse', 'copy_propagation', 'algebraic_simplification', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 39.0, 'instr_count': 21, 'code_size': 109, 'arith_ops': 14}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
 Best-overall (weighted) individual:

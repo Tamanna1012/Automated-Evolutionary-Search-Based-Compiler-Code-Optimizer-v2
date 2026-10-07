@@ -1,4 +1,4 @@
-=== bench_0178 (triangle_area_twice) ===
+=== bench_0178 (triangle_area_twice, naive spelling) ===
 Original source:
     def triangle_area_twice(x1, y1, x2, y2, x3, y3):
         area2 = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)
@@ -14,7 +14,7 @@ Best/avg cost at checkpoint generations:
   gen  50: best=0.7088  avg=0.7496
 Generations to convergence: 4
 Simulated exec-time improvement vs baseline (cycle model): 19.0%
-Measured runtime (real, Python backend): baseline 554 ns/call -> best 411 ns/call = 25.8% faster (1.35x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 600 ns/call -> best 428 ns/call = 28.7% faster (1.40x); optimized outputs correct: yes
 Pareto front: 23 non-dominated individuals, 1 distinct objective-space point(s):
   genome=['cse', 'strength_reduction', 'copy_propagation', 'cse', 'dead_code_elimination']  fitness={'exec_time': 34.0, 'instr_count': 22, 'code_size': 99, 'arith_ops': 13}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
 Best-overall (weighted) individual:
