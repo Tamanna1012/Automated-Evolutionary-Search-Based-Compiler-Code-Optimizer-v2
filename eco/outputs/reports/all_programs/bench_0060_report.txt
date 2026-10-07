@@ -1,0 +1,62 @@
+=== bench_0060 ===
+Baseline fitness: {'exec_time': 128.0, 'instr_count': 69, 'code_size': 325, 'arith_ops': 39}
+Best/avg cost at checkpoint generations:
+  gen   1: best=0.6167  avg=0.8420
+  gen   5: best=0.5768  avg=0.6386
+  gen  10: best=0.5326  avg=0.5811
+  gen  20: best=0.5295  avg=0.6310
+  gen  50: best=0.5248  avg=0.5525
+Generations to convergence: 49
+Exec-time improvement vs baseline: 43.0%
+Pareto front: 22 non-dominated individuals, 3 distinct objective-space point(s):
+  genome=['algebraic_simplification', 'copy_propagation', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 72.0, 'instr_count': 43, 'code_size': 186, 'arith_ops': 18}  -> fastest (lowest exec_time)  (5 genomes tie here)
+  genome=['cse', 'algebraic_simplification', 'multiply_fusion', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 73.0, 'instr_count': 42, 'code_size': 174, 'arith_ops': 15}  -> smallest code size, fewest arithmetic ops  (2 genomes tie here)
+  genome=['algebraic_simplification', 'multiply_fusion', 'copy_propagation', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 74.0, 'instr_count': 41, 'code_size': 174, 'arith_ops': 16}  -> fewest instructions, smallest code size  (15 genomes tie here)
+Best-overall (weighted) individual:
+  genome: ['cse', 'algebraic_simplification', 'multiply_fusion', 'copy_propagation', 'dead_code_elimination']
+  fitness: {'exec_time': 73.0, 'instr_count': 42, 'code_size': 174, 'arith_ops': 15}
+  cost: 0.5248
+  optimized TAC:
+    v0 = INPUT in0
+    v1 = INPUT in1
+    v3 = INPUT in3
+    v4 = INPUT in4
+    c0 = 1
+    c2 = -10
+    t0 = c2
+    t1 = t0
+    t2 = t1
+    t3 = t2
+    t4 = c0 / c2
+    t5 = 0
+    t7 = t0 / v3
+    t8 = t5 / v4
+    t10 = t3
+    t11 = t7 * t8
+    t14 = v1 / c2
+    t17 = t10
+    t20 = t14 - v0
+    t21 = t17
+    t22 = t5 + c2
+    t25 = t20 / t5
+    t26 = t21
+    t28 = v3 * t11
+    t30 = t22
+    OUTPUT t30
+    k0 = 3
+    s0 = t4 * k0
+    OUTPUT s0
+    k1 = 3
+    s1 = t11 * k1
+    OUTPUT s1
+    k2 = 4
+    s2 = t28 * k2
+    OUTPUT s2
+    k3 = 4
+    s3 = v4 * k3
+    OUTPUT s3
+    w0 = t26 * k2
+    OUTPUT w0
+    w1 = t25 * k0
+    OUTPUT w1
+Correctness verdict: PASS

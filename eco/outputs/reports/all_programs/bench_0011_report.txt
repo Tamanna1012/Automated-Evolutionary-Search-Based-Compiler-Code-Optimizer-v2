@@ -1,0 +1,50 @@
+=== bench_0011 ===
+Baseline fitness: {'exec_time': 114.0, 'instr_count': 61, 'code_size': 291, 'arith_ops': 35}
+Best/avg cost at checkpoint generations:
+  gen   1: best=0.4542  avg=0.7403
+  gen   5: best=0.4243  avg=0.5186
+  gen  10: best=0.4243  avg=0.4742
+  gen  20: best=0.4220  avg=0.5494
+  gen  50: best=0.4106  avg=0.4253
+Generations to convergence: 48
+Exec-time improvement vs baseline: 57.0%
+Pareto front: 21 non-dominated individuals, 4 distinct objective-space point(s):
+  genome=['strength_reduction', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 43.0, 'instr_count': 31, 'code_size': 139, 'arith_ops': 15}  -> fastest (lowest exec_time)
+  genome=['strength_reduction', 'copy_propagation', 'copy_propagation', 'multiply_fusion', 'dead_code_elimination']  fitness={'exec_time': 48.0, 'instr_count': 28, 'code_size': 127, 'arith_ops': 13}  -> fewest instructions  (7 genomes tie here)
+  genome=['strength_reduction', 'algebraic_simplification', 'copy_propagation', 'multiply_fusion', 'dead_code_elimination']  fitness={'exec_time': 49.0, 'instr_count': 29, 'code_size': 123, 'arith_ops': 11}  -> fewest arithmetic ops  (12 genomes tie here)
+  genome=['algebraic_simplification', 'copy_propagation', 'copy_propagation', 'multiply_fusion', 'dead_code_elimination']  fitness={'exec_time': 52.0, 'instr_count': 28, 'code_size': 122, 'arith_ops': 11}  -> fewest instructions, smallest code size, fewest arithmetic ops
+Best-overall (weighted) individual:
+  genome: ['strength_reduction', 'algebraic_simplification', 'copy_propagation', 'multiply_fusion', 'dead_code_elimination']
+  fitness: {'exec_time': 49.0, 'instr_count': 29, 'code_size': 123, 'arith_ops': 11}
+  cost: 0.4106
+  optimized TAC:
+    v0 = INPUT in0
+    c0 = -7
+    c2 = 7
+    t0 = c2
+    t1 = c0
+    t5 = v0 * c0
+    t6 = t0
+    t8 = c2
+    t11 = c0 / c2
+    t14 = t6 / t11
+    t22 = c0 * t8
+    t24 = t1
+    t27 = t24
+    t29 = t22 * t22
+    OUTPUT t6
+    s0 = t14 + t14
+    OUTPUT s0
+    s1 = t29 + t29
+    OUTPUT s1
+    k2 = 3
+    s2 = t29 * k2
+    OUTPUT s2
+    _mf1 = 4
+    w0 = t27 * _mf1
+    OUTPUT w0
+    w1 = t5 * _mf1
+    OUTPUT w1
+    w2 = c0 * k2
+    OUTPUT w2
+Correctness verdict: PASS

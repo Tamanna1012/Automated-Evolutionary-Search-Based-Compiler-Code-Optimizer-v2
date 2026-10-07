@@ -1,0 +1,69 @@
+=== bench_0122 ===
+Baseline fitness: {'exec_time': 112.0, 'instr_count': 64, 'code_size': 304, 'arith_ops': 36}
+Best/avg cost at checkpoint generations:
+  gen   1: best=0.7473  avg=0.9243
+  gen   5: best=0.7049  avg=0.8189
+  gen  10: best=0.6987  avg=0.7289
+  gen  20: best=0.6987  avg=0.7613
+  gen  50: best=0.6932  avg=0.7046
+Generations to convergence: 21
+Exec-time improvement vs baseline: 27.7%
+Pareto front: 27 non-dominated individuals, 3 distinct objective-space point(s):
+  genome=['strength_reduction', 'constant_folding', 'cse', 'dead_code_elimination']  fitness={'exec_time': 75.0, 'instr_count': 53, 'code_size': 239, 'arith_ops': 26}  -> fastest (lowest exec_time)  (3 genomes tie here)
+  genome=['strength_reduction', 'multiply_fusion', 'constant_folding', 'cse', 'dead_code_elimination']  fitness={'exec_time': 81.0, 'instr_count': 49, 'code_size': 213, 'arith_ops': 21}  -> smallest code size, fewest arithmetic ops  (22 genomes tie here)
+  genome=['strength_reduction', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 86.0, 'instr_count': 48, 'code_size': 222, 'arith_ops': 25}  -> fewest instructions  (2 genomes tie here)
+Best-overall (weighted) individual:
+  genome: ['strength_reduction', 'multiply_fusion', 'constant_folding', 'cse', 'dead_code_elimination']
+  fitness: {'exec_time': 81.0, 'instr_count': 49, 'code_size': 213, 'arith_ops': 21}
+  cost: 0.6932
+  optimized TAC:
+    v0 = INPUT in0
+    v1 = INPUT in1
+    v2 = INPUT in2
+    v3 = INPUT in3
+    c0 = 1
+    c1 = -4
+    c2 = 4
+    c3 = 6
+    t0 = 5
+    t1 = 24
+    t2 = t0 * v3
+    t3 = t0 / c1
+    t5 = t2 * v1
+    t6 = t5
+    t7 = t5
+    t9 = c2
+    t10 = t5
+    t11 = t3 / c3
+    t12 = v0 - t10
+    t13 = t9
+    t14 = t13
+    t15 = t12
+    t16 = t14 * t5
+    t20 = t7 / c3
+    t22 = t11 - c3
+    t24 = t1 * t20
+    t25 = t22 + c1
+    t27 = t12 / c0
+    t28 = t6 * t25
+    t29 = t28
+    t30 = t29 + t16
+    t32 = t25 + c2
+    OUTPUT t27
+    OUTPUT t15
+    k0 = 3
+    s0 = v1 * k0
+    OUTPUT s0
+    s1 = t30 + t30
+    OUTPUT s1
+    s2 = v3 + v3
+    OUTPUT s2
+    s3 = v2 * k0
+    OUTPUT s3
+    w0 = t24 * k0
+    OUTPUT w0
+    w1 = t12 * c2
+    OUTPUT w1
+    w2 = t32 * k0
+    OUTPUT w2
+Correctness verdict: PASS

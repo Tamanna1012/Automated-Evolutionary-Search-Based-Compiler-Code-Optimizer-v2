@@ -22,7 +22,9 @@ python -m pytest tests/ -q  # unit / correctness tests
 3. Produce detailed per-program reports for the 20 largest ("deep-dive")
    programs, including a generation-by-generation cost trace, the final
    Pareto-optimal solutions and the best-overall (weighted) individual.
-4. Render all six required plots to `eco/outputs/plots/` and write text /
+4. Write the same style of detailed report for **all 300 programs** into
+   `eco/outputs/reports/all_programs/`, plus one `all_programs_summary.csv`.
+5. Render all six required plots to `eco/outputs/plots/` and write text /
    JSON reports to `eco/outputs/reports/`.
 
 A full run (300 programs x 50 generations) takes about 5 minutes on a single core.
@@ -190,6 +192,17 @@ absolute improvement percentages are not directly comparable with older runs.
   cost at generations 1, 5, 10, 20, 50, the final Pareto-optimal solutions
   and what each represents, the best-overall (weighted) individual with its
   genome and optimized TAC, and a PASS/FAIL correctness verdict.
+- `all_programs/<program>_report.txt` — the same report for **every one of
+  the 300 programs** (best/avg cost at generations 1, 5, 10, 20, 50, final
+  Pareto solutions with what each is best at, best weighted individual with
+  its genome and optimized TAC, PASS/FAIL verdict), kept in their own folder
+  to avoid 300 loose files.
+- `all_programs/all_programs_summary.csv` — one row per program: `program`,
+  `baseline_cost` / `best_cost` (the weighted, baseline-normalized cost the
+  GA minimizes, so the baseline is 1.0), `baseline_exec_time` /
+  `best_exec_time`, `improvement_pct` (exec_time vs baseline),
+  `generations_to_convergence`, `pareto_front_size`, `distinct_points`,
+  `verdict`.
 - `aggregate_metrics.md` / `.json` — the Testing & Metrics table above,
   computed across the full dataset.
 
@@ -207,12 +220,13 @@ eco/
                             generational loop
   benchmark_generator.py   synthesizes one random benchmark program
   dataset.py                 assembles the 200-500 program dataset
-  report.py                  per-program + aggregate report builders
+  report.py                  per-program, all-program + aggregate report builders
   visualize.py                the six required plots
   main.py                      end-to-end experiment driver
   outputs/
     plots/                  generated PNGs
     reports/                generated text/JSON/Markdown reports
+      all_programs/         report for each of the 300 programs + summary CSV
 tests/
   test_eco.py              correctness + regression tests
 ```

@@ -1,0 +1,53 @@
+=== bench_0083 ===
+Baseline fitness: {'exec_time': 109.0, 'instr_count': 64, 'code_size': 312, 'arith_ops': 40}
+Best/avg cost at checkpoint generations:
+  gen   1: best=0.4593  avg=0.7178
+  gen   5: best=0.4497  avg=0.4779
+  gen  10: best=0.4497  avg=0.4899
+  gen  20: best=0.4491  avg=0.5514
+  gen  50: best=0.4491  avg=0.4581
+Generations to convergence: 34
+Exec-time improvement vs baseline: 57.8%
+Pareto front: 18 non-dominated individuals, 2 distinct objective-space point(s):
+  genome=['algebraic_simplification', 'cse', 'strength_reduction', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 46.0, 'instr_count': 34, 'code_size': 146, 'arith_ops': 15}  -> fastest (lowest exec_time), smallest code size, fewest arithmetic ops  (16 genomes tie here)
+  genome=['algebraic_simplification', 'constant_folding', 'strength_reduction', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 49.0, 'instr_count': 33, 'code_size': 147, 'arith_ops': 16}  -> fewest instructions  (2 genomes tie here)
+Best-overall (weighted) individual:
+  genome: ['algebraic_simplification', 'cse', 'strength_reduction', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 46.0, 'instr_count': 34, 'code_size': 146, 'arith_ops': 15}
+  cost: 0.4491
+  optimized TAC:
+    v0 = INPUT in0
+    v1 = INPUT in1
+    v3 = INPUT in3
+    v5 = INPUT in5
+    c0 = -2
+    c1 = -3
+    t0 = c1 - v3
+    t1 = t0
+    t2 = v3 - v0
+    t3 = v5 + v3
+    t4 = t1
+    t8 = t3 * t2
+    t10 = 3
+    t13 = t4
+    t14 = t8 * t13
+    t17 = t14
+    t20 = t14
+    t21 = t14
+    t23 = t10 / c0
+    t26 = t23 + c0
+    t30 = v0 / t20
+    t33 = t30 * t17
+    t38 = t21
+    OUTPUT t26
+    s0 = t33 + t33
+    OUTPUT s0
+    s1 = t10 + t10
+    OUTPUT s1
+    u0 = t38 + t38
+    w0 = u0 + u0
+    OUTPUT w0
+    u1 = v1 + v1
+    w1 = u1 + u1
+    OUTPUT w1
+Correctness verdict: PASS

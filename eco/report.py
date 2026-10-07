@@ -2,6 +2,8 @@
 assignment's "Expected Output" and "Testing & Metrics" sections."""
 from __future__ import annotations
 
+import csv
+import os
 from typing import List
 
 from .benchmark_generator import BenchmarkProgram
@@ -115,3 +117,44 @@ def aggregate_metrics(programs: List[BenchmarkProgram], results: List[GAResult])
         "avg_generations_to_convergence": sum(convergences) / n if n else 0.0,
         "pass_rate_pct": 100.0 * pass_count / n if n else 0.0,
     }
+
+
+SUMMARY_COLUMNS = [
+    "program", "baseline_cost", "best_cost", "baseline_exec_time", "best_exec_time",
+    "improvement_pct", "generations_to_convergence", "pareto_front_size",
+    "distinct_points", "verdict",
+]
+
+
+def write_all_program_reports(programs: List[BenchmarkProgram], results: List[GAResult],
+                              out_dir: str) -> List[dict]:
+    """Write one detailed text report per program plus ``all_programs_summary.csv``.
+
+    ``baseline_cost`` / ``best_cost`` are the weighted, baseline-normalized cost
+    the GA minimizes (so the baseline is 1.0 by construction);
+    ``improvement_pct`` is the exec_time improvement used everywhere else.
+    Returns the summary rows.
+    """
+    os.makedirs(out_dir, exist_ok=True)
+    rows = []
+    for program, result in zip(programs, results):
+        report = program_report(program, result)
+        with open(os.path.join(out_dir, f"{program.name}_report.txt"), "w", encoding="utf-8") as f:
+            f.write(format_program_report_text(report))
+        rows.append({
+            "program": program.name,
+            "baseline_cost": 1.0,
+            "best_cost": round(report["best_overall"]["cost"], 6),
+            "baseline_exec_time": round(report["baseline_fitness"]["exec_time"], 4),
+            "best_exec_time": round(report["best_overall"]["fitness"]["exec_time"], 4),
+            "improvement_pct": round(report["improvement_pct_exec_time"], 2),
+            "generations_to_convergence": report["generations_to_convergence"],
+            "pareto_front_size": report["pareto_front_raw_size"],
+            "distinct_points": len(report["pareto_front"]),
+            "verdict": report["verdict"],
+        })
+    with open(os.path.join(out_dir, "all_programs_summary.csv"), "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=SUMMARY_COLUMNS)
+        writer.writeheader()
+        writer.writerows(rows)
+    return rows

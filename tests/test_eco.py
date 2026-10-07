@@ -238,3 +238,53 @@ def test_benchmarks_contain_tradeoff_fodder():
     prog = generate_program(0, random.Random(1))
     assert strength_reduction(prog.tac) != prog.tac
     assert multiply_fusion(prog.tac) != prog.tac
+
+
+# ---------------------------------------------------------------------------
+# Reports for all programs
+# ---------------------------------------------------------------------------
+import csv
+
+from eco import main as eco_main
+from eco.report import SUMMARY_COLUMNS, write_all_program_reports
+
+
+def test_report_written_for_all_300_programs_plus_summary_csv(tmp_path):
+    programs = generate_dataset(300, seed=3)
+    config = GAConfig(pop_size=6, num_generations=3, seed=0)  # tiny GA: this tests reporting, not search
+    results = [run_ga(p.tac, p.test_input_sets, p.expected_outputs, config) for p in programs]
+
+    out_dir = tmp_path / "all_programs"
+    rows = write_all_program_reports(programs, results, str(out_dir))
+
+    assert len(rows) == 300
+    txt_files = sorted(f.name for f in out_dir.glob("bench_*_report.txt"))
+    assert txt_files == sorted(f"{p.name}_report.txt" for p in programs)
+
+    with open(out_dir / "all_programs_summary.csv", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        assert reader.fieldnames == SUMMARY_COLUMNS
+        csv_rows = list(reader)
+    assert len(csv_rows) == 300
+    assert [r["program"] for r in csv_rows] == [p.name for p in programs]
+    for r, res in zip(csv_rows, results):
+        assert r["verdict"] in ("PASS", "FAIL")
+        assert int(r["pareto_front_size"]) == len(res.final_pareto_front)
+        assert 1 <= int(r["distinct_points"]) <= int(r["pareto_front_size"])
+        assert float(r["baseline_cost"]) == 1.0
+        assert float(r["best_cost"]) <= 1.0 + 1e-9
+
+
+def test_report_contents_cover_required_sections(tmp_path):
+    prog = generate_program(0, random.Random(11))
+    res = run_ga(prog.tac, prog.test_input_sets, prog.expected_outputs, GAConfig(pop_size=10, num_generations=6, seed=1))
+    write_all_program_reports([prog], [res], str(tmp_path))
+    text = (tmp_path / f"{prog.name}_report.txt").read_text(encoding="utf-8")
+    for needle in ("Best/avg cost at checkpoint generations", "Pareto front:", "genome=",
+                   "Best-overall (weighted) individual", "genome:", "Correctness verdict: PASS"):
+        assert needle in text
+
+
+def test_main_runs_50_generations_and_reports_dir_is_under_reports():
+    assert eco_main.NUM_GENERATIONS == 50
+    assert eco_main.ALL_REPORTS_DIR.replace("\\", "/").endswith("outputs/reports/all_programs")

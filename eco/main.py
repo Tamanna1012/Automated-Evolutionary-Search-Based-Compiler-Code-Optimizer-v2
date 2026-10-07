@@ -7,7 +7,8 @@
 3. Runs the same search across the *entire* dataset to compute the
    aggregate Testing & Metrics table (validity rate, Pareto front size,
    best-cost improvement, generations to convergence).
-4. Renders all six required plots and writes text reports to disk.
+4. Writes a detailed report for every program (plus a summary CSV).
+5. Renders all six required plots and writes text reports to disk.
 """
 from __future__ import annotations
 
@@ -18,7 +19,12 @@ import time
 from .dataset import generate_dataset, dataset_summary
 from .ga import GAConfig, run_ga
 from .pareto import distinct_fitness_points
-from .report import aggregate_metrics, format_program_report_text, program_report
+from .report import (
+    aggregate_metrics,
+    format_program_report_text,
+    program_report,
+    write_all_program_reports,
+)
 from .visualize import (
     plot_convergence,
     plot_elite_heatmap,
@@ -33,6 +39,7 @@ from .visualize import (
 HERE = os.path.dirname(__file__)
 PLOTS_DIR = os.path.join(HERE, "outputs", "plots")
 REPORTS_DIR = os.path.join(HERE, "outputs", "reports")
+ALL_REPORTS_DIR = os.path.join(REPORTS_DIR, "all_programs")
 
 N_PROGRAMS = 300
 DEEP_DIVE_N = 20
@@ -80,6 +87,10 @@ def main():
             f.write(format_program_report_text(rep))
     with open(os.path.join(REPORTS_DIR, "deep_dive_reports.json"), "w") as f:
         json.dump(all_reports, f, indent=2)
+
+    # ---- Per-program reports for every program + one summary CSV ----
+    print(f"Writing reports for all {N_PROGRAMS} programs -> {ALL_REPORTS_DIR}")
+    write_all_program_reports(programs, results, ALL_REPORTS_DIR)
 
     # ---- Aggregate metrics across the full dataset ----
     print("Computing aggregate Testing & Metrics table...")

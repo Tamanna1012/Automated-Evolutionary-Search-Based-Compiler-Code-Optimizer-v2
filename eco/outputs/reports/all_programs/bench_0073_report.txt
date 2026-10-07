@@ -1,0 +1,49 @@
+=== bench_0073 ===
+Baseline fitness: {'exec_time': 85.0, 'instr_count': 57, 'code_size': 285, 'arith_ops': 37}
+Best/avg cost at checkpoint generations:
+  gen   1: best=0.5120  avg=0.7921
+  gen   5: best=0.4749  avg=0.5929
+  gen  10: best=0.4550  avg=0.5197
+  gen  20: best=0.4550  avg=0.5428
+  gen  50: best=0.4550  avg=0.4619
+Generations to convergence: 7
+Exec-time improvement vs baseline: 45.9%
+Pareto front: 27 non-dominated individuals, 3 distinct objective-space point(s):
+  genome=['algebraic_simplification', 'copy_propagation', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 42.0, 'instr_count': 31, 'code_size': 141, 'arith_ops': 15}  -> fastest (lowest exec_time)  (5 genomes tie here)
+  genome=['algebraic_simplification', 'multiply_fusion', 'copy_propagation', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 46.0, 'instr_count': 29, 'code_size': 127, 'arith_ops': 12}  -> fewest instructions, smallest code size  (21 genomes tie here)
+  genome=['algebraic_simplification', 'multiply_fusion', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 47.0, 'instr_count': 30, 'code_size': 127, 'arith_ops': 11}  -> smallest code size, fewest arithmetic ops
+Best-overall (weighted) individual:
+  genome: ['algebraic_simplification', 'multiply_fusion', 'copy_propagation', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 46.0, 'instr_count': 29, 'code_size': 127, 'arith_ops': 12}
+  cost: 0.4550
+  optimized TAC:
+    v0 = INPUT in0
+    v1 = INPUT in1
+    v3 = INPUT in3
+    c0 = 0
+    c2 = 5
+    t0 = 6
+    t2 = v3 * c2
+    t3 = v0 * v3
+    t4 = t0 + c2
+    t7 = t4 + c2
+    t11 = v1 / t7
+    t24 = v1 - t2
+    t26 = t3 - t11
+    OUTPUT c0
+    k0 = 3
+    s0 = 0
+    OUTPUT s0
+    k1 = 4
+    s1 = t26 * k1
+    OUTPUT s1
+    k2 = 3
+    s2 = v0 * k2
+    OUTPUT s2
+    w0 = t24 * k0
+    OUTPUT w0
+    w1 = t26 * k1
+    OUTPUT w1
+    w2 = t7 * k1
+    OUTPUT w2
+Correctness verdict: PASS
