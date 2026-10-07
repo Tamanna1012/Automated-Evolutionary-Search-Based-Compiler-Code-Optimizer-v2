@@ -7,36 +7,31 @@ Original source:
         return interest, total, monthly
 Baseline fitness: {'exec_time': 44.0, 'instr_count': 20, 'code_size': 95, 'arith_ops': 12}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.9198  avg=1.0234
-  gen   5: best=0.7875  avg=0.9041
-  gen  10: best=0.7875  avg=0.8282
-  gen  20: best=0.7875  avg=0.8228
-  gen  50: best=0.7875  avg=0.8130
-Generations to convergence: 4
-Simulated exec-time improvement vs baseline (cycle model): 22.7%
-Measured runtime (real, Python backend): baseline 1079 ns/call -> best 993 ns/call = 7.9% faster (1.09x); optimized outputs correct: yes
-Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['cse', 'copy_propagation', 'cse', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 34.0, 'instr_count': 18, 'code_size': 77, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=0.5890  avg=0.9269
+  gen   5: best=0.5368  avg=0.6480
+  gen  10: best=0.5368  avg=0.5972
+  gen  20: best=0.5368  avg=0.5719
+  gen  50: best=0.5368  avg=0.5733
+Generations to convergence: 3
+Simulated exec-time improvement vs baseline (cycle model): 47.7%
+Measured runtime (real, Python backend): baseline 1116 ns/call -> best 588 ns/call = 47.4% faster (1.90x); optimized outputs correct: yes
+Pareto front: 26 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'constant_propagation', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 23.0, 'instr_count': 13, 'code_size': 53, 'arith_ops': 5}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (26 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['cse', 'copy_propagation', 'cse', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 34.0, 'instr_count': 18, 'code_size': 77, 'arith_ops': 8}
-  cost: 0.7875
+  genome: ['cse', 'copy_propagation', 'constant_propagation', 'strength_reduction', 'dead_code_elimination']
+  fitness: {'exec_time': 23.0, 'instr_count': 13, 'code_size': 53, 'arith_ops': 5}
+  cost: 0.5368
   optimized TAC:
     principal = INPUT principal
     rate = INPUT rate
     years = INPUT years
     _e1 = principal * rate
     _e2 = _e1 * years
-    _k1 = 100
-    interest = _e2 / _k1
-    _e4 = _e2
-    _e5 = _e4 / _k1
-    total = principal + _e5
-    _e7 = _e2
-    _e8 = _e7 / _k1
-    _e9 = principal + _e8
-    _k2 = 6
-    monthly = _e9 / _k2
+    _pc1 = 100
+    interest = _e2 / _pc1
+    total = principal + interest
+    _pc2 = 6
+    monthly = total / _pc2
     OUTPUT interest
     OUTPUT total
     OUTPUT monthly

@@ -485,3 +485,87 @@ def test_dataset_measurement_and_correlation_summary_are_well_formed(tmp_path):
     agg = aggregate_metrics(progs, results, runtimes, corr)
     assert agg["measured_outputs_correct_pct"] == 100.0
     assert agg["avg_measured_speedup_x"] > 0
+
+
+# ---------------------------------------------------------------------------
+# CSE that looks through copies and equal constants (value numbering)
+# ---------------------------------------------------------------------------
+from eco.optimizations import common_subexpression_elimination as cse_pass
+
+
+def _bins(tac):
+    return sum(1 for i in tac if i[0] == "bin")
+
+
+def test_cse_looks_through_copies():
+    tac = [("input", "a", "x"), ("input", "b", "y"), ("copy", "u", "a"),
+           ("bin", "t1", "+", "a", "b"), ("bin", "t2", "+", "u", "b"),
+           ("output", "t1"), ("output", "t2")]
+    out = cse_pass(tac)
+    assert _bins(out) == 1 and ("copy", "t2", "t1") in out
+    _same_outputs_multi(tac, out, ["x", "y"])
+
+
+def test_cse_treats_equal_constants_as_the_same_value():
+    tac = [("input", "a", "x"), ("const", "k1", 5), ("const", "k2", 5),
+           ("bin", "t1", "*", "a", "k1"), ("bin", "t2", "*", "k2", "a"),
+           ("output", "t1"), ("output", "t2")]
+    out = cse_pass(tac)
+    assert _bins(out) == 1
+    _same_outputs_multi(tac, out, ["x"])
+
+
+def test_cse_collapses_a_nested_repeat_in_a_single_application():
+    # (((a+b)+c)+d) computed twice, the second time from scratch
+    tac = [("input", "a", "xa"), ("input", "b", "xb"), ("input", "c", "xc"), ("input", "d", "xd"),
+           ("bin", "p1", "+", "a", "b"), ("bin", "p2", "+", "p1", "c"), ("bin", "p3", "+", "p2", "d"),
+           ("bin", "q1", "+", "a", "b"), ("bin", "q2", "+", "q1", "c"), ("bin", "q3", "+", "q2", "d"),
+           ("output", "p3"), ("output", "q3")]
+    out = cse_pass(tac)
+    assert _bins(out) == 3
+    _same_outputs_multi(tac, out, ["xa", "xb", "xc", "xd"])
+
+
+def test_cse_does_not_merge_non_commutative_swaps_or_different_operators():
+    tac = [("input", "a", "x"), ("input", "b", "y"),
+           ("bin", "t1", "-", "a", "b"), ("bin", "t2", "-", "b", "a"),
+           ("bin", "t3", "/", "a", "b"), ("bin", "t4", "/", "b", "a"),
+           ("bin", "t5", "+", "a", "b"), ("bin", "t6", "*", "a", "b"),
+           ("output", "t1"), ("output", "t2"), ("output", "t3"), ("output", "t4"),
+           ("output", "t5"), ("output", "t6")]
+    assert _bins(cse_pass(tac)) == 6
+
+
+def test_cse_is_safe_when_a_name_is_defined_twice():
+    tac = [("input", "a", "x"), ("const", "k", 2), ("bin", "t", "+", "a", "k"),
+           ("const", "k", 9), ("bin", "u", "+", "a", "k"), ("output", "t"), ("output", "u")]
+    out = cse_pass(tac)
+    _same_outputs_multi(tac, out, ["x"])
+
+
+def test_cse_is_correct_on_every_kernel_and_after_other_passes():
+    for pid in range(len(TEMPLATE_NAMES)):
+        prog = generate_kernel_program(pid, random.Random(pid + 31))
+        for genome in (["cse"], ["copy_propagation", "cse"], ["cse", "copy_propagation", "dead_code_elimination"]):
+            opt = apply_genome(prog.tac, genome)
+            assert evaluate(opt, prog.test_input_sets, prog.expected_outputs).valid, (prog.kernel, genome)
+            assert len(opt) <= len(prog.tac)
+
+
+def test_value_numbering_cse_helps_the_inline_variance_kernel_a_lot():
+    # a kernel that recomputes its mean inline has many nested repeats
+    for seed in range(40):
+        prog = generate_kernel_program(TEMPLATE_NAMES.index("variance_of_values"), random.Random(seed))
+        if "mean = (" in prog.source_code.split("\n")[1] and "var = ((x0 - (" in prog.source_code:
+            break
+    opt = apply_genome(prog.tac, ["cse", "copy_propagation", "dead_code_elimination"])
+    assert evaluate(opt, prog.test_input_sets, prog.expected_outputs).valid
+    assert len(opt) < 0.6 * len(prog.tac)
+
+
+def _same_outputs_multi(tac_a, tac_b, names):
+    rng = random.Random(0)
+    for _ in range(8):
+        inputs = {n: rng.randint(-9, 9) for n in names}
+        ra, rb = run(tac_a, inputs), run(tac_b, inputs)
+        assert ra.ok and rb.ok and ra.outputs == rb.outputs

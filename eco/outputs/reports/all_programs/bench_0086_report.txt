@@ -8,20 +8,20 @@ Original source:
         return value, slope
 Baseline fitness: {'exec_time': 40.0, 'instr_count': 22, 'code_size': 112, 'arith_ops': 14}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.8913  avg=1.0345
-  gen   5: best=0.8648  avg=0.8968
-  gen  10: best=0.8648  avg=0.8965
-  gen  20: best=0.8648  avg=0.8818
-  gen  50: best=0.8648  avg=0.8736
-Generations to convergence: 2
-Simulated exec-time improvement vs baseline (cycle model): 20.0%
-Measured runtime (real, Python backend): baseline 474 ns/call -> best 442 ns/call = 6.9% faster (1.07x); optimized outputs correct: yes
-Pareto front: 24 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['constant_folding', 'multiply_fusion', 'strength_reduction', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 32.0, 'instr_count': 20, 'code_size': 100, 'arith_ops': 12}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (24 genomes tie here)
+  gen   1: best=0.8543  avg=1.0320
+  gen   5: best=0.8402  avg=0.9154
+  gen  10: best=0.8012  avg=0.8231
+  gen  20: best=0.8012  avg=0.8394
+  gen  50: best=0.7769  avg=0.7970
+Generations to convergence: 37
+Simulated exec-time improvement vs baseline (cycle model): 30.0%
+Measured runtime (real, Python backend): baseline 474 ns/call -> best 414 ns/call = 12.6% faster (1.14x); optimized outputs correct: yes
+Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['constant_folding', 'cse', 'strength_reduction', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 28.0, 'instr_count': 18, 'code_size': 90, 'arith_ops': 11}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'multiply_fusion', 'strength_reduction', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 32.0, 'instr_count': 20, 'code_size': 100, 'arith_ops': 12}
-  cost: 0.8648
+  genome: ['constant_folding', 'cse', 'strength_reduction', 'copy_propagation', 'dead_code_elimination']
+  fitness: {'exec_time': 28.0, 'instr_count': 18, 'code_size': 90, 'arith_ops': 11}
+  cost: 0.7769
   optimized TAC:
     x = INPUT x
     x2 = x * x
@@ -38,9 +38,7 @@ Best-overall (weighted) individual:
     _e6 = 12
     _e7 = _e6 * x
     _e8 = _k2 + _e7
-    _e9 = 6
-    _e10 = _e9 * x2
-    slope = _e8 + _e10
+    slope = _e8 + _e3
     OUTPUT value
     OUTPUT slope
 Correctness verdict: PASS

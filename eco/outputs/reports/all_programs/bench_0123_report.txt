@@ -8,17 +8,17 @@ Original source:
 Baseline fitness: {'exec_time': 35.0, 'instr_count': 18, 'code_size': 85, 'arith_ops': 11}
 Best/avg cost at checkpoint generations:
   gen   1: best=0.9399  avg=0.9929
-  gen   5: best=0.9399  avg=0.9564
-  gen  10: best=0.9100  avg=0.9415
-  gen  20: best=0.9100  avg=0.9206
-  gen  50: best=0.9100  avg=0.9189
-Generations to convergence: 7
+  gen   5: best=0.9399  avg=0.9580
+  gen  10: best=0.9100  avg=0.9475
+  gen  20: best=0.9100  avg=0.9233
+  gen  50: best=0.9100  avg=0.9270
+Generations to convergence: 9
 Simulated exec-time improvement vs baseline (cycle model): 14.3%
-Measured runtime (real, Python backend): baseline 513 ns/call -> best 490 ns/call = 4.5% faster (1.05x); optimized outputs correct: yes
+Measured runtime (real, Python backend): baseline 444 ns/call -> best 441 ns/call = 0.6% faster (1.01x); optimized outputs correct: yes
 Pareto front: 19 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['cse', 'strength_reduction', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 30.0, 'instr_count': 17, 'code_size': 79, 'arith_ops': 10}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (19 genomes tie here)
+  genome=['cse', 'strength_reduction', 'constant_folding', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 30.0, 'instr_count': 17, 'code_size': 79, 'arith_ops': 10}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (19 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['cse', 'strength_reduction', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']
+  genome: ['cse', 'strength_reduction', 'constant_folding', 'copy_propagation', 'dead_code_elimination']
   fitness: {'exec_time': 30.0, 'instr_count': 17, 'code_size': 79, 'arith_ops': 10}
   cost: 0.9100
   optimized TAC:

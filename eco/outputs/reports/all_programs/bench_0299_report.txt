@@ -6,18 +6,18 @@ Original source:
         return square, cube
 Baseline fitness: {'exec_time': 18.0, 'instr_count': 12, 'code_size': 58, 'arith_ops': 8}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.8233  avg=0.9293
-  gen   5: best=0.5607  avg=0.8258
-  gen  10: best=0.5607  avg=0.6565
-  gen  20: best=0.5607  avg=0.6307
-  gen  50: best=0.5131  avg=0.5354
-Generations to convergence: 46
+  gen   1: best=0.6560  avg=0.8942
+  gen   5: best=0.6560  avg=0.6865
+  gen  10: best=0.5131  avg=0.6920
+  gen  20: best=0.5131  avg=0.5916
+  gen  50: best=0.5131  avg=0.5939
+Generations to convergence: 10
 Simulated exec-time improvement vs baseline (cycle model): 38.9%
-Measured runtime (real, Python backend): baseline 283 ns/call -> best 179 ns/call = 36.9% faster (1.59x); optimized outputs correct: yes
-Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 11.0, 'instr_count': 7, 'code_size': 28, 'arith_ops': 3}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
+Measured runtime (real, Python backend): baseline 260 ns/call -> best 156 ns/call = 40.2% faster (1.67x); optimized outputs correct: yes
+Pareto front: 24 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['constant_folding', 'constant_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 11.0, 'instr_count': 7, 'code_size': 28, 'arith_ops': 3}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (24 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']
+  genome: ['constant_folding', 'constant_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']
   fitness: {'exec_time': 11.0, 'instr_count': 7, 'code_size': 28, 'arith_ops': 3}
   cost: 0.5131
   optimized TAC:

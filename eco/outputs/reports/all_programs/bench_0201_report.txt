@@ -8,20 +8,21 @@ Original source:
         return fahrenheit, kelvin, reaumur, rankine
 Baseline fitness: {'exec_time': 36.0, 'instr_count': 21, 'code_size': 98, 'arith_ops': 10}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.9535  avg=1.1468
-  gen   5: best=0.9535  avg=0.9848
-  gen  10: best=0.8735  avg=0.9552
-  gen  20: best=0.8673  avg=0.8815
-  gen  50: best=0.8673  avg=0.8760
-Generations to convergence: 14
-Simulated exec-time improvement vs baseline (cycle model): 13.9%
-Measured runtime (real, Python backend): baseline 879 ns/call -> best 674 ns/call = 23.3% faster (1.30x); optimized outputs correct: yes
-Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['cse', 'copy_propagation', 'cse', 'copy_propagation', 'cse']  fitness={'exec_time': 31.0, 'instr_count': 21, 'code_size': 89, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
+  gen   1: best=0.8596  avg=1.0892
+  gen   5: best=0.7878  avg=0.8346
+  gen  10: best=0.7878  avg=0.8090
+  gen  20: best=0.7878  avg=0.8096
+  gen  50: best=0.7878  avg=0.8164
+Generations to convergence: 3
+Simulated exec-time improvement vs baseline (cycle model): 22.2%
+Measured runtime (real, Python backend): baseline 880 ns/call -> best 671 ns/call = 23.7% faster (1.31x); optimized outputs correct: yes
+Pareto front: 22 non-dominated individuals, 2 distinct objective-space point(s):
+  genome=['dead_code_elimination', 'cse', 'strength_reduction', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 26.0, 'instr_count': 18, 'code_size': 82, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions
+  genome=['dead_code_elimination', 'cse', 'copy_propagation', 'cse', 'dead_code_elimination']  fitness={'exec_time': 28.0, 'instr_count': 18, 'code_size': 80, 'arith_ops': 7}  -> fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['cse', 'copy_propagation', 'cse', 'copy_propagation', 'cse']
-  fitness: {'exec_time': 31.0, 'instr_count': 21, 'code_size': 89, 'arith_ops': 7}
-  cost: 0.8673
+  genome: ['dead_code_elimination', 'cse', 'copy_propagation', 'cse', 'dead_code_elimination']
+  fitness: {'exec_time': 28.0, 'instr_count': 18, 'code_size': 80, 'arith_ops': 7}
+  cost: 0.7878
   optimized TAC:
     c = INPUT c
     _k1 = 9
@@ -35,11 +36,8 @@ Best-overall (weighted) individual:
     _k5 = 4
     _e3 = c * _k5
     reaumur = _e3 / _k2
-    _e4 = _e1
-    _e5 = _e2
-    _e6 = fahrenheit
     _k6 = 460
-    rankine = _e6 + _k6
+    rankine = fahrenheit + _k6
     OUTPUT fahrenheit
     OUTPUT kelvin
     OUTPUT reaumur

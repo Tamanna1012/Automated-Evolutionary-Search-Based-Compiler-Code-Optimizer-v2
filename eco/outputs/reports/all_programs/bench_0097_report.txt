@@ -6,20 +6,20 @@ Original source:
         return volume, surface
 Baseline fitness: {'exec_time': 36.0, 'instr_count': 16, 'code_size': 78, 'arith_ops': 9}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.8299  avg=1.0015
-  gen   5: best=0.8299  avg=0.8586
-  gen  10: best=0.7977  avg=0.8469
-  gen  20: best=0.7464  avg=0.7844
-  gen  50: best=0.7464  avg=0.7767
-Generations to convergence: 15
-Simulated exec-time improvement vs baseline (cycle model): 25.0%
-Measured runtime (real, Python backend): baseline 772 ns/call -> best 687 ns/call = 10.9% faster (1.12x); optimized outputs correct: yes
-Pareto front: 20 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination', 'cse']  fitness={'exec_time': 27.0, 'instr_count': 13, 'code_size': 59, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (20 genomes tie here)
+  gen   1: best=0.6629  avg=0.9485
+  gen   5: best=0.6629  avg=0.7658
+  gen  10: best=0.6629  avg=0.7263
+  gen  20: best=0.6307  avg=0.6735
+  gen  50: best=0.6307  avg=0.6592
+Generations to convergence: 13
+Simulated exec-time improvement vs baseline (cycle model): 36.1%
+Measured runtime (real, Python backend): baseline 772 ns/call -> best 618 ns/call = 20.0% faster (1.25x); optimized outputs correct: yes
+Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 23.0, 'instr_count': 11, 'code_size': 50, 'arith_ops': 5}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination', 'cse']
-  fitness: {'exec_time': 27.0, 'instr_count': 13, 'code_size': 59, 'arith_ops': 6}
-  cost: 0.7464
+  genome: ['cse', 'copy_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 23.0, 'instr_count': 11, 'code_size': 50, 'arith_ops': 5}
+  cost: 0.6307
   optimized TAC:
     r = INPUT r
     _e1 = 1256
@@ -28,10 +28,8 @@ Best-overall (weighted) individual:
     _e4 = _e3 * r
     _k3 = 300
     volume = _e4 / _k3
-    _e6 = _e2
-    _e7 = _e6 * r
     _k4 = 100
-    surface = _e7 / _k4
+    surface = _e3 / _k4
     OUTPUT volume
     OUTPUT surface
 Correctness verdict: PASS

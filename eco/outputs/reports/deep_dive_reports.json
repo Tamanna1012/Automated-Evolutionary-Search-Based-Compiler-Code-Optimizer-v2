@@ -13,28 +13,28 @@
     "checkpoints": [
       {
         "generation": 1,
-        "best_cost": 0.950709219858156,
-        "avg_cost": 1.0295916107113594
+        "best_cost": 0.38327888496092233,
+        "avg_cost": 0.8885381373754958
       },
       {
         "generation": 5,
-        "best_cost": 0.8359606660188502,
-        "avg_cost": 0.941955190049328
+        "best_cost": 0.31074341900009733,
+        "avg_cost": 0.5136043166563665
       },
       {
         "generation": 10,
-        "best_cost": 0.8359606660188502,
-        "avg_cost": 0.876392109755201
+        "best_cost": 0.31074341900009733,
+        "avg_cost": 0.4375551091053973
       },
       {
         "generation": 20,
-        "best_cost": 0.8359606660188502,
-        "avg_cost": 0.854959753246865
+        "best_cost": 0.31074341900009733,
+        "avg_cost": 0.41147792555675444
       },
       {
         "generation": 50,
-        "best_cost": 0.8359606660188502,
-        "avg_cost": 0.8547407012181996
+        "best_cost": 0.31074341900009733,
+        "avg_cost": 0.397059484846859
       }
     ],
     "pareto_front": [
@@ -42,49 +42,49 @@
         "genome": [
           "cse",
           "copy_propagation",
-          "dead_code_elimination",
-          "cse",
-          "copy_propagation"
+          "strength_reduction",
+          "constant_folding",
+          "dead_code_elimination"
         ],
         "fitness": {
-          "exec_time": 119.0,
-          "instr_count": 73,
-          "code_size": 380,
-          "arith_ops": 55
+          "exec_time": 44.0,
+          "instr_count": 28,
+          "code_size": 140,
+          "arith_ops": 20
         },
         "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
-        "tied_genome_count": 22
+        "tied_genome_count": 23
       }
     ],
-    "pareto_front_raw_size": 22,
+    "pareto_front_raw_size": 23,
     "best_overall": {
       "genome": [
         "cse",
         "copy_propagation",
-        "dead_code_elimination",
-        "cse",
-        "copy_propagation"
+        "strength_reduction",
+        "constant_folding",
+        "dead_code_elimination"
       ],
       "fitness": {
-        "exec_time": 119.0,
-        "instr_count": 73,
-        "code_size": 380,
-        "arith_ops": 55
+        "exec_time": 44.0,
+        "instr_count": 28,
+        "code_size": 140,
+        "arith_ops": 20
       },
-      "cost": 0.8359606660188502,
-      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nx4 = INPUT x4\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_e3 = _e2 + x3\n_e4 = _e3 + x4\n_k1 = 5\nmean = _e4 / _k1\n_e6 = _e2\n_e7 = _e2 + x3\n_e8 = _e7 + x4\n_e9 = _e8 / _k1\n_e10 = x0 - _e9\n_e12 = _e2\n_e13 = _e2 + x3\n_e14 = _e13 + x4\n_e15 = _e14 / _k1\n_e16 = x0 - _e15\n_e17 = _e10 * _e16\n_e19 = _e2\n_e20 = _e2 + x3\n_e21 = _e20 + x4\n_e22 = _e21 / _k1\n_e23 = x1 - _e22\n_e25 = _e2\n_e26 = _e2 + x3\n_e27 = _e26 + x4\n_e28 = _e27 / _k1\n_e29 = x1 - _e28\n_e30 = _e23 * _e29\n_e31 = _e17 + _e30\n_e33 = _e2\n_e34 = _e2 + x3\n_e35 = _e34 + x4\n_e36 = _e35 / _k1\n_e37 = x2 - _e36\n_e39 = _e2\n_e40 = _e2 + x3\n_e41 = _e40 + x4\n_e42 = _e41 / _k1\n_e43 = x2 - _e42\n_e44 = _e37 * _e43\n_e45 = _e31 + _e44\n_e47 = _e2\n_e48 = _e2 + x3\n_e49 = _e48 + x4\n_e50 = _e49 / _k1\n_e51 = x3 - _e50\n_e53 = _e2\n_e54 = _e2 + x3\n_e55 = _e54 + x4\n_e56 = _e55 / _k1\n_e57 = x3 - _e56\n_e58 = _e51 * _e57\n_e59 = _e45 + _e58\n_e61 = _e2\n_e62 = _e2 + x3\n_e63 = _e62 + x4\n_e64 = _e63 / _k1\n_e65 = x4 - _e64\n_e67 = _e2\n_e68 = _e2 + x3\n_e69 = _e68 + x4\n_e70 = _e69 / _k1\n_e71 = x4 - _e70\n_e72 = _e65 * _e71\n_e73 = _e59 + _e72\nvar = _e73 / _k1\nOUTPUT mean\nOUTPUT var"
+      "cost": 0.31074341900009733,
+      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nx4 = INPUT x4\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_e3 = _e2 + x3\n_e4 = _e3 + x4\n_k1 = 5\nmean = _e4 / _k1\n_e10 = x0 - mean\n_e17 = _e10 * _e10\n_e23 = x1 - mean\n_e30 = _e23 * _e23\n_e31 = _e17 + _e30\n_e37 = x2 - mean\n_e44 = _e37 * _e37\n_e45 = _e31 + _e44\n_e51 = x3 - mean\n_e58 = _e51 * _e51\n_e59 = _e45 + _e58\n_e65 = x4 - mean\n_e72 = _e65 * _e65\n_e73 = _e59 + _e72\nvar = _e73 / _k1\nOUTPUT mean\nOUTPUT var"
     },
-    "improvement_pct_exec_time": 7.751937984496124,
+    "improvement_pct_exec_time": 65.89147286821705,
     "runtime": {
-      "baseline_ns": 2808.9,
-      "best_ns": 2611.2,
-      "measured_improvement_pct": 7.038342411620217,
-      "measured_speedup_x": 1.0757123161764708,
+      "baseline_ns": 3507.0,
+      "best_ns": 836.9,
+      "measured_improvement_pct": 76.13629883090961,
+      "measured_speedup_x": 4.190464810610587,
       "baseline_cycles": 129.0,
-      "best_cycles": 119.0,
+      "best_cycles": 44.0,
       "outputs_correct": true
     },
-    "generations_to_convergence": 5,
+    "generations_to_convergence": 3,
     "verdict": "PASS"
   },
   {
@@ -101,28 +101,28 @@
     "checkpoints": [
       {
         "generation": 1,
-        "best_cost": 0.9433566433566434,
-        "avg_cost": 1.0341149760213189
+        "best_cost": 0.43864875586874535,
+        "avg_cost": 0.9026077452165169
       },
       {
         "generation": 5,
-        "best_cost": 0.8140146067456919,
-        "avg_cost": 0.9333809064719426
+        "best_cost": 0.3561051651476254,
+        "avg_cost": 0.5516438779928208
       },
       {
         "generation": 10,
-        "best_cost": 0.8140146067456919,
-        "avg_cost": 0.8595519082815956
+        "best_cost": 0.3561051651476254,
+        "avg_cost": 0.475883860446153
       },
       {
         "generation": 20,
-        "best_cost": 0.8140146067456919,
-        "avg_cost": 0.8355666192971802
+        "best_cost": 0.3561051651476254,
+        "avg_cost": 0.45024872714021763
       },
       {
         "generation": 50,
-        "best_cost": 0.8140146067456919,
-        "avg_cost": 0.8354001961305824
+        "best_cost": 0.3561051651476254,
+        "avg_cost": 0.4365924721210411
       }
     ],
     "pareto_front": [
@@ -130,49 +130,49 @@
         "genome": [
           "cse",
           "copy_propagation",
-          "dead_code_elimination",
-          "cse",
-          "copy_propagation"
+          "strength_reduction",
+          "constant_folding",
+          "dead_code_elimination"
         ],
         "fitness": {
-          "exec_time": 89.0,
-          "instr_count": 51,
-          "code_size": 258,
-          "arith_ops": 36
+          "exec_time": 37.0,
+          "instr_count": 23,
+          "code_size": 114,
+          "arith_ops": 16
         },
         "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
-        "tied_genome_count": 22
+        "tied_genome_count": 23
       }
     ],
-    "pareto_front_raw_size": 22,
+    "pareto_front_raw_size": 23,
     "best_overall": {
       "genome": [
         "cse",
         "copy_propagation",
-        "dead_code_elimination",
-        "cse",
-        "copy_propagation"
+        "strength_reduction",
+        "constant_folding",
+        "dead_code_elimination"
       ],
       "fitness": {
-        "exec_time": 89.0,
-        "instr_count": 51,
-        "code_size": 258,
-        "arith_ops": 36
+        "exec_time": 37.0,
+        "instr_count": 23,
+        "code_size": 114,
+        "arith_ops": 16
       },
-      "cost": 0.8140146067456919,
-      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_e3 = _e2 + x3\n_k1 = 4\nmean = _e3 / _k1\n_e5 = _e2\n_e6 = _e2 + x3\n_e7 = _e6 / _k1\n_e8 = x0 - _e7\n_e10 = _e2\n_e11 = _e2 + x3\n_e12 = _e11 / _k1\n_e13 = x0 - _e12\n_e14 = _e8 * _e13\n_e16 = _e2\n_e17 = _e2 + x3\n_e18 = _e17 / _k1\n_e19 = x1 - _e18\n_e21 = _e2\n_e22 = _e2 + x3\n_e23 = _e22 / _k1\n_e24 = x1 - _e23\n_e25 = _e19 * _e24\n_e26 = _e14 + _e25\n_e28 = _e2\n_e29 = _e2 + x3\n_e30 = _e29 / _k1\n_e31 = x2 - _e30\n_e33 = _e2\n_e34 = _e2 + x3\n_e35 = _e34 / _k1\n_e36 = x2 - _e35\n_e37 = _e31 * _e36\n_e38 = _e26 + _e37\n_e40 = _e2\n_e41 = _e2 + x3\n_e42 = _e41 / _k1\n_e43 = x3 - _e42\n_e45 = _e2\n_e46 = _e2 + x3\n_e47 = _e46 / _k1\n_e48 = x3 - _e47\n_e49 = _e43 * _e48\n_e50 = _e38 + _e49\nvar = _e50 / _k1\nOUTPUT mean\nOUTPUT var"
+      "cost": 0.3561051651476254,
+      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_e3 = _e2 + x3\n_k1 = 4\nmean = _e3 / _k1\n_e8 = x0 - mean\n_e14 = _e8 * _e8\n_e19 = x1 - mean\n_e25 = _e19 * _e19\n_e26 = _e14 + _e25\n_e31 = x2 - mean\n_e37 = _e31 * _e31\n_e38 = _e26 + _e37\n_e43 = x3 - mean\n_e49 = _e43 * _e43\n_e50 = _e38 + _e49\nvar = _e50 / _k1\nOUTPUT mean\nOUTPUT var"
     },
-    "improvement_pct_exec_time": 8.24742268041237,
+    "improvement_pct_exec_time": 61.855670103092784,
     "runtime": {
-      "baseline_ns": 2686.3,
-      "best_ns": 2444.8,
-      "measured_improvement_pct": 8.990060678256338,
-      "measured_speedup_x": 1.0987810863874345,
+      "baseline_ns": 2379.6,
+      "best_ns": 621.8,
+      "measured_improvement_pct": 73.86955790889225,
+      "measured_speedup_x": 3.826954004503056,
       "baseline_cycles": 97.0,
-      "best_cycles": 89.0,
+      "best_cycles": 37.0,
       "outputs_correct": true
     },
-    "generations_to_convergence": 5,
+    "generations_to_convergence": 3,
     "verdict": "PASS"
   },
   {
@@ -240,8 +240,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 785.5,
-      "best_ns": 785.5,
+      "baseline_ns": 776.6,
+      "best_ns": 776.6,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 73.0,
@@ -316,8 +316,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 744.6,
-      "best_ns": 744.6,
+      "baseline_ns": 878.9,
+      "best_ns": 878.9,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 73.0,
@@ -341,78 +341,78 @@
     "checkpoints": [
       {
         "generation": 1,
-        "best_cost": 0.9073816760746852,
-        "avg_cost": 1.0046101703092585
+        "best_cost": 0.6897814444926906,
+        "avg_cost": 0.9350680272108843
       },
       {
         "generation": 5,
-        "best_cost": 0.8147633521493703,
-        "avg_cost": 0.8976052974381242
+        "best_cost": 0.5658995513098856,
+        "avg_cost": 0.6565730689438897
       },
       {
         "generation": 10,
-        "best_cost": 0.8147633521493703,
-        "avg_cost": 0.835859748154581
+        "best_cost": 0.5658995513098856,
+        "avg_cost": 0.5921734935108794
       },
       {
         "generation": 20,
-        "best_cost": 0.8025980605007961,
-        "avg_cost": 0.8372465865778936
+        "best_cost": 0.5658995513098856,
+        "avg_cost": 0.6012956530129782
       },
       {
         "generation": 50,
-        "best_cost": 0.775466782457664,
-        "avg_cost": 0.805556761711777
+        "best_cost": 0.5658995513098856,
+        "avg_cost": 0.6134098036377671
       }
     ],
     "pareto_front": [
       {
         "genome": [
-          "cse",
           "algebraic_simplification",
+          "cse",
+          "cse",
           "copy_propagation",
-          "dead_code_elimination",
-          "cse"
+          "dead_code_elimination"
         ],
         "fitness": {
-          "exec_time": 72.0,
-          "instr_count": 36,
-          "code_size": 187,
-          "arith_ops": 25
+          "exec_time": 50.0,
+          "instr_count": 26,
+          "code_size": 139,
+          "arith_ops": 19
         },
         "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
-        "tied_genome_count": 18
+        "tied_genome_count": 20
       }
     ],
-    "pareto_front_raw_size": 18,
+    "pareto_front_raw_size": 20,
     "best_overall": {
       "genome": [
-        "cse",
         "algebraic_simplification",
+        "cse",
+        "cse",
         "copy_propagation",
-        "dead_code_elimination",
-        "cse"
+        "dead_code_elimination"
       ],
       "fitness": {
-        "exec_time": 72.0,
-        "instr_count": 36,
-        "code_size": 187,
-        "arith_ops": 25
+        "exec_time": 50.0,
+        "instr_count": 26,
+        "code_size": 139,
+        "arith_ops": 19
       },
-      "cost": 0.775466782457664,
-      "tac": "x = INPUT x\n_k1 = 1\n_k2 = 5\n_e1 = _k2 * x\n_e2 = _k1 + _e1\n_k3 = -6\n_e3 = x * x\n_e4 = _k3 * _e3\n_e5 = _e2 + _e4\n_e7 = _e3 * x\n_e9 = _e5 + _e7\n_k4 = -8\n_e11 = _e7\n_e12 = _e11 * x\n_e13 = _k4 * _e12\n_e14 = _e9 + _e13\n_e16 = _e7\n_e17 = _e16 * x\n_e18 = _e17 * x\n_e19 = _k4 * _e18\n_e20 = _e14 + _e19\n_k5 = 6\n_e22 = _e7\n_e23 = _e22 * x\n_e24 = _e23 * x\n_e25 = _e24 * x\n_e26 = _k5 * _e25\n_e27 = _e20 + _e26\n_e29 = _e7\n_e30 = _e29 * x\n_e31 = _e30 * x\n_e32 = _e31 * x\n_e33 = _e32 * x\n_e34 = _k3 * _e33\nr = _e27 + _e34\nOUTPUT r"
+      "cost": 0.5658995513098856,
+      "tac": "x = INPUT x\n_k1 = 1\n_k2 = 5\n_e1 = _k2 * x\n_e2 = _k1 + _e1\n_k3 = -6\n_e3 = x * x\n_e4 = _k3 * _e3\n_e5 = _e2 + _e4\n_e7 = _e3 * x\n_e9 = _e5 + _e7\n_k4 = -8\n_e12 = _e7 * x\n_e13 = _k4 * _e12\n_e14 = _e9 + _e13\n_e18 = _e12 * x\n_e19 = _k4 * _e18\n_e20 = _e14 + _e19\n_k5 = 6\n_e25 = _e18 * x\n_e26 = _k5 * _e25\n_e27 = _e20 + _e26\n_e33 = _e25 * x\n_e34 = _k3 * _e33\nr = _e27 + _e34\nOUTPUT r"
     },
-    "improvement_pct_exec_time": 26.53061224489796,
+    "improvement_pct_exec_time": 48.97959183673469,
     "runtime": {
-      "baseline_ns": 952.9,
-      "best_ns": 798.0,
-      "measured_improvement_pct": 16.25564067583167,
-      "measured_speedup_x": 1.194110275689223,
+      "baseline_ns": 863.7,
+      "best_ns": 529.0,
+      "measured_improvement_pct": 38.75188144031493,
+      "measured_speedup_x": 1.6327032136105861,
       "baseline_cycles": 98.0,
-      "best_cycles": 72.0,
+      "best_cycles": 50.0,
       "outputs_correct": true
     },
-    "generations_to_convergence": 23,
+    "generations_to_convergence": 5,
     "verdict": "PASS"
   },
   {
@@ -429,78 +429,78 @@
     "checkpoints": [
       {
         "generation": 1,
-        "best_cost": 0.8862724989988419,
-        "avg_cost": 0.9545089995995367
+        "best_cost": 0.6095609146295267,
+        "avg_cost": 0.8983684092845171
       },
       {
         "generation": 5,
-        "best_cost": 0.7789850777946699,
-        "avg_cost": 0.89134179955385
+        "best_cost": 0.6095609146295267,
+        "avg_cost": 0.6553019768681664
       },
       {
         "generation": 10,
-        "best_cost": 0.7789850777946699,
-        "avg_cost": 0.8193875134312696
+        "best_cost": 0.5822888929131734,
+        "avg_cost": 0.6586045644625701
       },
       {
         "generation": 20,
-        "best_cost": 0.7789850777946699,
-        "avg_cost": 0.8075950567824491
+        "best_cost": 0.5822888929131734,
+        "avg_cost": 0.6383173891591934
       },
       {
         "generation": 50,
-        "best_cost": 0.7517130560783166,
-        "avg_cost": 0.7623817760100258
+        "best_cost": 0.5822888929131734,
+        "avg_cost": 0.6507106506590484
       }
     ],
     "pareto_front": [
       {
         "genome": [
-          "cse",
-          "copy_propagation",
+          "constant_folding",
+          "constant_propagation",
           "cse",
           "copy_propagation",
           "dead_code_elimination"
         ],
         "fitness": {
-          "exec_time": 49.0,
-          "instr_count": 33,
-          "code_size": 149,
-          "arith_ops": 20
+          "exec_time": 40.0,
+          "instr_count": 27,
+          "code_size": 113,
+          "arith_ops": 14
         },
         "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
-        "tied_genome_count": 22
+        "tied_genome_count": 24
       }
     ],
-    "pareto_front_raw_size": 22,
+    "pareto_front_raw_size": 24,
     "best_overall": {
       "genome": [
-        "cse",
-        "copy_propagation",
+        "constant_folding",
+        "constant_propagation",
         "cse",
         "copy_propagation",
         "dead_code_elimination"
       ],
       "fitness": {
-        "exec_time": 49.0,
-        "instr_count": 33,
-        "code_size": 149,
-        "arith_ops": 20
+        "exec_time": 40.0,
+        "instr_count": 27,
+        "code_size": 113,
+        "arith_ops": 14
       },
-      "cost": 0.7517130560783166,
-      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nx4 = INPUT x4\nw0 = INPUT w0\nw1 = INPUT w1\nw2 = INPUT w2\nw3 = INPUT w3\nw4 = INPUT w4\n_e1 = w0 * x0\n_e2 = w1 * x1\n_e3 = _e1 + _e2\n_e4 = w2 * x2\n_e5 = _e3 + _e4\n_e6 = w3 * x3\n_e7 = _e5 + _e6\n_e8 = w4 * x4\n_e9 = _e7 + _e8\n_e10 = w0 + w1\n_e11 = _e10 + w2\n_e12 = _e11 + w3\n_e13 = _e12 + w4\navg = _e9 / _e13\n_e16 = _e11 + w3\ntotal_weight = _e16 + w4\n_e21 = _e3 + _e4\n_e23 = _e21 + _e6\n_e25 = _e23 + _e8\nscaled = _e25 / total_weight\nOUTPUT avg\nOUTPUT total_weight\nOUTPUT scaled"
+      "cost": 0.5822888929131734,
+      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nx4 = INPUT x4\nw0 = INPUT w0\nw1 = INPUT w1\nw2 = INPUT w2\nw3 = INPUT w3\nw4 = INPUT w4\n_e1 = w0 * x0\n_e2 = w1 * x1\n_e3 = _e1 + _e2\n_e4 = w2 * x2\n_e5 = _e3 + _e4\n_e6 = w3 * x3\n_e7 = _e5 + _e6\n_e8 = w4 * x4\n_e9 = _e7 + _e8\n_e10 = w0 + w1\n_e11 = _e10 + w2\n_e12 = _e11 + w3\n_e13 = _e12 + w4\navg = _e9 / _e13\nOUTPUT avg\nOUTPUT _e13\nOUTPUT avg"
     },
-    "improvement_pct_exec_time": 26.865671641791046,
+    "improvement_pct_exec_time": 40.298507462686565,
     "runtime": {
-      "baseline_ns": 1046.6,
-      "best_ns": 940.7,
-      "measured_improvement_pct": 10.118478884005338,
-      "measured_speedup_x": 1.1125757414691186,
+      "baseline_ns": 1089.4,
+      "best_ns": 621.1,
+      "measured_improvement_pct": 42.9869653020011,
+      "measured_speedup_x": 1.7539848655611014,
       "baseline_cycles": 67.0,
-      "best_cycles": 49.0,
+      "best_cycles": 40.0,
       "outputs_correct": true
     },
-    "generations_to_convergence": 46,
+    "generations_to_convergence": 10,
     "verdict": "PASS"
   },
   {
@@ -517,28 +517,28 @@
     "checkpoints": [
       {
         "generation": 1,
-        "best_cost": 0.933517417162277,
-        "avg_cost": 1.0405659287211502
+        "best_cost": 0.5137281450771902,
+        "avg_cost": 0.9226931980385861
       },
       {
         "generation": 5,
-        "best_cost": 0.7858061280450552,
-        "avg_cost": 0.9219454492412639
+        "best_cost": 0.41779309678537635,
+        "avg_cost": 0.6029421682205104
       },
       {
         "generation": 10,
-        "best_cost": 0.7858061280450552,
-        "avg_cost": 0.8377508479601125
+        "best_cost": 0.41779309678537635,
+        "avg_cost": 0.527912166392459
       },
       {
         "generation": 20,
-        "best_cost": 0.7858061280450552,
-        "avg_cost": 0.8106569950434233
+        "best_cost": 0.41779309678537635,
+        "avg_cost": 0.5031267019584776
       },
       {
         "generation": 50,
-        "best_cost": 0.7858061280450552,
-        "avg_cost": 0.8106367254579363
+        "best_cost": 0.41779309678537635,
+        "avg_cost": 0.4904521846161424
       }
     ],
     "pareto_front": [
@@ -546,49 +546,49 @@
         "genome": [
           "cse",
           "copy_propagation",
-          "dead_code_elimination",
-          "cse",
-          "copy_propagation"
+          "strength_reduction",
+          "constant_folding",
+          "dead_code_elimination"
         ],
         "fitness": {
-          "exec_time": 63.0,
-          "instr_count": 33,
-          "code_size": 160,
-          "arith_ops": 21
+          "exec_time": 30.0,
+          "instr_count": 18,
+          "code_size": 88,
+          "arith_ops": 12
         },
         "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
-        "tied_genome_count": 22
+        "tied_genome_count": 23
       }
     ],
-    "pareto_front_raw_size": 22,
+    "pareto_front_raw_size": 23,
     "best_overall": {
       "genome": [
         "cse",
         "copy_propagation",
-        "dead_code_elimination",
-        "cse",
-        "copy_propagation"
+        "strength_reduction",
+        "constant_folding",
+        "dead_code_elimination"
       ],
       "fitness": {
-        "exec_time": 63.0,
-        "instr_count": 33,
-        "code_size": 160,
-        "arith_ops": 21
+        "exec_time": 30.0,
+        "instr_count": 18,
+        "code_size": 88,
+        "arith_ops": 12
       },
-      "cost": 0.7858061280450552,
-      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_k1 = 3\nmean = _e2 / _k1\n_e4 = _e2\n_e5 = _e2 / _k1\n_e6 = x0 - _e5\n_e8 = _e2\n_e9 = _e2 / _k1\n_e10 = x0 - _e9\n_e11 = _e6 * _e10\n_e13 = _e2\n_e14 = _e2 / _k1\n_e15 = x1 - _e14\n_e17 = _e2\n_e18 = _e2 / _k1\n_e19 = x1 - _e18\n_e20 = _e15 * _e19\n_e21 = _e11 + _e20\n_e23 = _e2\n_e24 = _e2 / _k1\n_e25 = x2 - _e24\n_e27 = _e2\n_e28 = _e2 / _k1\n_e29 = x2 - _e28\n_e30 = _e25 * _e29\n_e31 = _e21 + _e30\nvar = _e31 / _k1\nOUTPUT mean\nOUTPUT var"
+      "cost": 0.41779309678537635,
+      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_k1 = 3\nmean = _e2 / _k1\n_e6 = x0 - mean\n_e11 = _e6 * _e6\n_e15 = x1 - mean\n_e20 = _e15 * _e15\n_e21 = _e11 + _e20\n_e25 = x2 - mean\n_e30 = _e25 * _e25\n_e31 = _e21 + _e30\nvar = _e31 / _k1\nOUTPUT mean\nOUTPUT var"
     },
-    "improvement_pct_exec_time": 8.695652173913043,
+    "improvement_pct_exec_time": 56.52173913043478,
     "runtime": {
-      "baseline_ns": 1912.8,
-      "best_ns": 1829.1,
-      "measured_improvement_pct": 4.3757841907151835,
-      "measured_speedup_x": 1.0457602099393144,
+      "baseline_ns": 1771.7,
+      "best_ns": 592.3,
+      "measured_improvement_pct": 66.56883219506689,
+      "measured_speedup_x": 2.9912206652034445,
       "baseline_cycles": 69.0,
-      "best_cycles": 63.0,
+      "best_cycles": 30.0,
       "outputs_correct": true
     },
-    "generations_to_convergence": 5,
+    "generations_to_convergence": 3,
     "verdict": "PASS"
   },
   {
@@ -605,28 +605,28 @@
     "checkpoints": [
       {
         "generation": 1,
-        "best_cost": 0.933517417162277,
-        "avg_cost": 1.0405659287211502
+        "best_cost": 0.5137281450771902,
+        "avg_cost": 0.9226931980385861
       },
       {
         "generation": 5,
-        "best_cost": 0.7858061280450552,
-        "avg_cost": 0.9219454492412639
+        "best_cost": 0.41779309678537635,
+        "avg_cost": 0.6029421682205104
       },
       {
         "generation": 10,
-        "best_cost": 0.7858061280450552,
-        "avg_cost": 0.8377508479601125
+        "best_cost": 0.41779309678537635,
+        "avg_cost": 0.527912166392459
       },
       {
         "generation": 20,
-        "best_cost": 0.7858061280450552,
-        "avg_cost": 0.8106569950434233
+        "best_cost": 0.41779309678537635,
+        "avg_cost": 0.5031267019584776
       },
       {
         "generation": 50,
-        "best_cost": 0.7858061280450552,
-        "avg_cost": 0.8106367254579363
+        "best_cost": 0.41779309678537635,
+        "avg_cost": 0.4904521846161424
       }
     ],
     "pareto_front": [
@@ -634,49 +634,49 @@
         "genome": [
           "cse",
           "copy_propagation",
-          "dead_code_elimination",
-          "cse",
-          "copy_propagation"
+          "strength_reduction",
+          "constant_folding",
+          "dead_code_elimination"
         ],
         "fitness": {
-          "exec_time": 63.0,
-          "instr_count": 33,
-          "code_size": 160,
-          "arith_ops": 21
+          "exec_time": 30.0,
+          "instr_count": 18,
+          "code_size": 88,
+          "arith_ops": 12
         },
         "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
-        "tied_genome_count": 22
+        "tied_genome_count": 23
       }
     ],
-    "pareto_front_raw_size": 22,
+    "pareto_front_raw_size": 23,
     "best_overall": {
       "genome": [
         "cse",
         "copy_propagation",
-        "dead_code_elimination",
-        "cse",
-        "copy_propagation"
+        "strength_reduction",
+        "constant_folding",
+        "dead_code_elimination"
       ],
       "fitness": {
-        "exec_time": 63.0,
-        "instr_count": 33,
-        "code_size": 160,
-        "arith_ops": 21
+        "exec_time": 30.0,
+        "instr_count": 18,
+        "code_size": 88,
+        "arith_ops": 12
       },
-      "cost": 0.7858061280450552,
-      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_k1 = 3\nmean = _e2 / _k1\n_e4 = _e2\n_e5 = _e2 / _k1\n_e6 = x0 - _e5\n_e8 = _e2\n_e9 = _e2 / _k1\n_e10 = x0 - _e9\n_e11 = _e6 * _e10\n_e13 = _e2\n_e14 = _e2 / _k1\n_e15 = x1 - _e14\n_e17 = _e2\n_e18 = _e2 / _k1\n_e19 = x1 - _e18\n_e20 = _e15 * _e19\n_e21 = _e11 + _e20\n_e23 = _e2\n_e24 = _e2 / _k1\n_e25 = x2 - _e24\n_e27 = _e2\n_e28 = _e2 / _k1\n_e29 = x2 - _e28\n_e30 = _e25 * _e29\n_e31 = _e21 + _e30\nvar = _e31 / _k1\nOUTPUT mean\nOUTPUT var"
+      "cost": 0.41779309678537635,
+      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\n_e1 = x0 + x1\n_e2 = _e1 + x2\n_k1 = 3\nmean = _e2 / _k1\n_e6 = x0 - mean\n_e11 = _e6 * _e6\n_e15 = x1 - mean\n_e20 = _e15 * _e15\n_e21 = _e11 + _e20\n_e25 = x2 - mean\n_e30 = _e25 * _e25\n_e31 = _e21 + _e30\nvar = _e31 / _k1\nOUTPUT mean\nOUTPUT var"
     },
-    "improvement_pct_exec_time": 8.695652173913043,
+    "improvement_pct_exec_time": 56.52173913043478,
     "runtime": {
-      "baseline_ns": 2141.2,
-      "best_ns": 2003.7,
-      "measured_improvement_pct": 6.421632729310657,
-      "measured_speedup_x": 1.0686230473623795,
+      "baseline_ns": 2091.3,
+      "best_ns": 695.0,
+      "measured_improvement_pct": 66.76708267584756,
+      "measured_speedup_x": 3.009064748201439,
       "baseline_cycles": 69.0,
-      "best_cycles": 63.0,
+      "best_cycles": 30.0,
       "outputs_correct": true
     },
-    "generations_to_convergence": 5,
+    "generations_to_convergence": 3,
     "verdict": "PASS"
   },
   {
@@ -761,8 +761,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 662.6,
-      "best_ns": 662.6,
+      "baseline_ns": 677.9,
+      "best_ns": 677.9,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 61.0,
@@ -854,8 +854,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 642.1,
-      "best_ns": 642.1,
+      "baseline_ns": 605.5,
+      "best_ns": 605.5,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 61.0,
@@ -947,8 +947,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 626.0,
-      "best_ns": 626.0,
+      "baseline_ns": 704.9,
+      "best_ns": 704.9,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 61.0,
@@ -972,78 +972,78 @@
     "checkpoints": [
       {
         "generation": 1,
-        "best_cost": 0.8829328314997105,
-        "avg_cost": 0.9531731325998842
+        "best_cost": 0.6203676896352056,
+        "avg_cost": 0.8988419224088013
       },
       {
         "generation": 5,
-        "best_cost": 0.7661600077205173,
-        "avg_cost": 0.8879307405262818
+        "best_cost": 0.6203676896352056,
+        "avg_cost": 0.6634390079135302
       },
       {
         "generation": 10,
-        "best_cost": 0.7661600077205173,
-        "avg_cost": 0.8100625683587467
+        "best_cost": 0.5865711252653928,
+        "avg_cost": 0.6673433378369684
       },
       {
         "generation": 20,
-        "best_cost": 0.7661600077205173,
-        "avg_cost": 0.7972994273949687
+        "best_cost": 0.5865711252653928,
+        "avg_cost": 0.6422968538892105
       },
       {
         "generation": 50,
-        "best_cost": 0.7323634433507045,
-        "avg_cost": 0.7456800488966094
+        "best_cost": 0.5865711252653928,
+        "avg_cost": 0.6540870488322718
       }
     ],
     "pareto_front": [
       {
         "genome": [
-          "cse",
-          "copy_propagation",
+          "constant_folding",
+          "constant_propagation",
           "cse",
           "copy_propagation",
           "dead_code_elimination"
         ],
         "fitness": {
-          "exec_time": 40.0,
-          "instr_count": 26,
-          "code_size": 115,
-          "arith_ops": 15
+          "exec_time": 33.0,
+          "instr_count": 22,
+          "code_size": 91,
+          "arith_ops": 11
         },
         "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
-        "tied_genome_count": 22
+        "tied_genome_count": 24
       }
     ],
-    "pareto_front_raw_size": 22,
+    "pareto_front_raw_size": 24,
     "best_overall": {
       "genome": [
-        "cse",
-        "copy_propagation",
+        "constant_folding",
+        "constant_propagation",
         "cse",
         "copy_propagation",
         "dead_code_elimination"
       ],
       "fitness": {
-        "exec_time": 40.0,
-        "instr_count": 26,
-        "code_size": 115,
-        "arith_ops": 15
+        "exec_time": 33.0,
+        "instr_count": 22,
+        "code_size": 91,
+        "arith_ops": 11
       },
-      "cost": 0.7323634433507045,
-      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nw0 = INPUT w0\nw1 = INPUT w1\nw2 = INPUT w2\nw3 = INPUT w3\n_e1 = w0 * x0\n_e2 = w1 * x1\n_e3 = _e1 + _e2\n_e4 = w2 * x2\n_e5 = _e3 + _e4\n_e6 = w3 * x3\n_e7 = _e5 + _e6\n_e8 = w0 + w1\n_e9 = _e8 + w2\n_e10 = _e9 + w3\navg = _e7 / _e10\ntotal_weight = _e9 + w3\n_e17 = _e3 + _e4\n_e19 = _e17 + _e6\nscaled = _e19 / total_weight\nOUTPUT avg\nOUTPUT total_weight\nOUTPUT scaled"
+      "cost": 0.5865711252653928,
+      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nw0 = INPUT w0\nw1 = INPUT w1\nw2 = INPUT w2\nw3 = INPUT w3\n_e1 = w0 * x0\n_e2 = w1 * x1\n_e3 = _e1 + _e2\n_e4 = w2 * x2\n_e5 = _e3 + _e4\n_e6 = w3 * x3\n_e7 = _e5 + _e6\n_e8 = w0 + w1\n_e9 = _e8 + w2\n_e10 = _e9 + w3\navg = _e7 / _e10\nOUTPUT avg\nOUTPUT _e10\nOUTPUT avg"
     },
-    "improvement_pct_exec_time": 27.272727272727273,
+    "improvement_pct_exec_time": 40.0,
     "runtime": {
-      "baseline_ns": 919.2,
-      "best_ns": 815.6,
-      "measured_improvement_pct": 11.270670147954744,
-      "measured_speedup_x": 1.1270230505149583,
+      "baseline_ns": 801.1,
+      "best_ns": 471.9,
+      "measured_improvement_pct": 41.09349644239172,
+      "measured_speedup_x": 1.6976054248781522,
       "baseline_cycles": 55.0,
-      "best_cycles": 40.0,
+      "best_cycles": 33.0,
       "outputs_correct": true
     },
-    "generations_to_convergence": 46,
+    "generations_to_convergence": 10,
     "verdict": "PASS"
   },
   {
@@ -1060,78 +1060,78 @@
     "checkpoints": [
       {
         "generation": 1,
-        "best_cost": 0.8829328314997105,
-        "avg_cost": 0.9531731325998842
+        "best_cost": 0.6203676896352056,
+        "avg_cost": 0.8988419224088013
       },
       {
         "generation": 5,
-        "best_cost": 0.7661600077205173,
-        "avg_cost": 0.8879307405262818
+        "best_cost": 0.6203676896352056,
+        "avg_cost": 0.6634390079135302
       },
       {
         "generation": 10,
-        "best_cost": 0.7661600077205173,
-        "avg_cost": 0.8100625683587467
+        "best_cost": 0.5865711252653928,
+        "avg_cost": 0.6673433378369684
       },
       {
         "generation": 20,
-        "best_cost": 0.7661600077205173,
-        "avg_cost": 0.7972994273949687
+        "best_cost": 0.5865711252653928,
+        "avg_cost": 0.6422968538892105
       },
       {
         "generation": 50,
-        "best_cost": 0.7323634433507045,
-        "avg_cost": 0.7456800488966094
+        "best_cost": 0.5865711252653928,
+        "avg_cost": 0.6540870488322718
       }
     ],
     "pareto_front": [
       {
         "genome": [
-          "cse",
-          "copy_propagation",
+          "constant_folding",
+          "constant_propagation",
           "cse",
           "copy_propagation",
           "dead_code_elimination"
         ],
         "fitness": {
-          "exec_time": 40.0,
-          "instr_count": 26,
-          "code_size": 115,
-          "arith_ops": 15
+          "exec_time": 33.0,
+          "instr_count": 22,
+          "code_size": 91,
+          "arith_ops": 11
         },
         "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
-        "tied_genome_count": 22
+        "tied_genome_count": 24
       }
     ],
-    "pareto_front_raw_size": 22,
+    "pareto_front_raw_size": 24,
     "best_overall": {
       "genome": [
-        "cse",
-        "copy_propagation",
+        "constant_folding",
+        "constant_propagation",
         "cse",
         "copy_propagation",
         "dead_code_elimination"
       ],
       "fitness": {
-        "exec_time": 40.0,
-        "instr_count": 26,
-        "code_size": 115,
-        "arith_ops": 15
+        "exec_time": 33.0,
+        "instr_count": 22,
+        "code_size": 91,
+        "arith_ops": 11
       },
-      "cost": 0.7323634433507045,
-      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nw0 = INPUT w0\nw1 = INPUT w1\nw2 = INPUT w2\nw3 = INPUT w3\n_e1 = w0 * x0\n_e2 = w1 * x1\n_e3 = _e1 + _e2\n_e4 = w2 * x2\n_e5 = _e3 + _e4\n_e6 = w3 * x3\n_e7 = _e5 + _e6\n_e8 = w0 + w1\n_e9 = _e8 + w2\n_e10 = _e9 + w3\navg = _e7 / _e10\ntotal_weight = _e9 + w3\n_e17 = _e3 + _e4\n_e19 = _e17 + _e6\nscaled = _e19 / total_weight\nOUTPUT avg\nOUTPUT total_weight\nOUTPUT scaled"
+      "cost": 0.5865711252653928,
+      "tac": "x0 = INPUT x0\nx1 = INPUT x1\nx2 = INPUT x2\nx3 = INPUT x3\nw0 = INPUT w0\nw1 = INPUT w1\nw2 = INPUT w2\nw3 = INPUT w3\n_e1 = w0 * x0\n_e2 = w1 * x1\n_e3 = _e1 + _e2\n_e4 = w2 * x2\n_e5 = _e3 + _e4\n_e6 = w3 * x3\n_e7 = _e5 + _e6\n_e8 = w0 + w1\n_e9 = _e8 + w2\n_e10 = _e9 + w3\navg = _e7 / _e10\nOUTPUT avg\nOUTPUT _e10\nOUTPUT avg"
     },
-    "improvement_pct_exec_time": 27.272727272727273,
+    "improvement_pct_exec_time": 40.0,
     "runtime": {
-      "baseline_ns": 813.8,
-      "best_ns": 705.4,
-      "measured_improvement_pct": 13.320226099778814,
-      "measured_speedup_x": 1.153671675645024,
+      "baseline_ns": 988.0,
+      "best_ns": 582.9,
+      "measured_improvement_pct": 41.002024291497975,
+      "measured_speedup_x": 1.694973408817979,
       "baseline_cycles": 55.0,
-      "best_cycles": 40.0,
+      "best_cycles": 33.0,
       "outputs_correct": true
     },
-    "generations_to_convergence": 46,
+    "generations_to_convergence": 10,
     "verdict": "PASS"
   },
   {
@@ -1199,8 +1199,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 559.9,
-      "best_ns": 559.9,
+      "baseline_ns": 552.2,
+      "best_ns": 552.2,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 48.0,
@@ -1275,8 +1275,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 551.1,
-      "best_ns": 551.1,
+      "baseline_ns": 555.1,
+      "best_ns": 555.1,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1351,8 +1351,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 529.4,
-      "best_ns": 529.4,
+      "baseline_ns": 530.5,
+      "best_ns": 530.5,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1427,8 +1427,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 518.4,
-      "best_ns": 518.4,
+      "baseline_ns": 499.5,
+      "best_ns": 499.5,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1503,8 +1503,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 502.9,
-      "best_ns": 502.9,
+      "baseline_ns": 432.1,
+      "best_ns": 432.1,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1591,10 +1591,10 @@
     },
     "improvement_pct_exec_time": 19.047619047619047,
     "runtime": {
-      "baseline_ns": 561.5,
-      "best_ns": 394.3,
-      "measured_improvement_pct": 29.777382012466607,
-      "measured_speedup_x": 1.4240426071519148,
+      "baseline_ns": 558.2,
+      "best_ns": 401.5,
+      "measured_improvement_pct": 28.072375492654967,
+      "measured_speedup_x": 1.3902864259028644,
       "baseline_cycles": 42.0,
       "best_cycles": 34.0,
       "outputs_correct": true
@@ -1616,35 +1616,35 @@
     "checkpoints": [
       {
         "generation": 1,
-        "best_cost": 0.8934523809523809,
-        "avg_cost": 0.9573809523809523
+        "best_cost": 0.7860119047619047,
+        "avg_cost": 0.9384126984126984
       },
       {
         "generation": 5,
         "best_cost": 0.7860119047619047,
-        "avg_cost": 0.898125
+        "avg_cost": 0.8075496031746032
       },
       {
         "generation": 10,
-        "best_cost": 0.7860119047619047,
-        "avg_cost": 0.8265575396825396
+        "best_cost": 0.75,
+        "avg_cost": 0.8110119047619048
       },
       {
         "generation": 20,
-        "best_cost": 0.7860119047619047,
-        "avg_cost": 0.8146626984126984
+        "best_cost": 0.75,
+        "avg_cost": 0.784672619047619
       },
       {
         "generation": 50,
         "best_cost": 0.75,
-        "avg_cost": 0.7643253968253968
+        "avg_cost": 0.7905357142857142
       }
     ],
     "pareto_front": [
       {
         "genome": [
-          "cse",
-          "copy_propagation",
+          "constant_folding",
+          "constant_propagation",
           "cse",
           "copy_propagation",
           "dead_code_elimination"
@@ -1656,14 +1656,14 @@
           "arith_ops": 14
         },
         "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
-        "tied_genome_count": 22
+        "tied_genome_count": 24
       }
     ],
-    "pareto_front_raw_size": 22,
+    "pareto_front_raw_size": 24,
     "best_overall": {
       "genome": [
-        "cse",
-        "copy_propagation",
+        "constant_folding",
+        "constant_propagation",
         "cse",
         "copy_propagation",
         "dead_code_elimination"
@@ -1679,15 +1679,15 @@
     },
     "improvement_pct_exec_time": 25.0,
     "runtime": {
-      "baseline_ns": 602.1,
-      "best_ns": 485.4,
-      "measured_improvement_pct": 19.382162431489792,
-      "measured_speedup_x": 1.2404202719406676,
+      "baseline_ns": 576.1,
+      "best_ns": 479.9,
+      "measured_improvement_pct": 16.69848984551294,
+      "measured_speedup_x": 1.2004584288393416,
       "baseline_cycles": 56.0,
       "best_cycles": 42.0,
       "outputs_correct": true
     },
-    "generations_to_convergence": 46,
+    "generations_to_convergence": 10,
     "verdict": "PASS"
   }
 ]

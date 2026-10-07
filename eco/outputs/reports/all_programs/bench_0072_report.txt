@@ -6,20 +6,20 @@ Original source:
         return tax, net
 Baseline fitness: {'exec_time': 37.0, 'instr_count': 17, 'code_size': 86, 'arith_ops': 11}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.9101  avg=1.1141
-  gen   5: best=0.9101  avg=0.9437
-  gen  10: best=0.7752  avg=0.8553
-  gen  20: best=0.7463  avg=0.7854
-  gen  50: best=0.7463  avg=0.7756
-Generations to convergence: 16
-Simulated exec-time improvement vs baseline (cycle model): 32.4%
-Measured runtime (real, Python backend): baseline 952 ns/call -> best 564 ns/call = 40.7% faster (1.69x); optimized outputs correct: yes
-Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['cse', 'copy_propagation', 'dead_code_elimination', 'copy_propagation', 'cse']  fitness={'exec_time': 25.0, 'instr_count': 15, 'code_size': 68, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=0.6875  avg=1.0201
+  gen   5: best=0.6243  avg=0.7193
+  gen  10: best=0.6243  avg=0.6760
+  gen  20: best=0.6243  avg=0.6750
+  gen  50: best=0.6243  avg=0.6353
+Generations to convergence: 3
+Simulated exec-time improvement vs baseline (cycle model): 40.5%
+Measured runtime (real, Python backend): baseline 1011 ns/call -> best 594 ns/call = 41.2% faster (1.70x); optimized outputs correct: yes
+Pareto front: 27 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'strength_reduction', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 22.0, 'instr_count': 12, 'code_size': 56, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (27 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['cse', 'copy_propagation', 'dead_code_elimination', 'copy_propagation', 'cse']
-  fitness: {'exec_time': 25.0, 'instr_count': 15, 'code_size': 68, 'arith_ops': 7}
-  cost: 0.7463
+  genome: ['cse', 'strength_reduction', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']
+  fitness: {'exec_time': 22.0, 'instr_count': 12, 'code_size': 56, 'arith_ops': 6}
+  cost: 0.6243
   optimized TAC:
     income = INPUT income
     _k1 = 10
@@ -30,10 +30,7 @@ Best-overall (weighted) individual:
     _e3 = income * _k3
     _e4 = _e3 / _k2
     tax = _e2 + _e4
-    _e6 = _e2
-    _e8 = _e4
-    _e9 = _e6 + _e8
-    net = income - _e9
+    net = income - tax
     OUTPUT tax
     OUTPUT net
 Correctness verdict: PASS

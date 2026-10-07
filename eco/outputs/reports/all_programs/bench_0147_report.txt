@@ -6,18 +6,18 @@ Original source:
         return x2, y2
 Baseline fitness: {'exec_time': 25.0, 'instr_count': 17, 'code_size': 78, 'arith_ops': 8}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.7831  avg=0.9832
-  gen   5: best=0.7080  avg=0.8196
-  gen  10: best=0.7080  avg=0.7956
-  gen  20: best=0.7080  avg=0.7476
-  gen  50: best=0.6737  avg=0.6967
-Generations to convergence: 37
+  gen   1: best=0.7456  avg=0.9678
+  gen   5: best=0.7456  avg=0.8559
+  gen  10: best=0.7080  avg=0.7409
+  gen  20: best=0.7080  avg=0.7384
+  gen  50: best=0.6737  avg=0.6864
+Generations to convergence: 22
 Simulated exec-time improvement vs baseline (cycle model): 40.0%
-Measured runtime (real, Python backend): baseline 305 ns/call -> best 237 ns/call = 22.2% faster (1.29x); optimized outputs correct: yes
-Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'cse', 'strength_reduction', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 15.0, 'instr_count': 13, 'code_size': 55, 'arith_ops': 5}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+Measured runtime (real, Python backend): baseline 265 ns/call -> best 209 ns/call = 21.2% faster (1.27x); optimized outputs correct: yes
+Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['algebraic_simplification', 'copy_propagation', 'cse', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 15.0, 'instr_count': 13, 'code_size': 55, 'arith_ops': 5}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['algebraic_simplification', 'cse', 'strength_reduction', 'copy_propagation', 'dead_code_elimination']
+  genome: ['algebraic_simplification', 'copy_propagation', 'cse', 'strength_reduction', 'dead_code_elimination']
   fitness: {'exec_time': 15.0, 'instr_count': 13, 'code_size': 55, 'arith_ops': 5}
   cost: 0.6737
   optimized TAC:

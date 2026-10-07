@@ -7,20 +7,20 @@ Original source:
         return mean, remainder
 Baseline fitness: {'exec_time': 30.0, 'instr_count': 25, 'code_size': 114, 'arith_ops': 15}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.9768  avg=1.0169
-  gen   5: best=0.9286  avg=0.9748
-  gen  10: best=0.9286  avg=0.9503
-  gen  20: best=0.9286  avg=0.9405
-  gen  50: best=0.9286  avg=0.9367
-Generations to convergence: 5
-Simulated exec-time improvement vs baseline (cycle model): 3.3%
-Measured runtime (real, Python backend): baseline 510 ns/call -> best 504 ns/call = 1.3% faster (1.01x); optimized outputs correct: yes
-Pareto front: 23 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['cse', 'copy_propagation', 'dead_code_elimination', 'cse']  fitness={'exec_time': 29.0, 'instr_count': 24, 'code_size': 105, 'arith_ops': 13}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
+  gen   1: best=0.7631  avg=0.9621
+  gen   5: best=0.7111  avg=0.7628
+  gen  10: best=0.7111  avg=0.7290
+  gen  20: best=0.7111  avg=0.7682
+  gen  50: best=0.7111  avg=0.7405
+Generations to convergence: 2
+Simulated exec-time improvement vs baseline (cycle model): 20.0%
+Measured runtime (real, Python backend): baseline 445 ns/call -> best 370 ns/call = 16.7% faster (1.20x); optimized outputs correct: yes
+Pareto front: 18 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['dead_code_elimination', 'cse', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 24.0, 'instr_count': 19, 'code_size': 78, 'arith_ops': 9}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (18 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['cse', 'copy_propagation', 'dead_code_elimination', 'cse']
-  fitness: {'exec_time': 29.0, 'instr_count': 24, 'code_size': 105, 'arith_ops': 13}
-  cost: 0.9286
+  genome: ['dead_code_elimination', 'cse', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']
+  fitness: {'exec_time': 24.0, 'instr_count': 19, 'code_size': 78, 'arith_ops': 9}
+  cost: 0.7111
   optimized TAC:
     x0 = INPUT x0
     x1 = INPUT x1
@@ -37,13 +37,8 @@ Best-overall (weighted) individual:
     total = _e5 + x6
     _k1 = 7
     mean = total / _k1
-    _e7 = _e2
-    _e8 = _e7 + x3
-    _e9 = _e8 + x4
-    _e10 = _e9 + x5
-    _e11 = _e10 + x6
     _e12 = mean * _k1
-    remainder = _e11 - _e12
+    remainder = total - _e12
     OUTPUT mean
     OUTPUT remainder
 Correctness verdict: PASS

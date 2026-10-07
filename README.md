@@ -50,7 +50,7 @@ multiply is what lets strength reduction trade speed against size.
 | 1 | `constant_folding` | Evaluates arithmetic whose operands are already literal constants |
 | 2 | `constant_propagation` | Substitutes known-constant variables into later uses |
 | 3 | `copy_propagation` | Forward-substitutes `copy` targets so uses reference the original variable |
-| 4 | `cse` | Reuses an earlier temp when an identical expression recurs |
+| 4 | `cse` | Value-numbering CSE: reuses an earlier temp when the same *value* recurs, looking through copies and equal constants (see below) |
 | 5 | `dead_code_elimination` | Backward liveness sweep that drops unused definitions |
 | 6 | `algebraic_simplification` | Simplifies identities: `x+0`, `x*1`, `x*0`, `x-0`, `x/1`, `x-x` |
 | 7 | `strength_reduction` | Rewrites `x*2 -> x+x`, `x*3 -> (x+x)+x`, `x*4 -> (x+x)+(x+x)`. Adds are cheaper than a multiply, so **`exec_time` drops**, but for `k=3,4` one multiply becomes two adds, so **`arith_ops` and `code_size` rise** (the leftover constant is for `dead_code_elimination` to remove) |
@@ -132,12 +132,12 @@ old random generator (`eco/benchmark_generator.py`) is kept behind
 | Metric | Result | Target |
 |---|---|---|
 | Validity Rate | 100.0% | > 90% |
-| Avg. Pareto Front Size | 24.9 individuals (avg. 1.04 distinct objective-space points) | identify trade-offs |
-| Best Cost Improvement (simulated exec_time vs. baseline) | **13.1%** | > 30% (**not met** on real kernels, see below) |
-| Avg. Generations to Convergence | 9.1 | tracked per program |
-| Measured improvement (real runtime, original vs best) | **9.7%** (avg speedup 1.13x; 1.12x on total time; 9.2-9.7% over three runs) | validation of the cycle model |
+| Avg. Pareto Front Size | 25.4 individuals (avg. 1.07 distinct objective-space points) | identify trade-offs |
+| Best Cost Improvement (simulated exec_time vs. baseline) | **15.6%** | > 30% (**not met** on real kernels, see below) |
+| Avg. Generations to Convergence | 4.1 | tracked per program |
+| Measured improvement (real runtime, original vs best) | **12.2%** (avg speedup 1.20x; 1.21x on total time; 12.2-12.3% over three runs) | validation of the cycle model |
 | Optimized code correct when really run | 100.0% | — |
-| Simulated vs measured improvement % (300 programs) | Pearson r = 0.83, Spearman rho = 0.88 (0.77-0.83 / 0.83-0.88 over three runs) | model should predict speedups |
+| Simulated vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.92 | model should predict speedups |
 | Correctness PASS rate | 100.0% | — |
 
 Regenerate this table with `python -m eco.main` (see
@@ -145,30 +145,44 @@ Regenerate this table with `python -m eco.main` (see
 
 ### Honest reading of these numbers (real kernels)
 
-These are the results on the **real kernels**, and two of them are weaker than
-the earlier results on the random synthetic programs (54.5% improvement and
-1.65 distinct Pareto points per program with `--synthetic`):
+These are the results on the **real kernels**. Two of them are weaker than the
+earlier results on the random synthetic programs (54.5% improvement and 1.65
+distinct Pareto points per program with `--synthetic`):
 
-* **Improvement is 13.1%, below the 30% target.** The distribution is very
+* **Improvement is 15.6%, below the 30% target.** The distribution is very
   uneven: 100 of 300 programs improve by exactly 0% (kernels such as
   `dot_product`, `determinant_3x3`, `matrix_vector`, `trace_and_frobenius`,
-  `rgb_to_gray` are already tight - there is nothing to remove), 39 programs
-  improve by 30% or more (best: `difference_of_squares` 40%, `binomial_expansion`
-  39%, `length_conversions` 36%, `naive_poly` 32%), and the maximum is 47.8%.
-  Per-kernel averages are in `all_programs/all_programs_summary.csv`.
-* **Where redundancy exists the search still leaves some on the table.** For
-  example a variance kernel that recomputes its mean inline reaches only ~8%
-  although most of its TAC is redundant, because CSE rewrites a repeat as a
-  copy and `copy_propagation` / `cse` / `constant_*` are single-hop passes, so
-  deeply nested repeats need many rounds. This is a limit of the pass set, not
-  of the genome length: raising the genome cap from 5 to 15 in an experiment
-  moved the average only from 13.8% to 15.2%. A value-numbering CSE that looks
-  through copies would be the real fix; it is not part of this change.
-* **Pareto fronts are mostly a single point (avg. 1.04; 13 of 300 programs
-  have more than one).** `strength_reduction` / `multiply_fusion` only trade
-  objectives when a program multiplies by 2, 3 or 4 or adds the same value
-  repeatedly, which real kernels rarely do. The two trade-off passes are
-  still correct and tested; they simply have few targets in real code.
+  `rgb_to_gray` are already tight - there is nothing to remove), 66 programs
+  improve by 30% or more, and the maximum is 65.9%. Best kernel averages:
+  `naive_poly` 42%, `difference_of_squares` 40%, `weighted_average` 40%,
+  `binomial_expansion` 39%, `variance_of_values` 38%. Per-kernel numbers are
+  in `all_programs/all_programs_summary.csv`. The target is not reached by
+  changing the kernels: no kernel was edited to chase it.
+* **The CSE upgrade helped, but only where there is redundancy.** The old CSE
+  matched expressions by variable *name* and rewrote only one level of a
+  nested repeat per application, so a kernel that recomputes its mean inline
+  (`variance_of_values`) stayed near 8% improvement. The value-numbering CSE
+  (alias through `copy`, equal `const`s share a value, commutative operands
+  unordered) collapses a whole nested repeat in one application and lifts
+  that kernel to 38%. Across the dataset it moved the numbers like this:
+
+  | | old name-based CSE | value-numbering CSE |
+  |---|---|---|
+  | simulated improvement | 13.1% | 15.6% |
+  | measured improvement | 9.7% (9.2-9.7%) | 12.2% (12.2-12.3%) |
+  | avg generations to convergence | 9.1 | 4.1 |
+  | programs improved >= 30% | 39 | 66 |
+  | programs with > 1 distinct Pareto point | 13 | 21 |
+
+  Raising the genome length cap (5 to 15) in an earlier experiment on the old
+  CSE had changed the average only from 13.8% to 15.2%, so the bottleneck was
+  the pass, not the search budget. What remains is mostly kernels with no
+  redundancy to remove.
+* **Pareto fronts are still mostly a single point (avg. 1.07; 21 of 300
+  programs have more than one).** `strength_reduction` / `multiply_fusion`
+  only trade objectives when a program multiplies by 2, 3 or 4 or adds the same
+  value repeatedly, which real kernels rarely do. The two trade-off passes are
+  correct and tested; they simply have few targets in real code.
 
 `eco/outputs/plots/2_pareto_front_2d.png` and `6_pareto_front_3d.png` plot
 the **final population** of the deep-dive program with the richest final
@@ -331,11 +345,14 @@ guaranteed to be installed (none was available here), and a ctypes call has
 a fixed overhead that would swamp kernels this small. So "measured" means
 CPython executing the generated function, not native machine code.
 
-Timing is noisy by nature. Three consecutive full runs gave measured
-improvements of 9.2%, 9.3% and 9.7% (committed outputs: 9.7%) and
-correlations that moved by a few hundredths (improvement-correlation Pearson
-0.77, 0.83, 0.83; within-program Spearman 0.50, 0.45, 0.56), which is why
-ranges are quoted below. The simulated numbers are deterministic.
+Timing is noisy by nature. Three consecutive full runs with the current
+code gave measured improvements of 12.3%, 12.3% and 12.2% (committed
+outputs: 12.2%), pooled Pearson 0.66/0.66/0.65, improvement-correlation
+Spearman 0.91/0.92/0.92 and within-program Spearman 0.61/0.63/0.63. The
+simulated numbers are deterministic. (With the previous CSE the measured
+improvement had varied between 9.2% and 9.7% and the within-program Spearman
+between 0.45 and 0.56, so timing-derived values should be read to within a
+few hundredths.)
 
 ### How well do simulated cycles predict real time?
 
@@ -343,18 +360,19 @@ Three views, all reported in `aggregate_metrics.md/.json`:
 
 | View | Result | Reading |
 |---|---|---|
-| Pooled: cycles vs ns over all 600 measured programs (original + best) | Pearson r = 0.70, Spearman rho = 0.66 (0.69-0.70 / 0.64-0.66) | **Moderate**, and flattered by program size: bigger programs are slower under both measures |
-| Per program: simulated improvement % vs measured improvement % (300 programs) | Pearson r = 0.83, Spearman rho = 0.88 (0.77-0.83 / 0.83-0.88) | **Good** for deciding how much an optimization helps |
-| Within one program: rank agreement across the distinct programs in its final population (170 programs with >= 3 distinct points) | mean Spearman rho = 0.56 (0.45-0.56) | **Weak to moderate**: the model only partly ranks close variants of the same program correctly |
+| Pooled: cycles vs ns over all 600 measured programs (original + best) | Pearson r = 0.65, Spearman rho = 0.62 (0.65-0.66 / 0.62-0.63) | **Moderate**, and flattered by program size: bigger programs are slower under both measures |
+| Per program: simulated improvement % vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.92 | **Good** for deciding how much an optimization helps |
+| Within one program: rank agreement across the distinct programs in its final population (184 programs with >= 3 distinct points) | mean Spearman rho = 0.63 (0.61-0.63) | **Moderate**: the model ranks close variants of the same program only partly correctly |
 
-So the cycle model is a decent predictor of *whether and roughly how much*
-the search helps, but a poor fine-grained ranker of near-identical variants.
+So the cycle model is a good predictor of *whether and roughly how much*
+the search helps, but only a moderate fine-grained ranker of near-identical
+variants.
 Plausible reasons: CPython charges roughly a constant cost per statement
 regardless of operator while the model charges multiply 3 and divide 4;
 division additionally pays for a function call in the generated code; and
 `const`/`copy` statements are cheap in both but not in the same proportion.
-These mismatches are the likely reason the measured improvement (about 9-10%) is
-smaller than the simulated one (13.1%); this was not isolated by a separate
+These mismatches are the likely reason the measured improvement (12.2%) is
+smaller than the simulated one (15.6%); this was not isolated by a separate
 experiment. The trade-off passes (`strength_reduction`, `multiply_fusion`)
 rely on a multiply-vs-add cost gap that CPython probably does not have (an
 extra statement costs about as much as the multiply it replaces), so their
@@ -369,7 +387,7 @@ benefit should be expected in the model more than in measured time.
   validation, and only through a Python backend (no C/native code); the model
   and CPython disagree on per-operation costs (see above).
 * Real kernels are often already tight: the average simulated improvement is
-  13.1% (about 9-10% measured) and the 30% target is **not met** on this dataset.
+  15.6% (12.2% measured) and the 30% target is **not met** on this dataset.
   The earlier 54.5% was obtained on random synthetic programs written to
   contain redundancy (`--synthetic`).
 * Timing is noisy; numbers vary by a few percent between runs.

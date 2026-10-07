@@ -118,17 +118,60 @@ def copy_propagation(tac: Sequence[Instr]) -> TAC:
 
 
 def common_subexpression_elimination(tac: Sequence[Instr]) -> TAC:
-    """Reuse an earlier temp when an identical arithmetic expression recurs."""
-    seen: Dict[tuple, str] = {}
+    """Value-numbering CSE: reuse an earlier temp when the same value recurs.
+
+    Expressions are compared by the *values* of their operands, not their
+    names. A forward scan keeps a canonical name for every variable:
+
+    * ``d = copy s`` makes ``d`` an alias of ``s`` (looks through copies),
+    * a ``const`` equal to an earlier ``const`` aliases that earlier one,
+    * an expression recomputed from the same canonical operands is replaced
+      by a copy of the first result (commutative ops compare unordered).
+
+    Because aliases chain, a whole nested repeat such as
+    ``(((a+b)+c)+d)`` computed twice collapses in a single application:
+    the inner repeat becomes a copy, which makes the next level's operands
+    canonical-equal too, and so on. (The older name-based version rewrote
+    only one level per application, so deep repeats needed many genome
+    slots.) The now-redundant copies are left for copy propagation and dead
+    code elimination, as before.
+
+    If a name is ever defined twice (the passes can emit that - see
+    constant_propagation) every table is reset, which is always safe.
+    """
+    canon: Dict[str, str] = {}      # variable -> canonical variable holding the same value
+    const_first: Dict[int, str] = {}
+    seen: Dict[tuple, str] = {}     # (op, canon a, canon b) -> variable computing it
+    defined = set()
     out: TAC = []
+
+    def c(name: str) -> str:
+        return canon.get(name, name)
+
     for instr in tac:
-        if instr[0] == "bin":
+        d = dest_of(instr)
+        if d is not None:
+            if d in defined:  # redefinition: forget everything, stay correct
+                canon.clear()
+                const_first.clear()
+                seen.clear()
+            defined.add(d)
+
+        op = instr[0]
+        if op == "copy":
+            canon[instr[1]] = c(instr[2])
+            out.append(instr)
+        elif op == "const":
+            first = const_first.setdefault(instr[2], instr[1])
+            canon[instr[1]] = first
+            out.append(instr)
+        elif op == "bin":
             _, dest, o, a, b = instr
-            key = (o, a, b)
-            if o in COMMUTATIVE:
-                key = (o,) + tuple(sorted((a, b)))
+            ca, cb = c(a), c(b)
+            key = (o,) + (tuple(sorted((ca, cb))) if o in COMMUTATIVE else (ca, cb))
             if key in seen:
                 out.append(("copy", dest, seen[key]))
+                canon[dest] = c(seen[key])
             else:
                 seen[key] = dest
                 out.append(instr)

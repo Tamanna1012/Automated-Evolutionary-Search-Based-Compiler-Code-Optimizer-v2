@@ -7,20 +7,20 @@ Original source:
         return avg, total_weight, scaled
 Baseline fitness: {'exec_time': 67.0, 'instr_count': 41, 'code_size': 197, 'arith_ops': 28}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.8863  avg=0.9545
-  gen   5: best=0.7790  avg=0.8913
-  gen  10: best=0.7790  avg=0.8194
-  gen  20: best=0.7790  avg=0.8076
-  gen  50: best=0.7517  avg=0.7624
-Generations to convergence: 46
-Simulated exec-time improvement vs baseline (cycle model): 26.9%
-Measured runtime (real, Python backend): baseline 1047 ns/call -> best 941 ns/call = 10.1% faster (1.11x); optimized outputs correct: yes
-Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 49.0, 'instr_count': 33, 'code_size': 149, 'arith_ops': 20}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
+  gen   1: best=0.6096  avg=0.8984
+  gen   5: best=0.6096  avg=0.6553
+  gen  10: best=0.5823  avg=0.6586
+  gen  20: best=0.5823  avg=0.6383
+  gen  50: best=0.5823  avg=0.6507
+Generations to convergence: 10
+Simulated exec-time improvement vs baseline (cycle model): 40.3%
+Measured runtime (real, Python backend): baseline 1089 ns/call -> best 621 ns/call = 43.0% faster (1.75x); optimized outputs correct: yes
+Pareto front: 24 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['constant_folding', 'constant_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 40.0, 'instr_count': 27, 'code_size': 113, 'arith_ops': 14}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (24 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']
-  fitness: {'exec_time': 49.0, 'instr_count': 33, 'code_size': 149, 'arith_ops': 20}
-  cost: 0.7517
+  genome: ['constant_folding', 'constant_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']
+  fitness: {'exec_time': 40.0, 'instr_count': 27, 'code_size': 113, 'arith_ops': 14}
+  cost: 0.5823
   optimized TAC:
     x0 = INPUT x0
     x1 = INPUT x1
@@ -46,13 +46,7 @@ Best-overall (weighted) individual:
     _e12 = _e11 + w3
     _e13 = _e12 + w4
     avg = _e9 / _e13
-    _e16 = _e11 + w3
-    total_weight = _e16 + w4
-    _e21 = _e3 + _e4
-    _e23 = _e21 + _e6
-    _e25 = _e23 + _e8
-    scaled = _e25 / total_weight
     OUTPUT avg
-    OUTPUT total_weight
-    OUTPUT scaled
+    OUTPUT _e13
+    OUTPUT avg
 Correctness verdict: PASS

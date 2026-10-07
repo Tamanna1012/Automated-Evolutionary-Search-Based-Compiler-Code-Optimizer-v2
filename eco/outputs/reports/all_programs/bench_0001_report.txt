@@ -5,20 +5,21 @@ Original source:
         return r
 Baseline fitness: {'exec_time': 56.0, 'instr_count': 26, 'code_size': 141, 'arith_ops': 20}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.8433  avg=0.9859
-  gen   5: best=0.8433  avg=0.9069
-  gen  10: best=0.8128  avg=0.8787
-  gen  20: best=0.7481  avg=0.7917
-  gen  50: best=0.6946  avg=0.7303
-Generations to convergence: 25
-Simulated exec-time improvement vs baseline (cycle model): 35.7%
-Measured runtime (real, Python backend): baseline 516 ns/call -> best 417 ns/call = 19.2% faster (1.24x); optimized outputs correct: yes
-Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'cse', 'copy_propagation', 'dead_code_elimination', 'cse']  fitness={'exec_time': 36.0, 'instr_count': 20, 'code_size': 101, 'arith_ops': 13}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=0.7630  avg=0.9499
+  gen   5: best=0.6837  avg=0.8067
+  gen  10: best=0.6097  avg=0.6734
+  gen  20: best=0.5867  avg=0.6657
+  gen  50: best=0.5867  avg=0.6232
+Generations to convergence: 16
+Simulated exec-time improvement vs baseline (cycle model): 53.6%
+Measured runtime (real, Python backend): baseline 546 ns/call -> best 386 ns/call = 29.4% faster (1.42x); optimized outputs correct: yes
+Pareto front: 22 non-dominated individuals, 2 distinct objective-space point(s):
+  genome=['cse', 'algebraic_simplification', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 26.0, 'instr_count': 16, 'code_size': 87, 'arith_ops': 13}  -> fastest (lowest exec_time), fewest instructions, smallest code size  (20 genomes tie here)
+  genome=['cse', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 31.0, 'instr_count': 17, 'code_size': 89, 'arith_ops': 12}  -> fewest arithmetic ops  (2 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['algebraic_simplification', 'cse', 'copy_propagation', 'dead_code_elimination', 'cse']
-  fitness: {'exec_time': 36.0, 'instr_count': 20, 'code_size': 101, 'arith_ops': 13}
-  cost: 0.6946
+  genome: ['cse', 'algebraic_simplification', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']
+  fitness: {'exec_time': 26.0, 'instr_count': 16, 'code_size': 87, 'arith_ops': 13}
+  cost: 0.5867
   optimized TAC:
     x = INPUT x
     _k1 = -3
@@ -26,18 +27,14 @@ Best-overall (weighted) individual:
     _e2 = _k1 + _e1
     _e3 = x * x
     _e5 = _e2 + _e3
-    _k3 = 4
     _e7 = _e3 * x
-    _e8 = _k3 * _e7
+    _sr1 = _e7 + _e7
+    _e8 = _sr1 + _sr1
     _e9 = _e5 + _e8
-    _k4 = 2
-    _e11 = _e7
-    _e12 = _e11 * x
-    _e13 = _k4 * _e12
+    _e12 = _e7 * x
+    _e13 = _e12 + _e12
     _e14 = _e9 + _e13
-    _e16 = _e7
-    _e17 = _e16 * x
-    _e18 = _e17 * x
+    _e18 = _e12 * x
     r = _e14 + _e18
     OUTPUT r
 Correctness verdict: PASS
