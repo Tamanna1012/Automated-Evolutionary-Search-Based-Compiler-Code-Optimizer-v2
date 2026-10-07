@@ -5,7 +5,10 @@ program, complete with pseudo-C source, multiple test-input sets, expected
 Programs are generated with deliberate redundancy (repeated subexpressions
 for CSE), dead temporaries (for DCE), identity-friendly constants like 0/1
 (for algebraic simplification) and copy chains (for copy propagation), so
-every one of the six optimizations has real opportunities to fire.
+every one of the optimizations has real opportunities to fire. A final
+"scaling" block adds multiply-by-small-literal and repeated-addition
+patterns, which strength_reduction and multiply_fusion trade off against
+each other (see optimizations.py).
 """
 from __future__ import annotations
 
@@ -18,6 +21,7 @@ from .tac import TAC, render_source
 
 OPS = ["+", "-", "*", "/"]
 NUM_TEST_SETS = 5
+SCALE_FACTORS = [2, 3, 3, 4, 4]  # 3 and 4 trade speed for size when strength-reduced
 
 
 @dataclass
@@ -37,6 +41,31 @@ def _gen_test_input_sets(rng: random.Random, input_names: List[str]) -> List[Dic
     for _ in range(NUM_TEST_SETS):
         sets.append({name: rng.randint(-15, 15) for name in input_names})
     return sets
+
+
+def _append_scaling_block(tac: TAC, prog_id: int, input_names: List[str], vars_pool: List[str]):
+    """Append multiply-by-literal and repeated-add fodder (plus outputs).
+
+    Uses its own RNG stream keyed on the program id so the rest of the
+    program (and its test inputs) is generated exactly as before.
+    """
+    frng = random.Random(prog_id * 7919 + 17)
+    sources = [f"v{i}" for i in range(len(input_names))] + [v for v in vars_pool if v.startswith("t")]
+
+    for j in range(frng.randint(2, 4)):  # x * k  -> strength_reduction targets
+        k = frng.choice(SCALE_FACTORS)
+        tac.append(("const", f"k{j}", k))
+        tac.append(("bin", f"s{j}", "*", frng.choice(sources), f"k{j}"))
+        tac.append(("output", f"s{j}"))
+
+    for j in range(frng.randint(1, 3)):  # (x+x)+x or (x+x)+(x+x) -> multiply_fusion targets
+        x = frng.choice(sources)
+        tac.append(("bin", f"u{j}", "+", x, x))
+        if frng.random() < 0.7:
+            tac.append(("bin", f"w{j}", "+", f"u{j}", x))
+        else:
+            tac.append(("bin", f"w{j}", "+", f"u{j}", f"u{j}"))
+        tac.append(("output", f"w{j}"))
 
 
 def generate_program(prog_id: int, rng: random.Random) -> BenchmarkProgram:
@@ -110,6 +139,8 @@ def generate_program(prog_id: int, rng: random.Random) -> BenchmarkProgram:
         if var not in seen:
             tac.append(("output", var))
             seen.add(var)
+
+    _append_scaling_block(tac, prog_id, input_names, vars_pool)
 
     test_input_sets = _gen_test_input_sets(rng, input_names)
     base_eval = evaluate(tac, test_input_sets)

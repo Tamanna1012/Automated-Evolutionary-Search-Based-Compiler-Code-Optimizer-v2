@@ -1,4 +1,4 @@
-"""The six TAC-level optimization passes the evolutionary search chooses from.
+"""The eight TAC-level optimization passes the evolutionary search chooses from.
 
 Every benchmark program is generated in single-assignment form (each
 temporary is defined exactly once), which keeps the dataflow reasoning
@@ -210,6 +210,130 @@ def algebraic_simplification(tac: Sequence[Instr]) -> TAC:
     return out
 
 
+def _name_source(tac: Sequence[Instr], prefix: str):
+    """Return a callable yielding variable names not defined anywhere in ``tac``."""
+    taken = {dest_of(i) for i in tac if dest_of(i) is not None}
+    counter = [0]
+
+    def fresh() -> str:
+        while True:
+            counter[0] += 1
+            name = f"{prefix}{counter[0]}"
+            if name not in taken:
+                taken.add(name)
+                return name
+
+    return fresh
+
+
+STRENGTH_REDUCTION_FACTORS = (2, 3, 4)
+
+
+def strength_reduction(tac: Sequence[Instr]) -> TAC:
+    """Replace ``x * k`` (k = 2, 3, 4) with a short chain of additions.
+
+    ``x*2 -> x+x``, ``x*3 -> (x+x)+x``, ``x*4 -> (x+x)+(x+x)``. Additions
+    are cheaper than a multiply in the cycle model, so ``exec_time`` drops -
+    but for k = 3, 4 the multiply becomes *two* arithmetic instructions, so
+    ``arith_ops`` and ``code_size`` go up. That is a genuine speed-for-size
+    trade-off (k = 2 is a pure win). The now-unused constant is left for
+    dead_code_elimination to remove.
+    """
+    fresh = _name_source(tac, "_sr")
+    const_env: Dict[str, int] = {}  # forward scan: value of each name *at this point*
+    out: TAC = []
+    for instr in tac:
+        if instr[0] == "bin" and instr[2] == "*":
+            _, dest, _, a, b = instr
+            ka, kb = const_env.get(a), const_env.get(b)
+            if kb in STRENGTH_REDUCTION_FACTORS and ka is None:
+                x, k = a, kb
+            elif ka in STRENGTH_REDUCTION_FACTORS and kb is None:
+                x, k = b, ka
+            else:
+                x = None
+            if x is not None:
+                if k == 2:
+                    out.append(("bin", dest, "+", x, x))
+                elif k == 3:
+                    t = fresh()
+                    out.append(("bin", t, "+", x, x))
+                    out.append(("bin", dest, "+", t, x))
+                else:
+                    t = fresh()
+                    out.append(("bin", t, "+", x, x))
+                    out.append(("bin", dest, "+", t, t))
+                const_env.pop(dest, None)
+                continue
+        d = dest_of(instr)
+        if d is not None:
+            if instr[0] == "const":
+                const_env[d] = instr[2]
+            else:
+                const_env.pop(d, None)
+        out.append(instr)
+    return out
+
+
+def multiply_fusion(tac: Sequence[Instr]) -> TAC:
+    """Fuse repeated additions of the same value back into one multiply.
+
+    The size-oriented inverse of strength_reduction: ``(x+x)+x -> x*3`` and
+    ``(x+x)+(x+x) -> x*4``. It halves ``arith_ops`` for the chain and shrinks
+    ``code_size`` (once the leftover add is dead-code-eliminated) but a
+    multiply costs more cycles than the adds it replaces, so ``exec_time``
+    rises - the opposite corner of the speed/size trade-off. The needed
+    literal is reused if one is already defined, otherwise a fresh ``const``
+    is emitted.
+    """
+    fresh = _name_source(tac, "_mf")
+    const_env: Dict[str, int] = {}
+    doubled: Dict[str, str] = {}  # t -> x for every live ``t = x + x``
+    out: TAC = []
+
+    def const_for(k: int) -> str:
+        for name, value in const_env.items():
+            if value == k:
+                return name
+        name = fresh()
+        out.append(("const", name, k))
+        const_env[name] = k
+        return name
+
+    def kill(name: str):
+        doubled.pop(name, None)
+        for t in [t for t, x in doubled.items() if x == name]:
+            del doubled[t]
+
+    for instr in tac:
+        if instr[0] == "bin" and instr[2] == "+":
+            _, dest, _, p, q = instr
+            x, k = None, None
+            if p == q and p in doubled:
+                x, k = doubled[p], 4
+            elif p in doubled and doubled[p] == q:
+                x, k = q, 3
+            elif q in doubled and doubled[q] == p:
+                x, k = p, 3
+            if x is not None and x != dest:
+                kname = const_for(k)
+                kill(dest)
+                const_env.pop(dest, None)
+                out.append(("bin", dest, "*", x, kname))
+                continue
+        d = dest_of(instr)
+        if d is not None:
+            kill(d)
+            if instr[0] == "const":
+                const_env[d] = instr[2]
+            else:
+                const_env.pop(d, None)
+            if instr[0] == "bin" and instr[2] == "+" and instr[3] == instr[4] != d:
+                doubled[d] = instr[3]
+        out.append(instr)
+    return out
+
+
 OPTIMIZATIONS = {
     "constant_folding": constant_folding,
     "constant_propagation": constant_propagation,
@@ -217,6 +341,8 @@ OPTIMIZATIONS = {
     "cse": common_subexpression_elimination,
     "dead_code_elimination": dead_code_elimination,
     "algebraic_simplification": algebraic_simplification,
+    "strength_reduction": strength_reduction,
+    "multiply_fusion": multiply_fusion,
 }
 
 OPTIMIZATION_NAMES: List[str] = list(OPTIMIZATIONS.keys())

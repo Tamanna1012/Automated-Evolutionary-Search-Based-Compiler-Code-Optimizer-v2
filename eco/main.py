@@ -17,7 +17,7 @@ import time
 
 from .dataset import generate_dataset, dataset_summary
 from .ga import GAConfig, run_ga
-from .pareto import distinct_fitness_points, pareto_front
+from .pareto import distinct_fitness_points
 from .report import aggregate_metrics, format_program_report_text, program_report
 from .visualize import (
     plot_convergence,
@@ -109,28 +109,27 @@ def main():
     plot_multi_convergence({p.name: r for p, r in zip(deep_programs, deep_results)},
                             os.path.join(PLOTS_DIR, "1b_convergence_curves_20programs.png"))
 
-    # For the 2D/3D Pareto scatter plots we want a snapshot with genuine
-    # trade-off variety. Because all six optimizations here are simplifying
-    # (they never trade one objective for another), a fully-converged final
-    # population collapses onto a single dominant optimum - real variety is
-    # visible *mid-search*, before elitism converges everyone onto it. Scan
-    # the deep-dive programs' early generations and pick whichever snapshot
-    # has the richest (most distinct-point) Pareto front to plot.
-    best_choice = None  # (distinct_points, program, gen_idx, population, front)
-    for p, r in zip(deep_programs, deep_results):
-        for gen_idx, snap in enumerate(r.population_snapshots[:10]):
-            valid_snap = [ind for ind in snap if ind.valid]
-            front = pareto_front(valid_snap)
-            score = distinct_fitness_points(front)
-            if best_choice is None or score > best_choice[0]:
-                best_choice = (score, p, gen_idx, valid_snap, front)
-    _, pareto_program, pareto_gen_idx, pareto_pop, pareto_front_snap = best_choice
-    print(f"  Pareto scatter snapshot: {pareto_program.name}, generation {pareto_gen_idx + 1} "
-          f"({best_choice[0]} distinct objective-space points on the front)")
+    # The 2D/3D Pareto scatter plots use the FINAL population of the
+    # deep-dive program whose final Pareto front is richest (most distinct
+    # objective-space points). With the trade-off optimizations
+    # (strength_reduction vs multiply_fusion) the final front is no longer a
+    # single point; if some program still collapses to one point we say so.
+    pareto_program, pareto_result = max(
+        zip(deep_programs, deep_results),
+        key=lambda pr: (distinct_fitness_points(pr[1].final_pareto_front), len(pr[1].final_pareto_front)),
+    )
+    pareto_pop = [ind for ind in pareto_result.final_population if ind.valid]
+    pareto_front_final = pareto_result.final_pareto_front
+    final_gen = len(pareto_result.history)
+    n_distinct = distinct_fitness_points(pareto_front_final)
+    pareto_label = (f"{pareto_program.name}, final population (gen {final_gen}), "
+                    f"{n_distinct} distinct front point{'s' if n_distinct != 1 else ''}"
+                    f"\nrichest final front among the {DEEP_DIVE_N} deep-dive programs")
+    print(f"  Pareto scatter: {pareto_program.name}, final population (gen {final_gen}): "
+          f"{n_distinct} distinct objective-space points on the front")
 
-    plot_pareto_2d(pareto_pop, pareto_front_snap, os.path.join(PLOTS_DIR, "2_pareto_front_2d.png"),
-                    title=f"Pareto Front (exec_time vs instr_count) — {pareto_program.name}, "
-                          f"gen {pareto_gen_idx + 1}")
+    plot_pareto_2d(pareto_pop, pareto_front_final, os.path.join(PLOTS_DIR, "2_pareto_front_2d.png"),
+                    title=f"Pareto Front (exec_time vs instr_count)\n{pareto_label}")
     plot_fitness_boxplot(flagship_result, os.path.join(PLOTS_DIR, "3_fitness_boxplot.png"),
                           title=f"Cost Distribution Across Generations — {flagship_program.name}")
 
@@ -139,8 +138,8 @@ def main():
                           os.path.join(PLOTS_DIR, "4_improvement_bar.png"))
 
     plot_elite_heatmap_multi(deep_results, os.path.join(PLOTS_DIR, "5_elite_optimization_heatmap.png"))
-    plot_pareto_3d(pareto_pop, pareto_front_snap, os.path.join(PLOTS_DIR, "6_pareto_front_3d.png"),
-                   title=f"Pareto Front 3D — {pareto_program.name}, gen {pareto_gen_idx + 1}")
+    plot_pareto_3d(pareto_pop, pareto_front_final, os.path.join(PLOTS_DIR, "6_pareto_front_3d.png"),
+                   title=f"Pareto Front 3D\n{pareto_label}")
 
     print(f"All done in {time.time() - t_start:.1f}s. "
           f"Plots -> {PLOTS_DIR}, reports -> {REPORTS_DIR}")

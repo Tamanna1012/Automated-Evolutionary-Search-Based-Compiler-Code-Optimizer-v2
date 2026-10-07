@@ -25,7 +25,7 @@ python -m pytest tests/ -q  # unit / correctness tests
 4. Render all six required plots to `eco/outputs/plots/` and write text /
    JSON reports to `eco/outputs/reports/`.
 
-A full run takes ~25 seconds on a single core.
+A full run takes a few minutes on a single core.
 
 ## System design
 
@@ -35,10 +35,11 @@ Each benchmark "program" is straight-line three-address code built from five
 instruction kinds: `input`, `const`, `copy`, `bin` (`+ - * /`), `output`.
 A tiny interpreter (`eco/interpreter.py`) executes a program against a set
 of input values, returning both its outputs (for correctness checking) and
-a simulated cycle count (`+`/`-` = 2 cycles, `*` = 3, `/` = 4, everything
-else = 1) that stands in for `exec_time`.
+a simulated cycle count (`+`/`-` = 1 cycle, `*` = 3, `/` = 4, everything
+else = 1) that stands in for `exec_time`. Add/sub being much cheaper than a
+multiply is what lets strength reduction trade speed against size.
 
-### The six optimizations (`eco/optimizations.py`)
+### The eight optimizations (`eco/optimizations.py`)
 
 | # | Optimization | What it does |
 |---|---|---|
@@ -48,6 +49,20 @@ else = 1) that stands in for `exec_time`.
 | 4 | `cse` | Reuses an earlier temp when an identical expression recurs |
 | 5 | `dead_code_elimination` | Backward liveness sweep that drops unused definitions |
 | 6 | `algebraic_simplification` | Simplifies identities: `x+0`, `x*1`, `x*0`, `x-0`, `x/1`, `x-x` |
+| 7 | `strength_reduction` | Rewrites `x*2 -> x+x`, `x*3 -> (x+x)+x`, `x*4 -> (x+x)+(x+x)`. Adds are cheaper than a multiply, so **`exec_time` drops**, but for `k=3,4` one multiply becomes two adds, so **`arith_ops` and `code_size` rise** (the leftover constant is for `dead_code_elimination` to remove) |
+| 8 | `multiply_fusion` | The size-oriented inverse: `(x+x)+x -> x*3`, `(x+x)+(x+x) -> x*4` (reusing an existing literal or emitting one). **`arith_ops` and `code_size` drop**, but a multiply costs more cycles than the adds it replaces, so **`exec_time` rises** |
+
+Passes 1-6 only ever *simplify* (they improve every objective together or
+leave it unchanged). Passes 7 and 8 are the first that **trade objectives
+against each other**: neither dominates the other, so a genome that includes
+`strength_reduction` and one that includes `multiply_fusion` land at
+different, mutually non-dominated points. Both are exact, semantics
+preserving rewrites over unbounded integers (`x*k == x+...+x`), checked by
+the validity test on every individual. I did not add a third "rematerialize
+instead of reuse a temp" pass: under the four tracked objectives
+recomputing an expression instead of copying its temp is never better on
+any of them (it only helps register pressure, which is not measured here),
+so it could never appear on a Pareto front.
 
 `constant_folding`, `constant_propagation` and `copy_propagation` are
 deliberately **single-hop**: each only resolves one link of a dependency
@@ -72,7 +87,7 @@ the derived program directly.
 ### Evolutionary algorithm (`eco/ga.py`)
 
 - **Initialization**: `P=30` individuals; the unmodified original program is
-  always included, the rest apply a random subset of the six optimizations.
+  always included, the rest apply a random subset of the eight optimizations.
 - **Fitness evaluation**: every individual is executed against all of the
   program's test-input sets; the four metrics and a correctness `valid`
   flag are computed per `eco/metrics.py`.
@@ -104,23 +119,27 @@ ops / balanced).
 ### Benchmark dataset (`eco/benchmark_generator.py`, `eco/dataset.py`)
 
 `generate_dataset(n, seed)` synthesizes `200 <= n <= 500` (default 300)
-straight-line arithmetic programs (28-58 instructions each), each with:
+straight-line arithmetic programs (38-78 instructions each), each with:
 pseudo-C source, its TAC, 5 randomized test-input sets, ground-truth
 expected outputs (from executing the un-optimized TAC), and baseline
 metrics. Programs deliberately contain redundant/repeated subexpressions
 (CSE fodder), dead temporaries (DCE fodder), multi-hop copy chains (copy
 propagation fodder), deep constant-arithmetic chains (constant folding
-fodder), and identity-friendly literals like 0/1 (algebraic simplification
-fodder) — so every optimization has genuine opportunities to fire.
+fodder), identity-friendly literals like 0/1 (algebraic simplification
+fodder), and a final "scaling" block of `x*k` multiplies (`k` = 2, 3, 4) and
+repeated-add chains (`strength_reduction` / `multiply_fusion` fodder) — so
+every optimization has genuine opportunities to fire. The scaling block uses
+its own RNG stream, so the rest of each program and its test inputs are
+generated exactly as before.
 
 ## Testing & Metrics (last full run, 300 programs)
 
 | Metric | Result | Target |
 |---|---|---|
 | Validity Rate | 100.0% | > 90% |
-| Avg. Pareto Front Size | 23.2 individuals (avg. 1.0 distinct objective-space points) | identify trade-offs |
-| Best Cost Improvement (exec_time vs. baseline) | 85.6% | > 30% |
-| Avg. Generations to Convergence | 4.5 | tracked per program |
+| Avg. Pareto Front Size | 21.1 individuals (avg. 1.68 distinct objective-space points) | identify trade-offs |
+| Best Cost Improvement (exec_time vs. baseline) | 54.3% | > 30% |
+| Avg. Generations to Convergence | 10.8 | tracked per program |
 | Correctness PASS rate | 100.0% | — |
 
 Regenerate this table with `python -m eco.main` (see
@@ -128,27 +147,24 @@ Regenerate this table with `python -m eco.main` (see
 
 ### A note on the Pareto front
 
-For any single program, the final (fully-converged) Pareto front is almost
-always a **single distinct objective-space point**, reached by many
-different genomes. This is an honest and expected consequence of the six
-chosen optimizations: on straight-line code, all six are *simplifications*
-that never trade one objective for another — every one of them helps
-`exec_time`, `instr_count`, `code_size` and `arith_ops` together (or leaves
-them unchanged), never one at the expense of another. That's exactly what
-"peephole"/local optimizations do in real compilers too; the classic
-size-vs-speed *tensions* (loop unrolling, inlining, vectorization) require
-control flow and function boundaries that this simplified straight-line TAC
-model doesn't include.
+Before the trade-off passes existed, all six optimizations were
+simplifications, so the final front collapsed to a single distinct
+objective-space point (avg. 1.01 per program). With `strength_reduction` and
+`multiply_fusion` the final front now holds more than one point for most
+programs (avg. 1.68; many genomes still tie on the same point, hence the
+much larger raw front size). Fronts are still small because only the `x*k`
+and repeated-add patterns trade objectives; everything else remains a pure
+win that every good individual applies.
 
-The dominance/front machinery itself (`eco/pareto.py`) is fully general and
-correctly handles genuine trade-offs whenever they exist — which is visible
-*mid-search*, before elitism converges the population onto the single
-dominant optimum. `eco/outputs/plots/2_pareto_front_2d.png` and
-`6_pareto_front_3d.png` are therefore taken from an early-generation
-population snapshot (chosen automatically as whichever deep-dive
-program/generation has the richest front), clearly labeled with its
-generation number, to actually show the spread of dominated vs.
-non-dominated candidates the search is choosing between.
+`eco/outputs/plots/2_pareto_front_2d.png` and `6_pareto_front_3d.png` plot
+the **final population** of the deep-dive program whose final front has the
+most distinct points; the plot title names that program, the generation and
+the number of distinct front points (and says so if the richest front is
+still a single point).
+
+Note on comparing runs: the cost-model change (add/sub 2 -> 1 cycle) and the
+extra scaling block in the benchmark generator change the baselines, so
+absolute improvement percentages are not directly comparable with older runs.
 
 ## Plots (`eco/outputs/plots/`)
 
@@ -157,7 +173,7 @@ non-dominated candidates the search is choosing between.
 2. `1b_convergence_curves_20programs.png` — convergence curves overlaid
    across all 20 deep-dive programs plus their mean.
 3. `2_pareto_front_2d.png` — Pareto front in 2D (`exec_time` vs
-   `instr_count`).
+   `instr_count`), final population of the richest-front deep-dive program.
 4. `3_fitness_boxplot.png` — cost distribution across generations 1, 5,
    10, 20, 30.
 5. `4_improvement_bar.png` — best-individual improvement vs. original
@@ -166,7 +182,7 @@ non-dominated candidates the search is choosing between.
    often in elite individuals, per generation, aggregated across the 20
    deep-dive programs.
 7. `6_pareto_front_3d.png` — Pareto front in 3D (`exec_time`,
-   `instr_count`, `code_size`).
+   `instr_count`, `code_size`), same program/population as plot 3.
 
 ## Expected output (`eco/outputs/reports/`)
 
@@ -184,7 +200,7 @@ eco/
   tac.py                 TAC instruction representation + pretty-printers
   interpreter.py          TAC interpreter (correctness + simulated cycles)
   metrics.py               instr_count / arith_ops / code_size / exec_time
-  optimizations.py        the six optimization passes + genome replay
+  optimizations.py        the eight optimization passes + genome replay
   individual.py            candidate program representation
   pareto.py                 dominance + Pareto front + trade-off labels
   ga.py                     population init, selection, mutation, crossover,

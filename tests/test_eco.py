@@ -116,3 +116,125 @@ def test_pareto_front_contains_only_mutually_nondominated_individuals():
         for b in front:
             if a is not b:
                 assert not dominates(a, b)
+
+
+# ---------------------------------------------------------------------------
+# Trade-off optimizations: strength_reduction / multiply_fusion
+# ---------------------------------------------------------------------------
+from eco.optimizations import OPTIMIZATIONS, multiply_fusion, strength_reduction
+
+SCALE_INPUTS = [{"x": v} for v in (-7, -1, 0, 1, 2, 5, 13, 1000)]
+
+
+def _scale_tac(k):
+    return [
+        ("input", "a", "x"),
+        ("const", "k", k),
+        ("bin", "d", "*", "a", "k"),
+        ("output", "d"),
+    ]
+
+
+def _same_outputs(tac_a, tac_b, inputs=SCALE_INPUTS):
+    for inp in inputs:
+        ra, rb = run(tac_a, inp), run(tac_b, inp)
+        assert ra.ok and rb.ok
+        assert ra.outputs == rb.outputs
+
+
+def test_new_optimizations_are_registered():
+    assert "strength_reduction" in OPTIMIZATION_NAMES
+    assert "multiply_fusion" in OPTIMIZATION_NAMES
+    assert len(OPTIMIZATION_NAMES) == len(set(OPTIMIZATION_NAMES)) == 8
+
+
+def test_strength_reduction_preserves_output_for_each_factor():
+    for k in (2, 3, 4):
+        tac = _scale_tac(k)
+        reduced = strength_reduction(tac)
+        assert not any(i[0] == "bin" and i[2] == "*" for i in reduced)
+        _same_outputs(tac, reduced)
+
+
+def test_strength_reduction_also_handles_constant_on_the_left():
+    tac = [("input", "a", "x"), ("const", "k", 3), ("bin", "d", "*", "k", "a"), ("output", "d")]
+    _same_outputs(tac, strength_reduction(tac))
+
+
+def test_strength_reduction_leaves_other_multiplies_alone():
+    tac = _scale_tac(7)
+    assert strength_reduction(tac) == tac
+    both_vars = [("input", "a", "x"), ("input", "b", "y"), ("bin", "d", "*", "a", "b"), ("output", "d")]
+    assert strength_reduction(both_vars) == both_vars
+
+
+def test_strength_reduction_is_a_real_tradeoff_for_k3():
+    """Faster, but more arithmetic instructions: genuinely non-dominated."""
+    tac = _scale_tac(3)
+    reduced = apply_genome(tac, ["strength_reduction", "dead_code_elimination"])
+    base, opt = evaluate(tac, SCALE_INPUTS).fitness, evaluate(reduced, SCALE_INPUTS).fitness
+    assert opt.exec_time < base.exec_time
+    assert opt.arith_ops > base.arith_ops
+    assert opt.code_size > base.code_size
+
+
+def test_multiply_fusion_preserves_output():
+    for chain in (
+        [("bin", "u", "+", "a", "a"), ("bin", "d", "+", "u", "a")],
+        [("bin", "u", "+", "a", "a"), ("bin", "d", "+", "a", "u")],
+        [("bin", "u", "+", "a", "a"), ("bin", "d", "+", "u", "u")],
+    ):
+        tac = [("input", "a", "x")] + chain + [("output", "d")]
+        fused = multiply_fusion(tac)
+        assert any(i[0] == "bin" and i[2] == "*" for i in fused)
+        _same_outputs(tac, fused)
+
+
+def test_multiply_fusion_trades_time_for_size():
+    tac = [("input", "a", "x"), ("bin", "u", "+", "a", "a"), ("bin", "d", "+", "u", "a"), ("output", "d")]
+    fused = apply_genome(tac, ["multiply_fusion", "dead_code_elimination"])
+    base, opt = evaluate(tac, SCALE_INPUTS).fitness, evaluate(fused, SCALE_INPUTS).fitness
+    assert opt.exec_time > base.exec_time
+    assert opt.arith_ops < base.arith_ops
+    assert opt.code_size < base.code_size
+
+
+def test_multiply_fusion_ignores_unrelated_adds():
+    tac = [("input", "a", "x"), ("input", "b", "y"), ("bin", "u", "+", "a", "a"),
+           ("bin", "d", "+", "u", "b"), ("output", "d")]
+    assert multiply_fusion(tac) == tac
+
+
+def test_new_passes_do_not_clash_with_existing_names():
+    tac = [("input", "a", "x"), ("const", "_sr1", 3), ("bin", "d", "*", "a", "_sr1"), ("output", "d")]
+    reduced = strength_reduction(tac)
+    defs = [i[1] for i in reduced if i[0] != "output"]
+    assert len(defs) == len(set(defs))
+    _same_outputs(tac, reduced)
+
+
+def test_every_pass_pair_with_new_passes_preserves_correctness_on_benchmarks():
+    rng = random.Random(2024)
+    for i in range(10):
+        prog = generate_program(i, rng)
+        for first, second in itertools.product(OPTIMIZATION_NAMES, repeat=2):
+            opt = apply_genome(prog.tac, [first, second])
+            assert evaluate(opt, prog.test_input_sets, prog.expected_outputs).valid, (prog.name, first, second)
+
+
+def test_new_passes_compose_in_both_orders_without_changing_output():
+    rng = random.Random(5)
+    prog = generate_program(3, rng)
+    for genome in (
+        ["strength_reduction", "multiply_fusion"],
+        ["multiply_fusion", "strength_reduction"],
+        ["strength_reduction", "dead_code_elimination", "multiply_fusion", "dead_code_elimination"],
+    ):
+        opt = apply_genome(prog.tac, genome)
+        assert evaluate(opt, prog.test_input_sets, prog.expected_outputs).valid
+
+
+def test_benchmarks_contain_tradeoff_fodder():
+    prog = generate_program(0, random.Random(1))
+    assert strength_reduction(prog.tac) != prog.tac
+    assert multiply_fusion(prog.tac) != prog.tac

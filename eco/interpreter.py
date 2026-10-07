@@ -7,15 +7,17 @@ from typing import Dict, List, Sequence
 
 from .tac import Instr
 
-# Cycle cost model: multiply/divide are modeled as costlier than add/sub,
-# matching typical instruction-latency intuitions used in real cost models.
+# Cycle cost model: add/sub are single-cycle ALU ops while multiply/divide
+# are modeled as costlier, matching typical instruction-latency intuitions
+# (add 1, multiply ~3). This gap is what makes strength reduction
+# (x*3 -> x+x+x) a genuine speed-for-size trade-off rather than a free win.
 CYCLE_COST = {
     "input": 1,
     "const": 1,
     "copy": 1,
     "output": 1,
-    "bin+": 2,
-    "bin-": 2,
+    "bin+": 1,
+    "bin-": 1,
     "bin*": 3,
     "bin/": 4,
 }
