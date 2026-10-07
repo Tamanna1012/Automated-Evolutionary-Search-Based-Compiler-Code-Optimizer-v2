@@ -49,7 +49,6 @@ section.tab.active{display:block}
 .two{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
 h2{font-size:15px;margin:0 0 4px}
 .hint{color:var(--muted);font-size:12px;margin:0 0 8px}
-.callout{border-radius:10px;padding:10px 14px;margin:0 0 14px;background:var(--warn-bg);border:1px solid var(--warn);}
 .explorer{grid-template-columns:330px 1fr;align-items:start}
 @media (max-width:900px){.explorer{grid-template-columns:1fr}}
 .filters{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
@@ -248,10 +247,6 @@ function overview(){
       kpi(fmt(A.avg_pareto_front_size)+" / "+fmt(A.avg_distinct_pareto_points,2),"Pareto front: raw size / distinct points"),
       kpi(String(P.filter(p=>p.verdict==="PASS").length)+" / "+P.length,"Programs with PASS verdict")
     ),
-    h("div",{class:"callout", html:`<b>Honest reading.</b> The brief asks for &gt; 30% average improvement. On these real kernels the average is
-      <b>${fmt(A.avg_best_cost_improvement_pct)}%</b>: many kernels (dot product, determinant, ...) are already tight, while kernels with real redundancy improve a lot
-      (best program: ${fmt(Math.max(...imp))}%). Programs written in a deliberately redundant ("naive") spelling average
-      ${spell.naive?fmt(spell.naive.avg_improvement_pct):"n/a"}% versus ${spell.plain?fmt(spell.plain.avg_improvement_pct):"n/a"}% for plain ones.`}),
     h("div",{class:"grid two"}, ...overviewCharts())
   );
 }
