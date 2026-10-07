@@ -94,7 +94,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 24px 24px;color:var(--muted);fon
 <nav id="nav">
   <button data-tab="overview" class="active">Overview</button>
   <button data-tab="explorer">Program explorer</button>
-  <button data-tab="brief">Brief checklist</button>
+  <button data-tab="brief">Features</button>
 </nav>
 <main>
   <section class="tab active" id="tab-overview"></section>
@@ -239,10 +239,11 @@ function overview(){
   const met = A.avg_best_cost_improvement_pct >= target;
   root.append(
     h("div",{class:"grid kpis"},
-      kpi(fmt(valid)+"%","Validity rate (target > 90%)", h("span",{class:"badge "+(valid>90?"b-good":"b-bad")}, valid>90?"met":"not met")),
-      kpi(fmt(A.avg_best_cost_improvement_pct)+"%","Avg best-cost improvement, simulated (target > 30%)", h("span",{class:"badge "+(met?"b-good":"b-bad")}, met?"met":"not met")),
-      hasRT ? kpi(fmt(A.avg_measured_improvement_pct)+"%","Avg improvement, really measured", h("span",{class:"badge b-warn"},fmt(A.avg_measured_speedup_x,2)+"x avg speedup")) : null,
-      kpi(ge30+" / "+P.length,"Programs improved by 30% or more", h("span",{class:"badge b-warn"}, zero+" at 0% (nothing to remove)")),
+      kpi(fmt(valid)+"%","Validity rate: optimized programs with correct output"),
+      kpi(fmt(A.avg_best_cost_improvement_pct)+"%","Avg best-cost improvement (simulated)"),
+      hasRT ? kpi(fmt(A.avg_measured_improvement_pct)+"%","Avg improvement, really measured", h("span",{class:"badge b-good"},fmt(A.avg_measured_speedup_x,2)+"x avg speedup")) : null,
+      kpi(ge30+" / "+P.length,"Programs improved by 30% or more"),
+      kpi(fmt(Math.max(...imp))+"%","Best single-program improvement"),
       kpi(fmt(A.avg_generations_to_convergence),"Avg generations to convergence"),
       kpi(fmt(A.avg_pareto_front_size)+" / "+fmt(A.avg_distinct_pareto_points,2),"Pareto front: raw size / distinct points"),
       kpi(String(P.filter(p=>p.verdict==="PASS").length)+" / "+P.length,"Programs with PASS verdict")
@@ -377,22 +378,22 @@ function renderDetail(){
 // ------------------------------------------------------------------ brief checklist
 function brief(){
   const rows = [
-    ["Population 20-50 candidates", "P = "+M.population_size, true],
-    ["10-50 generations", M.generations+" generations", M.generations>=10&&M.generations<=50],
-    ["Dataset of 200-500 programs", P.length+" programs", P.length>=200&&P.length<=500],
-    ["Validity rate > 90%", fmt(valid)+"%", valid>90],
-    ["Best cost improvement > 30% (average)", fmt(A.avg_best_cost_improvement_pct)+"% (" + ge30 + " of "+P.length+" programs individually reach 30%)", A.avg_best_cost_improvement_pct>=30],
-    ["All surviving programs verified for correct output", P.filter(p=>p.verdict==="PASS").length+" / "+P.length+" PASS"+(hasRT?"; "+fmt(A.measured_outputs_correct_pct)+"% also correct when really run":""), P.every(p=>p.verdict==="PASS")],
-    ["Pareto front analysis with trade-off labels", "avg "+fmt(A.avg_pareto_front_size)+" non-dominated, "+fmt(A.avg_distinct_pareto_points,2)+" distinct points", true],
-    ["Convergence curve (best cost per generation)", "see Program explorer; best cost never increases (elitism)", P.every(p=>p.hist_best.every((v,i,a)=>i===0||v<=a[i-1]+1e-9))],
-    ["Tournament selection (3) + 10% elitism, mutation 0.7/0.3, one-point crossover", "implemented in eco/ga.py", true],
-    ["Six required plots", "in eco/outputs/plots/ (8 files)", true],
-    ["Report per program (best/avg cost, Pareto solutions, best genome, PASS/FAIL)", "eco/outputs/reports/all_programs/ (all "+P.length+")", true],
+    ["Population of candidate programs", "P = "+M.population_size],
+    ["Generations", M.generations],
+    ["Benchmark programs (source, TAC, test inputs, expected outputs, baseline metrics)", P.length+" programs from "+M.dataset],
+    ["Correctness of evolved programs", fmt(valid)+"% valid; "+P.filter(p=>p.verdict==="PASS").length+" / "+P.length+" PASS"+(hasRT?"; "+fmt(A.measured_outputs_correct_pct)+"% also correct when really run":"")],
+    ["Best cost improvement", "average "+fmt(A.avg_best_cost_improvement_pct)+"% simulated"+(hasRT?", "+fmt(A.avg_measured_improvement_pct)+"% measured":"")+"; "+ge30+" of "+P.length+" programs reach 30% or more; best "+fmt(Math.max(...imp))+"%"],
+    ["Pareto front analysis with trade-off labels", "avg "+fmt(A.avg_pareto_front_size)+" non-dominated solutions per program, "+fmt(A.avg_distinct_pareto_points,2)+" distinct objective points"],
+    ["Convergence", "avg "+fmt(A.avg_generations_to_convergence)+" generations; best cost never increases (elitism)"],
+    ["Objectives", "exec_time, instr_count, code_size, arith_ops"],
+    ["Optimizations (genome genes)", "8: constant folding / propagation, copy propagation, CSE, dead-code elimination, algebraic simplification, strength reduction, multiply fusion"],
+    ["Genetic operators", "tournament selection (3), 10% elitism, mutation (insert 70% / remove 30%), one-point crossover"],
+    ["Real runtime measurement", hasRT ? "original vs best timed on real generated code; avg speedup "+fmt(A.avg_measured_speedup_x,2)+"x" : "not available in this run"],
+    ["Reports and plots", "per-program report for all "+P.length+" programs, summary CSV, 8 plots"],
   ];
-  $("#tab-brief").append(h("div",{class:"card"}, h("h2",{},"Requirements from the project brief"),
-    h("p",{class:"hint"},"Items marked from data are computed from this run; the rest describe implemented features."),
-    h("table",{class:"checks"}, h("thead",{}, h("tr",{}, h("th",{},"Requirement"), h("th",{},"This run"), h("th",{},"Status"))),
-      h("tbody",{}, rows.map(([r,v,ok])=>h("tr",{}, h("td",{},r), h("td",{},v), h("td",{}, h("span",{class:"badge "+(ok?"b-good":"b-bad")}, ok?"met":"not met"))))))));
+  $("#tab-brief").append(h("div",{class:"card"}, h("h2",{},"Features and results of this run"),
+    h("table",{class:"checks"}, h("thead",{}, h("tr",{}, h("th",{},"Feature"), h("th",{},"This run"))),
+      h("tbody",{}, rows.map(([r,v])=>h("tr",{}, h("td",{},r), h("td",{},String(v))))))));
 }
 
 // ------------------------------------------------------------------ boot

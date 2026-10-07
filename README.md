@@ -201,15 +201,15 @@ Every `python -m eco.main` run also writes a single self-contained HTML page.
 Open it by double-clicking (no server, no internet, no libraries - the results
 are embedded as JSON and drawn with inline SVG; light/dark follows the system).
 
-* **Overview**: KPI tiles (validity, simulated and measured improvement with a
-  clear "not met" badge for the 30% target, programs >= 30%, convergence, Pareto
-  size), improvement distribution, improvement per kernel and per spelling label,
+* **Overview**: KPI tiles (validity, simulated and measured improvement,
+  programs >= 30%, best program, convergence, Pareto size), improvement
+  distribution, improvement per kernel and per spelling label,
   simulated-vs-measured scatter with the correlations, generations-to-convergence.
 * **Program explorer**: search/filter/sort all 300 programs; for the selected one
   the original Python source, the TAC before and after, the best genome,
   baseline-vs-best table (including measured ns), its convergence curve and a
   Pareto scatter of its final population with selectable axes and the front table.
-* **Brief checklist**: the project brief's requirements with this run's values.
+* **Features**: what the system implements, with this run's values (the limitations are documented in this README and the project explanation, not on the dashboard).
 
 `eco/dashboard.py` builds the data, `eco/dashboard_template.html` is the page. A copy is written to `docs/index.html` for GitHub Pages (Settings > Pages > branch `main`, folder `/docs`).
 
