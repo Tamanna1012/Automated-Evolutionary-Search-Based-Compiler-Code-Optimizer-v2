@@ -19,6 +19,7 @@ import json
 import os
 import time
 
+from .dashboard import build_dashboard_data, write_dashboard
 from .dataset import generate_dataset, dataset_summary
 from .ga import GAConfig, run_ga
 from .pareto import distinct_fitness_points
@@ -205,6 +206,18 @@ def main(kind: str = "kernels"):
     plot_elite_heatmap_multi(deep_results, os.path.join(PLOTS_DIR, "5_elite_optimization_heatmap.png"))
     plot_pareto_3d(pareto_pop, pareto_front_final, os.path.join(PLOTS_DIR, "6_pareto_front_3d.png"),
                    title=f"Pareto Front 3D\n{pareto_label}")
+
+    dashboard_path = os.path.join(HERE, out_root, "dashboard.html")
+    dash = build_dashboard_data(
+        programs, results, runtimes, agg,
+        {"dataset": "real kernels (42 templates)" if kind == "kernels" else "random synthetic TAC",
+         "population_size": POP_SIZE, "generations": NUM_GENERATIONS, "seed": SEED})
+    write_dashboard(dash, dashboard_path)
+    print(f"Dashboard -> {dashboard_path}")
+    if kind == "kernels":  # copy served by GitHub Pages (Settings > Pages > main /docs)
+        pages_path = os.path.join(os.path.dirname(HERE), "docs", "index.html")
+        write_dashboard(dash, pages_path)
+        print(f"Dashboard (GitHub Pages copy) -> {pages_path}")
 
     print(f"All done in {time.time() - t_start:.1f}s. "
           f"Plots -> {PLOTS_DIR}, reports -> {REPORTS_DIR}")

@@ -135,9 +135,9 @@ old random generator (`eco/benchmark_generator.py`) is kept behind
 | Avg. Pareto Front Size | 25.4 individuals (avg. 1.07 distinct objective-space points) | identify trade-offs |
 | Best Cost Improvement (simulated exec_time vs. baseline) | **15.6%** | > 30% (**not met** on real kernels, see below) |
 | Avg. Generations to Convergence | 4.1 | tracked per program |
-| Measured improvement (real runtime, original vs best) | **12.2%** (avg speedup 1.20x; 1.21x on total time; 12.2-12.3% over three runs) | validation of the cycle model |
+| Measured improvement (real runtime, original vs best) | **12.4%** (avg speedup 1.20x; 1.22x on total time; 12.2-12.4% over five runs) | validation of the cycle model |
 | Optimized code correct when really run | 100.0% | — |
-| Simulated vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.90 | model should predict speedups |
+| Simulated vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.92 | model should predict speedups |
 | Correctness PASS rate | 100.0% | — |
 
 Regenerate this table with `python -m eco.main` (see
@@ -173,7 +173,7 @@ distinct Pareto points per program with `--synthetic`):
   | | old name-based CSE | value-numbering CSE |
   |---|---|---|
   | simulated improvement | 13.1% | 15.6% |
-  | measured improvement | 9.7% (9.2-9.7%) | 12.2% (12.2-12.3%) |
+  | measured improvement | 9.7% (9.2-9.7%) | 12.4% (12.2-12.4%) |
   | avg generations to convergence | 9.1 | 4.1 |
   | programs improved >= 30% | 39 | 66 |
   | programs with > 1 distinct Pareto point | 13 | 21 |
@@ -192,6 +192,24 @@ distinct Pareto points per program with `--synthetic`):
 the **final population** of the deep-dive program with the richest final
 front; the title names the program, the generation and the number of
 distinct front points (and says so when the richest front is a single point).
+
+## Results dashboard (`eco/outputs/dashboard.html`)
+
+Every `python -m eco.main` run also writes a single self-contained HTML page.
+Open it by double-clicking (no server, no internet, no libraries - the results
+are embedded as JSON and drawn with inline SVG; light/dark follows the system).
+
+* **Overview**: KPI tiles (validity, simulated and measured improvement with a
+  clear "not met" badge for the 30% target, programs >= 30%, convergence, Pareto
+  size), improvement distribution, improvement per kernel and per spelling label,
+  simulated-vs-measured scatter with the correlations, generations-to-convergence.
+* **Program explorer**: search/filter/sort all 300 programs; for the selected one
+  the original Python source, the TAC before and after, the best genome,
+  baseline-vs-best table (including measured ns), its convergence curve and a
+  Pareto scatter of its final population with selectable axes and the front table.
+* **Brief checklist**: the project brief's requirements with this run's values.
+
+`eco/dashboard.py` builds the data, `eco/dashboard_template.html` is the page.
 
 ## Plots (`eco/outputs/plots/`)
 
@@ -258,6 +276,8 @@ eco/
   dataset.py                 assembles the 200-500 program dataset
   report.py                  per-program, all-program + aggregate report builders
   visualize.py                the six required plots
+  dashboard.py            builds eco/outputs/dashboard.html (data + template)
+  dashboard_template.html the interactive results page
   main.py                      end-to-end experiment driver
   outputs/
     plots/                  generated PNGs
@@ -378,14 +398,14 @@ guaranteed to be installed (none was available here), and a ctypes call has
 a fixed overhead that would swamp kernels this small. So "measured" means
 CPython executing the generated function, not native machine code.
 
-Timing is noisy by nature. Four consecutive full runs with the current
-code gave measured improvements of 12.3%, 12.3%, 12.2% and 12.2% (committed
-outputs: the last), pooled Pearson 0.66/0.66/0.65/0.66,
-improvement-correlation Spearman 0.91/0.92/0.92/0.90 and within-program
-Spearman 0.61/0.63/0.63/0.52. The simulated numbers are deterministic. (With the previous CSE the measured
-improvement had varied between 9.2% and 9.7% and the within-program Spearman
-between 0.45 and 0.56, so timing-derived values should be read to within a
-few hundredths.)
+Timing is noisy by nature. Five full runs with the current code gave measured
+improvements of 12.3%, 12.3%, 12.2%, 12.2% and 12.4% (committed outputs: the
+last), pooled Pearson 0.66/0.66/0.65/0.66/0.65, improvement-correlation
+Spearman 0.91/0.92/0.92/0.90/0.92 and within-program Spearman
+0.61/0.63/0.63/0.52/0.53. The simulated numbers are deterministic. (With the
+previous CSE the measured improvement had varied between 9.2% and 9.7% and the
+within-program Spearman between 0.45 and 0.56, so timing-derived values should
+be read to within a few hundredths.)
 
 ### How well do simulated cycles predict real time?
 
@@ -393,9 +413,9 @@ Three views, all reported in `aggregate_metrics.md/.json`:
 
 | View | Result | Reading |
 |---|---|---|
-| Pooled: cycles vs ns over all 600 measured programs (original + best) | Pearson r = 0.66, Spearman rho = 0.63 (0.65-0.66 / 0.62-0.63 over four runs) | **Moderate**, and flattered by program size: bigger programs are slower under both measures |
-| Per program: simulated improvement % vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.90 (0.90 / 0.90-0.92 over four runs) | **Good** for deciding how much an optimization helps |
-| Within one program: rank agreement across the distinct programs in its final population (184 programs with >= 3 distinct points) | mean Spearman rho = 0.52 (0.52-0.63 over four runs) | **Moderate and noisy**: the model ranks close variants of the same program only partly correctly, and this number moves most between runs because the variants differ by tiny amounts |
+| Pooled: cycles vs ns over all 600 measured programs (original + best) | Pearson r = 0.65, Spearman rho = 0.61 (0.65-0.66 / 0.61-0.63 over five runs) | **Moderate**, and flattered by program size: bigger programs are slower under both measures |
+| Per program: simulated improvement % vs measured improvement % (300 programs) | Pearson r = 0.90, Spearman rho = 0.92 (0.90 / 0.90-0.92 over five runs) | **Good** for deciding how much an optimization helps |
+| Within one program: rank agreement across the distinct programs in its final population (184 programs with >= 3 distinct points) | mean Spearman rho = 0.53 (0.52-0.63 over five runs) | **Moderate and noisy**: the model ranks close variants of the same program only partly correctly, and this number moves most between runs because the variants differ by tiny amounts |
 
 So the cycle model is a good predictor of *whether and roughly how much*
 the search helps, but only a moderate fine-grained ranker of near-identical
@@ -404,7 +424,7 @@ Plausible reasons: CPython charges roughly a constant cost per statement
 regardless of operator while the model charges multiply 3 and divide 4;
 division additionally pays for a function call in the generated code; and
 `const`/`copy` statements are cheap in both but not in the same proportion.
-These mismatches are the likely reason the measured improvement (12.2%) is
+These mismatches are the likely reason the measured improvement (12.4%) is
 smaller than the simulated one (15.6%); this was not isolated by a separate
 experiment. The trade-off passes (`strength_reduction`, `multiply_fusion`)
 rely on a multiply-vs-add cost gap that CPython probably does not have (an
@@ -420,7 +440,7 @@ benefit should be expected in the model more than in measured time.
   validation, and only through a Python backend (no C/native code); the model
   and CPython disagree on per-operation costs (see above).
 * Real kernels are often already tight: the average simulated improvement is
-  15.6% (12.2% measured) and the 30% target is **not met** on this dataset.
+  15.6% (12.4% measured) and the 30% target is **not met** on this dataset.
   The earlier 54.5% was obtained on random synthetic programs written to
   contain redundancy (`--synthetic`).
 * Timing is noisy; numbers vary by a few percent between runs.

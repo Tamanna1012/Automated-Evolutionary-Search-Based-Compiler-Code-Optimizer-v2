@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evolutionary Optimizer Dashboard</title>
+<style>
+:root{
+  --bg:#f5f7fa; --panel:#ffffff; --text:#1c2733; --muted:#66727f; --line:#dfe4ea; --grid:#e6eaef;
+  --accent:#2a6fb0; --accent2:#7a3fb0; --good:#1f8f55; --bad:#c0392b; --warn:#b7791f;
+  --good-bg:#e5f5ec; --bad-bg:#fdeceb; --warn-bg:#fdf3dc; --code:#f0f3f7;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161d; --panel:#18212b; --text:#e6ebf0; --muted:#93a1ae; --line:#2a3541; --grid:#26303b;
+    --accent:#5aa3e6; --accent2:#b58be0; --good:#4cc283; --bad:#ef7b6e; --warn:#e0b058;
+    --good-bg:#16342a; --bad-bg:#3a1f1d; --warn-bg:#3a2f14; --code:#0f151c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10161d; --panel:#18212b; --text:#e6ebf0; --muted:#93a1ae; --line:#2a3541; --grid:#26303b;
+  --accent:#5aa3e6; --accent2:#b58be0; --good:#4cc283; --bad:#ef7b6e; --warn:#e0b058;
+  --good-bg:#16342a; --bad-bg:#3a1f1d; --warn-bg:#3a2f14; --code:#0f151c;
+}
+*{box-sizing:border-box}
+.grid>*,.cols>*,#detail>*,.card{min-width:0;max-width:100%}
+svg{max-width:100%;height:auto;display:block}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px;max-width:1280px;margin:0 auto;display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:20px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:13px}
+button,select,input{font:inherit;color:var(--text)}
+select,input{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.scroll{overflow-x:auto}
+.theme{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+nav{max-width:1280px;margin:8px auto 0;padding:0 24px;display:flex;gap:6px;flex-wrap:wrap}
+nav button{background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--muted)}
+nav button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+main{max-width:1280px;margin:0 auto;padding:12px 24px 40px}
+section.tab{display:none}
+section.tab.active{display:block}
+.grid{display:grid;gap:12px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .v{font-size:26px;font-weight:650;line-height:1.1}
+.kpi .l{color:var(--muted);font-size:12px;margin-top:4px}
+.badge{display:inline-block;border-radius:999px;padding:1px 9px;font-size:11px;font-weight:600}
+.b-good{background:var(--good-bg);color:var(--good)} .b-bad{background:var(--bad-bg);color:var(--bad)} .b-warn{background:var(--warn-bg);color:var(--warn)}
+.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+h2{font-size:15px;margin:0 0 4px}
+.hint{color:var(--muted);font-size:12px;margin:0 0 8px}
+.callout{border-radius:10px;padding:10px 14px;margin:0 0 14px;background:var(--warn-bg);border:1px solid var(--warn);}
+.explorer{grid-template-columns:330px 1fr;align-items:start}
+@media (max-width:900px){.explorer{grid-template-columns:1fr}}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.filters input{grid-column:1/3}
+.filters input,.filters select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
+.plist{max-height:640px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.plist table{width:100%;border-collapse:collapse;font-size:12.5px}
+.plist th{position:sticky;top:0;background:var(--panel);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);color:var(--muted);font-weight:600}
+.plist td{padding:5px 8px;border-bottom:1px solid var(--grid);white-space:nowrap}
+.plist tr{cursor:pointer}
+.plist tr:hover td{background:var(--code)}
+.plist tr.sel td{background:var(--accent);color:#fff}
+.plist tr.sel .muted{color:#e6f0fa}
+.muted{color:var(--muted)}
+pre{background:var(--code);border-radius:8px;padding:10px;margin:0;overflow:auto;font:12px/1.45 ui-monospace,Consolas,Menlo,monospace;max-height:340px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+table.t{border-collapse:collapse;width:100%;font-size:13px}
+table.t th,table.t td{padding:5px 8px;border-bottom:1px solid var(--grid);text-align:right}
+table.t th:first-child,table.t td:first-child{text-align:left}
+table.t th{color:var(--muted);font-weight:600}
+.chip{display:inline-block;background:var(--code);border:1px solid var(--line);border-radius:6px;padding:1px 8px;margin:2px 4px 2px 0;font:12px ui-monospace,Consolas,monospace}
+.pass{color:var(--good);font-weight:700}.fail{color:var(--bad);font-weight:700}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+svg text{fill:var(--muted);font-size:11px}
+svg .lbl{fill:var(--text)}
+.axisline{stroke:var(--line)} .gridline{stroke:var(--grid)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:4px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.checks{width:100%;border-collapse:collapse;font-size:13px}
+.checks td,.checks th{padding:7px 9px;border-bottom:1px solid var(--grid);text-align:left;vertical-align:top}
+footer{max-width:1280px;margin:0 auto;padding:0 24px 24px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Automated Evolutionary Search-Based Compiler Code Optimizer</h1>
+    <div class="sub" id="subtitle"></div>
+  </div>
+  <button class="theme" id="themeBtn" title="Toggle light / dark">Theme</button>
+</header>
+<nav id="nav">
+  <button data-tab="overview" class="active">Overview</button>
+  <button data-tab="explorer">Program explorer</button>
+  <button data-tab="brief">Brief checklist</button>
+</nav>
+<main>
+  <section class="tab active" id="tab-overview"></section>
+  <section class="tab" id="tab-explorer"></section>
+  <section class="tab" id="tab-brief"></section>
+</main>
+<footer>All numbers on this page come from the experiment run that generated it (<span id="gen"></span>). Simulated = cycle model used by the GA; measured = real timing of the generated Python function.</footer>
+
+<script>
+const DATA = /*__DASHBOARD_DATA__*/null;
+</script>
+<script>
+(function(){
+"use strict";
+const P = DATA.programs, A = DATA.aggregate, M = DATA.meta;
+const NS = "http://www.w3.org/2000/svg";
+const $ = (s, r=document) => r.querySelector(s);
+const fmt = (v, d=1) => (v === null || v === undefined || Number.isNaN(v)) ? "n/a" : Number(v).toFixed(d);
+const mean = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
+
+function h(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs||{})) {
+    if (k === "class") e.className = attrs[k];
+    else if (k === "html") e.innerHTML = attrs[k];
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  for (const c of kids.flat()) if (c !== null && c !== undefined) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+function sv(tag, attrs, parent){
+  const e = document.createElementNS(NS, tag);
+  for (const k in (attrs||{})) e.setAttribute(k, attrs[k]);
+  if (parent) parent.append(e);
+  return e;
+}
+function ticks(lo, hi, n){
+  if (hi === lo) { hi = lo + 1; }
+  const span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1,2,2.5,5,10].map(m=>m*mag).find(s=>s>=raw) || 10*mag;
+  const out = []; for (let v = Math.ceil(lo/step)*step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(10));
+  return out;
+}
+function frame(w, hgt, m){
+  const s = sv("svg", {viewBox:`0 0 ${w} ${hgt}`, width:"100%", role:"img"});
+  return {s, w, h:hgt, m, iw:w-m.l-m.r, ih:hgt-m.t-m.b};
+}
+function axes(f, xr, yr, xl, yl, xt=6, yt=5, xfmt=v=>v, yfmt=v=>v){
+  const X = v => f.m.l + (v-xr[0])/(xr[1]-xr[0]||1)*f.iw;
+  const Y = v => f.m.t + f.ih - (v-yr[0])/(yr[1]-yr[0]||1)*f.ih;
+  for (const t of ticks(yr[0], yr[1], yt)) {
+    sv("line", {x1:f.m.l, x2:f.m.l+f.iw, y1:Y(t), y2:Y(t), class:"gridline"}, f.s);
+    sv("text", {x:f.m.l-6, y:Y(t)+4, "text-anchor":"end"}, f.s).textContent = yfmt(t);
+  }
+  for (const t of ticks(xr[0], xr[1], xt)) {
+    sv("text", {x:X(t), y:f.m.t+f.ih+16, "text-anchor":"middle"}, f.s).textContent = xfmt(t);
+  }
+  sv("line", {x1:f.m.l, x2:f.m.l+f.iw, y1:f.m.t+f.ih, y2:f.m.t+f.ih, class:"axisline"}, f.s);
+  sv("line", {x1:f.m.l, x2:f.m.l, y1:f.m.t, y2:f.m.t+f.ih, class:"axisline"}, f.s);
+  sv("text", {x:f.m.l+f.iw/2, y:f.h-4, "text-anchor":"middle"}, f.s).textContent = xl;
+  const yt2 = sv("text", {transform:`translate(12 ${f.m.t+f.ih/2}) rotate(-90)`, "text-anchor":"middle"}, f.s);
+  yt2.textContent = yl;
+  return {X, Y};
+}
+function pad(lo, hi, p=0.08){ const d = (hi-lo)||Math.abs(hi)||1; return [lo-d*p, hi+d*p]; }
+
+function lineChart(series, xl, yl){
+  const n = series[0].values.length;
+  const all = series.flatMap(s=>s.values);
+  const yr = pad(Math.min(...all), Math.max(...all));
+  const f = frame(560, 260, {l:48,r:12,t:10,b:34});
+  const {X,Y} = axes(f, [1,n], yr, xl, yl, 8, 5, v=>Math.round(v), v=>fmt(v,2));
+  for (const s of series){
+    sv("polyline", {points:s.values.map((v,i)=>`${X(i+1)},${Y(v)}`).join(" "), fill:"none", stroke:s.color, "stroke-width":2}, f.s);
+    s.values.forEach((v,i)=>{ if (n<=60) sv("circle",{cx:X(i+1),cy:Y(v),r:2.2,fill:s.color},f.s); });
+  }
+  return f.s;
+}
+function scatter(points, xl, yl, opts={}){
+  const xs = points.map(p=>p.x), ys = points.map(p=>p.y);
+  const xr = opts.xr || pad(Math.min(...xs), Math.max(...xs), .1), yr = opts.yr || pad(Math.min(...ys), Math.max(...ys), .1);
+  const f = frame(opts.w||560, opts.h||280, {l:52,r:14,t:10,b:36});
+  const {X,Y} = axes(f, xr, yr, xl, yl, 6, 5, v=>fmt(v, opts.xd ?? 0), v=>fmt(v, opts.yd ?? 0));
+  if (opts.diag) sv("line",{x1:X(opts.diag[0]),y1:Y(opts.diag[0]),x2:X(opts.diag[1]),y2:Y(opts.diag[1]),stroke:"var(--muted)","stroke-dasharray":"4 4"},f.s);
+  const draw = (pts, fill, r, op) => pts.forEach(p=>{ const c = sv("circle",{cx:X(p.x),cy:Y(p.y),r,fill,"fill-opacity":op,stroke:"var(--panel)","stroke-width":.8},f.s); if (p.tip) sv("title",{},c).textContent=p.tip; });
+  draw(points.filter(p=>!p.front), opts.color || "var(--muted)", opts.r || 4, opts.op ?? .55);
+  draw(points.filter(p=>p.front), "var(--bad)", 6, 1);
+  return f.s;
+}
+function barsH(items, xl, opts={}){
+  const rowH = 17, f = frame(560, items.length*rowH+34, {l:opts.lm||170,r:44,t:6,b:26});
+  const max = Math.max(...items.map(i=>i.value), 1);
+  const X = v => f.m.l + v/max*f.iw;
+  for (const t of ticks(0, max, 5)) {
+    sv("line",{x1:X(t),x2:X(t),y1:f.m.t,y2:f.m.t+items.length*rowH,class:"gridline"},f.s);
+    sv("text",{x:X(t),y:f.m.t+items.length*rowH+14,"text-anchor":"middle"},f.s).textContent = t;
+  }
+  items.forEach((it,i)=>{
+    const y = f.m.t + i*rowH;
+    sv("rect",{x:f.m.l,y:y+2,width:Math.max(X(it.value)-f.m.l,0),height:rowH-5,rx:3,fill:it.color||"var(--accent)"},f.s);
+    sv("text",{x:f.m.l-6,y:y+rowH-5,"text-anchor":"end",class:"lbl"},f.s).textContent = it.label;
+    sv("text",{x:X(it.value)+5,y:y+rowH-5},f.s).textContent = fmt(it.value,1);
+  });
+  sv("text",{x:f.m.l+f.iw/2,y:f.h-2,"text-anchor":"middle"},f.s).textContent = xl;
+  return f.s;
+}
+function barsV(items, xl, yl){
+  const f = frame(560, 250, {l:48,r:12,t:10,b:56});
+  const max = Math.max(...items.map(i=>i.value), 1);
+  const bw = f.iw/items.length;
+  const Y = v => f.m.t + f.ih - v/max*f.ih;
+  for (const t of ticks(0, max, 5)) {
+    sv("line",{x1:f.m.l,x2:f.m.l+f.iw,y1:Y(t),y2:Y(t),class:"gridline"},f.s);
+    sv("text",{x:f.m.l-6,y:Y(t)+4,"text-anchor":"end"},f.s).textContent = t;
+  }
+  items.forEach((it,i)=>{
+    const x = f.m.l + i*bw;
+    sv("rect",{x:x+4,y:Y(it.value),width:bw-8,height:f.m.t+f.ih-Y(it.value),rx:3,fill:it.color||"var(--accent)"},f.s);
+    sv("text",{x:x+bw/2,y:Y(it.value)-4,"text-anchor":"middle",class:"lbl"},f.s).textContent = it.value;
+    sv("text",{x:x+bw/2,y:f.m.t+f.ih+15,"text-anchor":"middle"},f.s).textContent = it.label;
+  });
+  sv("text",{x:f.m.l+f.iw/2,y:f.h-4,"text-anchor":"middle"},f.s).textContent = xl;
+  const t = sv("text",{transform:`translate(12 ${f.m.t+f.ih/2}) rotate(-90)`,"text-anchor":"middle"},f.s); t.textContent = yl;
+  return f.s;
+}
+const legend = items => h("div",{class:"legend"}, items.map(([c,t])=>h("span",{},h("i",{style:`background:${c}`}),t)));
+
+// ------------------------------------------------------------------ derived
+const imp = P.map(p=>p.improvement_pct);
+const ge30 = imp.filter(x=>x>=30).length, zero = imp.filter(x=>x===0).length;
+const hasRT = P.every(p=>p.runtime);
+const target = 30, valid = A.validity_rate_pct;
+const spell = A.improvement_by_spelling || {};
+
+// ------------------------------------------------------------------ overview
+function kpi(v, l, badge){
+  return h("div",{class:"card kpi"}, h("div",{class:"v"}, v), h("div",{class:"l"}, l), badge||null);
+}
+function overview(){
+  const root = $("#tab-overview");
+  const met = A.avg_best_cost_improvement_pct >= target;
+  root.append(
+    h("div",{class:"grid kpis"},
+      kpi(fmt(valid)+"%","Validity rate (target > 90%)", h("span",{class:"badge "+(valid>90?"b-good":"b-bad")}, valid>90?"met":"not met")),
+      kpi(fmt(A.avg_best_cost_improvement_pct)+"%","Avg best-cost improvement, simulated (target > 30%)", h("span",{class:"badge "+(met?"b-good":"b-bad")}, met?"met":"not met")),
+      hasRT ? kpi(fmt(A.avg_measured_improvement_pct)+"%","Avg improvement, really measured", h("span",{class:"badge b-warn"},fmt(A.avg_measured_speedup_x,2)+"x avg speedup")) : null,
+      kpi(ge30+" / "+P.length,"Programs improved by 30% or more", h("span",{class:"badge b-warn"}, zero+" at 0% (nothing to remove)")),
+      kpi(fmt(A.avg_generations_to_convergence),"Avg generations to convergence"),
+      kpi(fmt(A.avg_pareto_front_size)+" / "+fmt(A.avg_distinct_pareto_points,2),"Pareto front: raw size / distinct points"),
+      kpi(String(P.filter(p=>p.verdict==="PASS").length)+" / "+P.length,"Programs with PASS verdict")
+    ),
+    h("div",{class:"callout", html:`<b>Honest reading.</b> The brief asks for &gt; 30% average improvement. On these real kernels the average is
+      <b>${fmt(A.avg_best_cost_improvement_pct)}%</b>: many kernels (dot product, determinant, ...) are already tight, while kernels with real redundancy improve a lot
+      (best program: ${fmt(Math.max(...imp))}%). Programs written in a deliberately redundant ("naive") spelling average
+      ${spell.naive?fmt(spell.naive.avg_improvement_pct):"n/a"}% versus ${spell.plain?fmt(spell.plain.avg_improvement_pct):"n/a"}% for plain ones.`}),
+    h("div",{class:"grid two"}, ...overviewCharts())
+  );
+}
+function overviewCharts(){
+  const cards = [];
+  // histogram
+  const bins = [["0%",x=>x===0],["0-10",x=>x>0&&x<10],["10-20",x=>x>=10&&x<20],["20-30",x=>x>=20&&x<30],["30-50",x=>x>=30&&x<50],["50+",x=>x>=50]];
+  cards.push(h("div",{class:"card"}, h("h2",{},"How much each program improved"),
+    h("p",{class:"hint"},"Number of programs per simulated-improvement band (the average hides this spread)."),
+    barsV(bins.map(([l,f],i)=>({label:l,value:imp.filter(f).length,color:i>=4?"var(--good)":(i===0?"var(--muted)":"var(--accent)")})),"improvement band (%)","programs")));
+  // by kernel
+  const byK = {}; P.forEach(p=>(byK[p.kernel] ||= []).push(p));
+  const kernelItems = Object.entries(byK).map(([k,v])=>({label:k,value:mean(v.map(p=>p.improvement_pct)),color:"var(--accent)"})).sort((a,b)=>b.value-a.value);
+  cards.push(h("div",{class:"card"}, h("h2",{},"Average improvement by kernel"),
+    h("p",{class:"hint"},"Simulated exec_time improvement, averaged over each kernel's instances."),
+    barsH(kernelItems,"improvement (%)",{lm:190})));
+  // spelling
+  const sp = Object.entries(spell).map(([k,v])=>({label:`${k} (${v.programs})`,value:v.avg_improvement_pct,color:k==="naive"?"var(--accent2)":"var(--accent)"}));
+  if (sp.length) cards.push(h("div",{class:"card"}, h("h2",{},"By kernel spelling"),
+    h("p",{class:"hint"},"naive = redundant spelling (recomputes inline); tidy = names the intermediate; plain = single form."), barsH(sp,"improvement (%)",{lm:110})));
+  // sim vs measured
+  if (hasRT){
+    const pts = P.map(p=>({x:p.improvement_pct,y:p.runtime.measured_improvement_pct,tip:`${p.name} (${p.kernel})`}));
+    const c = A.correlation||{};
+    cards.push(h("div",{class:"card"}, h("h2",{},"Simulated vs measured improvement"),
+      h("p",{class:"hint"},`Each dot is a program. Dashed line = perfect agreement. Pearson ${fmt(c.improvement_pearson,2)}, Spearman ${fmt(c.improvement_spearman,2)}.`),
+      scatter(pts,"simulated improvement (%)","measured improvement (%)",{diag:[-10,80],color:"var(--accent)",op:.45,r:3.2}),
+      h("p",{class:"hint"},`Cycles vs measured ns over all ${c.pooled_n} measured programs: Pearson ${fmt(c.pooled_pearson,2)}, Spearman ${fmt(c.pooled_spearman,2)}; ranking variants of one program: mean Spearman ${fmt(c.within_program_mean_spearman,2)}.`)));
+  }
+  // generations to convergence histogram
+  const maxG = Math.max(...P.map(p=>p.generations_to_convergence));
+  const gb = [[1,2],[3,5],[6,10],[11,20],[21,50]].map(([a,b])=>({label:`${a}-${b}`,value:P.filter(p=>p.generations_to_convergence>=a&&p.generations_to_convergence<=b).length,color:"var(--accent2)"}));
+  cards.push(h("div",{class:"card"}, h("h2",{},"Generations to convergence"),
+    h("p",{class:"hint"},"Generation of the last improvement in best cost, per program (max "+maxG+")."), barsV(gb,"generations","programs")));
+  return cards;
+}
+
+// ------------------------------------------------------------------ explorer
+let sel = 0, filters = {q:"", spelling:"all", sort:"id", verdict:"all"};
+const OBJ = [["exec_time","exec_time (cycles)"],["instr_count","instr_count"],["code_size","code_size"],["arith_ops","arith_ops"]];
+function explorer(){
+  const root = $("#tab-explorer");
+  const list = h("div",{class:"plist", id:"plist"});
+  const q = h("input",{placeholder:"search name or kernel (e.g. variance)",oninput:e=>{filters.q=e.target.value.toLowerCase();renderList();}});
+  const sp = h("select",{onchange:e=>{filters.spelling=e.target.value;renderList();}}, ["all","naive","tidy","plain"].map(v=>h("option",{value:v},v==="all"?"all spellings":v+" spelling")));
+  const so = h("select",{onchange:e=>{filters.sort=e.target.value;renderList();}},
+    [["id","sort: program id"],["imp_desc","sort: improvement high-low"],["imp_asc","sort: improvement low-high"],["conv","sort: slowest convergence"]].map(([v,t])=>h("option",{value:v},t)));
+  root.append(h("div",{class:"grid explorer"},
+    h("div",{class:"card"}, h("h2",{},"Programs ("+P.length+")"), h("div",{class:"filters"}, q, sp, so), list),
+    h("div",{id:"detail"})));
+  renderList();
+  renderDetail();
+}
+function filtered(){
+  let idx = P.map((p,i)=>i).filter(i=>{
+    const p = P[i];
+    if (filters.spelling!=="all" && p.spelling!==filters.spelling) return false;
+    if (filters.q && !(p.name+" "+p.kernel).toLowerCase().includes(filters.q)) return false;
+    return true;
+  });
+  const key = {imp_desc:i=>-P[i].improvement_pct, imp_asc:i=>P[i].improvement_pct, conv:i=>-P[i].generations_to_convergence, id:i=>i}[filters.sort];
+  return idx.sort((a,b)=>key(a)-key(b));
+}
+function renderList(){
+  const idx = filtered();
+  const tb = h("tbody");
+  idx.forEach(i=>{
+    const p = P[i];
+    tb.append(h("tr",{class:i===sel?"sel":"",onclick:()=>{sel=i;renderList();renderDetail();}},
+      h("td",{}, p.name.replace("bench_","#")), h("td",{class:"muted"}, p.kernel), h("td",{style:"text-align:right"}, fmt(p.improvement_pct)+"%")));
+  });
+  const t = h("table",{}, h("thead",{}, h("tr",{}, h("th",{},"id"), h("th",{},"kernel"), h("th",{style:"text-align:right"},"gain"))), tb);
+  const box = $("#plist"); box.replaceChildren(t);
+  if (!idx.length) box.append(h("p",{class:"hint",style:"padding:10px"},"No program matches."));
+}
+function renderDetail(){
+  const p = P[sel], d = $("#detail");
+  const rt = p.runtime;
+  const rows = [["exec_time","exec_time"],["instr_count","instr_count"],["code_size","code_size"],["arith_ops","arith_ops"]].map(([k,l])=>{
+    const b = p.baseline[k], a = p.best[k], ch = b ? (a-b)/b*100 : 0;
+    return h("tr",{}, h("td",{},l), h("td",{},fmt(b,k==="exec_time"?1:0)), h("td",{},fmt(a,k==="exec_time"?1:0)),
+      h("td",{style:`color:${ch<0?"var(--good)":(ch>0?"var(--bad)":"var(--muted)")}`}, (ch>0?"+":"")+fmt(ch,0)+"%"));
+  });
+  if (rt) rows.push(h("tr",{}, h("td",{},"measured ns / call"), h("td",{},fmt(rt.baseline_ns,0)), h("td",{},fmt(rt.best_ns,0)),
+      h("td",{style:`color:${rt.measured_improvement_pct>0?"var(--good)":"var(--bad)"}`}, (rt.measured_improvement_pct>0?"-":"+")+fmt(Math.abs(rt.measured_improvement_pct),0)+"%")));
+
+  // pareto x/y selectors
+  const px = h("select",{onchange:drawPareto}, OBJ.map(([k,t])=>h("option",{value:k},t)));
+  const py = h("select",{onchange:drawPareto}, OBJ.map(([k,t],i)=>h("option",{value:k,selected:i===1?"selected":null},t)));
+  const pbox = h("div",{});
+  function drawPareto(){
+    const xi = OBJ.findIndex(o=>o[0]===px.value), yi = OBJ.findIndex(o=>o[0]===py.value);
+    const pts = p.population.filter(r=>r[5]).map(r=>({x:r[xi],y:r[yi],front:!!r[4]}));
+    pbox.replaceChildren(scatter(pts, OBJ[xi][1], OBJ[yi][1], {xd:xi?0:1,yd:yi?0:1}),
+      legend([["var(--muted)","dominated (valid)"],["var(--bad)","Pareto front"]]));
+  }
+
+  d.replaceChildren(
+    h("div",{class:"card",style:"margin-bottom:12px"},
+      h("div",{class:"row"}, h("h2",{style:"margin:0"}, `${p.name} - ${p.kernel}`), h("span",{class:"badge b-warn"}, p.spelling+" spelling"),
+        h("span",{class:p.verdict==="PASS"?"pass":"fail"}, p.verdict), h("span",{class:"muted"}, p.num_tests+" test input sets")),
+      h("div",{class:"muted"}, `Simulated improvement ${fmt(p.improvement_pct)}% | converged at generation ${p.generations_to_convergence} | weighted cost ${fmt(p.best_cost,3)} (baseline = 1.000)`),
+      h("div",{style:"margin-top:6px"}, "Best genome: ", p.genome.length ? p.genome.map(g=>h("span",{class:"chip"},g)) : h("span",{class:"chip"},"(unchanged original)"))),
+    h("div",{class:"grid two",style:"margin-bottom:12px"},
+      h("div",{class:"card"}, h("h2",{},"Baseline vs best individual"),
+        h("table",{class:"t"}, h("thead",{}, h("tr",{}, h("th",{},"objective"), h("th",{},"baseline"), h("th",{},"best"), h("th",{},"change"))), h("tbody",{}, rows))),
+      h("div",{class:"card"}, h("h2",{},"Convergence curve"),
+        h("p",{class:"hint"},"Weighted cost per generation (lower is better; original = 1.0)."),
+        lineChart([{values:p.hist_avg,color:"var(--muted)"},{values:p.hist_best,color:"var(--good)"}],"generation","weighted cost"),
+        legend([["var(--good)","best cost"],["var(--muted)","average cost"]]))),
+    h("div",{class:"card",style:"margin-bottom:12px"}, h("h2",{},"Original source (Python) and its three-address code"),
+      h("div",{class:"cols"},
+        h("div",{}, h("p",{class:"hint"},"Source"), h("pre",{}, p.source)),
+        h("div",{}, h("p",{class:"hint"},`TAC before (${p.tac_before.length} instructions)`), h("pre",{}, p.tac_before.join("\n")))),
+      h("div",{style:"margin-top:10px"}, h("p",{class:"hint"},`TAC after the best genome (${p.tac_after.length} instructions) - outputs verified equal to the original`),
+        h("pre",{}, p.tac_after.join("\n")))),
+    h("div",{class:"card"}, h("h2",{},"Final-population Pareto analysis"),
+      h("p",{class:"hint"},`${p.front_size} non-dominated individuals, ${p.distinct_points} distinct objective-space point(s). Choose the axes:`),
+      h("div",{class:"row"}, px, h("span",{class:"muted"},"vs"), py), pbox,
+      h("div",{class:"scroll"}, h("table",{class:"t",style:"margin-top:8px;min-width:560px"},
+        h("thead",{}, h("tr",{}, h("th",{},"best at"), h("th",{},"genome"), h("th",{},"time"), h("th",{},"instr"), h("th",{},"size"), h("th",{},"ops"), h("th",{},"ties"))),
+        h("tbody",{}, p.pareto.map(e=>h("tr",{}, h("td",{style:"text-align:left"},e.label), h("td",{style:"text-align:left"},e.genome.join(" > ")||"(none)"),
+          h("td",{},fmt(e.fitness.exec_time,1)), h("td",{},e.fitness.instr_count), h("td",{},e.fitness.code_size), h("td",{},e.fitness.arith_ops), h("td",{},e.tied)))))))
+  );
+  drawPareto();
+}
+
+// ------------------------------------------------------------------ brief checklist
+function brief(){
+  const rows = [
+    ["Population 20-50 candidates", "P = "+M.population_size, true],
+    ["10-50 generations", M.generations+" generations", M.generations>=10&&M.generations<=50],
+    ["Dataset of 200-500 programs", P.length+" programs", P.length>=200&&P.length<=500],
+    ["Validity rate > 90%", fmt(valid)+"%", valid>90],
+    ["Best cost improvement > 30% (average)", fmt(A.avg_best_cost_improvement_pct)+"% (" + ge30 + " of "+P.length+" programs individually reach 30%)", A.avg_best_cost_improvement_pct>=30],
+    ["All surviving programs verified for correct output", P.filter(p=>p.verdict==="PASS").length+" / "+P.length+" PASS"+(hasRT?"; "+fmt(A.measured_outputs_correct_pct)+"% also correct when really run":""), P.every(p=>p.verdict==="PASS")],
+    ["Pareto front analysis with trade-off labels", "avg "+fmt(A.avg_pareto_front_size)+" non-dominated, "+fmt(A.avg_distinct_pareto_points,2)+" distinct points", true],
+    ["Convergence curve (best cost per generation)", "see Program explorer; best cost never increases (elitism)", P.every(p=>p.hist_best.every((v,i,a)=>i===0||v<=a[i-1]+1e-9))],
+    ["Tournament selection (3) + 10% elitism, mutation 0.7/0.3, one-point crossover", "implemented in eco/ga.py", true],
+    ["Six required plots", "in eco/outputs/plots/ (8 files)", true],
+    ["Report per program (best/avg cost, Pareto solutions, best genome, PASS/FAIL)", "eco/outputs/reports/all_programs/ (all "+P.length+")", true],
+  ];
+  $("#tab-brief").append(h("div",{class:"card"}, h("h2",{},"Requirements from the project brief"),
+    h("p",{class:"hint"},"Items marked from data are computed from this run; the rest describe implemented features."),
+    h("table",{class:"checks"}, h("thead",{}, h("tr",{}, h("th",{},"Requirement"), h("th",{},"This run"), h("th",{},"Status"))),
+      h("tbody",{}, rows.map(([r,v,ok])=>h("tr",{}, h("td",{},r), h("td",{},v), h("td",{}, h("span",{class:"badge "+(ok?"b-good":"b-bad")}, ok?"met":"not met"))))))));
+}
+
+// ------------------------------------------------------------------ boot
+$("#subtitle").textContent = `${M.dataset} | ${P.length} programs | population ${M.population_size} | ${M.generations} generations | seed ${M.seed}`;
+$("#gen").textContent = M.dataset + ", seed " + M.seed;
+overview(); explorer(); brief();
+document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll("section.tab").forEach(s=>s.classList.toggle("active",s.id==="tab-"+b.dataset.tab));
+}));
+$("#themeBtn").addEventListener("click",()=>{
+  const root = document.documentElement, dark = getComputedStyle(root).getPropertyValue("--bg").trim()==="#10161d";
+  root.setAttribute("data-theme", dark?"light":"dark");
+});
+})();
+</script>
+</body>
+</html>

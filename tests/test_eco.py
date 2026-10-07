@@ -606,3 +606,53 @@ def test_spelling_reaches_reports_csv_and_aggregate(tmp_path):
     assert f"{progs[0].spelling} spelling" in first
     agg = aggregate_metrics(progs, results)
     assert sum(v["programs"] for v in agg["improvement_by_spelling"].values()) == len(progs)
+
+
+# ---------------------------------------------------------------------------
+# Results dashboard (self-contained HTML)
+# ---------------------------------------------------------------------------
+import json as _json
+
+from eco.dashboard import PLACEHOLDER, TEMPLATE_PATH, build_dashboard_data, write_dashboard
+
+
+def _small_run(n=6):
+    progs = [generate_kernel_program(i * 7, random.Random(i)) for i in range(n)]
+    results = [run_ga(p.tac, p.test_input_sets, p.expected_outputs, GAConfig(pop_size=8, num_generations=4, seed=1))
+               for p in progs]
+    runtimes = measure_dataset(progs, results)
+    agg = aggregate_metrics(progs, results, runtimes, correlation_summary(progs, results, runtimes))
+    return progs, results, runtimes, agg
+
+
+def test_dashboard_data_has_everything_the_page_needs():
+    progs, results, runtimes, agg = _small_run()
+    data = build_dashboard_data(progs, results, runtimes, agg, {"dataset": "t", "population_size": 8, "generations": 4, "seed": 1})
+    _json.dumps(data)  # must be JSON-serialisable
+    assert len(data["programs"]) == len(progs)
+    for item, prog, res in zip(data["programs"], progs, results):
+        assert item["name"] == prog.name and item["kernel"] == prog.kernel
+        assert len(item["hist_best"]) == len(item["hist_avg"]) == len(res.history) == 4
+        assert len(item["population"]) == len(res.final_population)
+        assert item["verdict"] == "PASS" and item["runtime"]["outputs_correct"]
+        assert item["tac_before"] and item["tac_after"] and item["source"].startswith("def ")
+        assert sum(r[4] for r in item["population"]) == len(res.final_pareto_front)
+    assert data["aggregate"]["num_programs"] == len(progs)
+
+
+def test_dashboard_html_is_self_contained_and_embeds_the_data(tmp_path):
+    progs, results, runtimes, agg = _small_run(3)
+    data = build_dashboard_data(progs, results, runtimes, agg, {"dataset": "t", "population_size": 8, "generations": 4, "seed": 1})
+    # a hostile string must not be able to close the script tag
+    data["programs"][0]["source"] += "\n# </script><b>x</b>"
+    out = write_dashboard(data, str(tmp_path / "d" / "dashboard.html"))
+    html = open(out, encoding="utf-8").read()
+    assert PLACEHOLDER not in html
+    assert progs[0].name in html and "Program explorer" in html
+    assert "</script><b>x" not in html
+    assert "http://" not in html.replace("http://www.w3.org/2000/svg", "") and "https://" not in html  # no external resources
+    assert "<script src" not in html and "<link" not in html
+
+
+def test_dashboard_template_has_the_data_placeholder():
+    assert PLACEHOLDER in open(TEMPLATE_PATH, encoding="utf-8").read()
