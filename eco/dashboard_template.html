@@ -111,7 +111,6 @@ footer{max-width:1280px;margin:0 auto;padding:0 24px 24px;color:var(--muted);fon
   <section class="tab" id="tab-live"></section>
   <section class="tab" id="tab-brief"></section>
 </main>
-<footer>All numbers on this page come from the experiment run that generated it (<span id="gen"></span>). Simulated = cycle model used by the GA; measured = real timing of the generated Python function.</footer>
 
 <script>
 const DATA = /*__DASHBOARD_DATA__*/null;
@@ -487,7 +486,6 @@ function live(){
   });
   root.append(h("div",{class:"card"},
     h("h2",{},"Optimize your own function, live"),
-    h("p",{class:"hint"},"Type a straight-line Python function (integers, + - * //, assignments, return one or several values). It is compiled to three-address code, 5 random test inputs are drawn from the range you set, the genetic algorithm evolves optimization sequences, and every result is verified against your original function. All of it runs in your browser; nothing is uploaded."),
     h("div",{class:"row"}, h("span",{class:"muted"},"Example:"), sample),
     ta,
     h("div",{class:"row",style:"margin-top:10px;align-items:flex-end"},
@@ -542,7 +540,6 @@ function renderLive(r){
 
 // ------------------------------------------------------------------ boot
 $("#subtitle").textContent = `${M.dataset} | ${P.length} programs | population ${M.population_size} | ${M.generations} generations | seed ${M.seed}`;
-$("#gen").textContent = M.dataset + ", seed " + M.seed;
 overview(); explorer(); live(); brief();
 document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));
