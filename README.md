@@ -17,7 +17,7 @@ python -m pytest tests/ -q  # unit / correctness tests
 `python -m eco.main` will:
 
 1. Generate a 300-program synthetic TAC benchmark suite.
-2. Run the evolutionary search (population 30, 30 generations) on **every**
+2. Run the evolutionary search (population 30, 50 generations) on **every**
    program to compute the aggregate Testing & Metrics table.
 3. Produce detailed per-program reports for the 20 largest ("deep-dive")
    programs, including a generation-by-generation cost trace, the final
@@ -25,7 +25,7 @@ python -m pytest tests/ -q  # unit / correctness tests
 4. Render all six required plots to `eco/outputs/plots/` and write text /
    JSON reports to `eco/outputs/reports/`.
 
-A full run takes a few minutes on a single core.
+A full run (300 programs x 50 generations) takes about 5 minutes on a single core.
 
 ## System design
 
@@ -101,7 +101,7 @@ the derived program directly.
   program.
 - **Generational loop**: evaluate → keep elites → select → mutate →
   crossover → form next population, logging best/average weighted cost
-  each generation, for `NUM_GENERATIONS=30`.
+  each generation, for `NUM_GENERATIONS=50`.
 
 Cost, for selection/elitism/reporting, is a weighted sum of each objective
 normalized against the program's own baseline (equal 0.25 weights by
@@ -137,9 +137,9 @@ generated exactly as before.
 | Metric | Result | Target |
 |---|---|---|
 | Validity Rate | 100.0% | > 90% |
-| Avg. Pareto Front Size | 21.1 individuals (avg. 1.68 distinct objective-space points) | identify trade-offs |
-| Best Cost Improvement (exec_time vs. baseline) | 54.3% | > 30% |
-| Avg. Generations to Convergence | 10.8 | tracked per program |
+| Avg. Pareto Front Size | 21.5 individuals (avg. 1.65 distinct objective-space points) | identify trade-offs |
+| Best Cost Improvement (exec_time vs. baseline) | 54.5% | > 30% |
+| Avg. Generations to Convergence | 15.2 | tracked per program |
 | Correctness PASS rate | 100.0% | — |
 
 Regenerate this table with `python -m eco.main` (see
@@ -151,7 +151,7 @@ Before the trade-off passes existed, all six optimizations were
 simplifications, so the final front collapsed to a single distinct
 objective-space point (avg. 1.01 per program). With `strength_reduction` and
 `multiply_fusion` the final front now holds more than one point for most
-programs (avg. 1.68; many genomes still tie on the same point, hence the
+programs (avg. 1.65; many genomes still tie on the same point, hence the
 much larger raw front size). Fronts are still small because only the `x*k`
 and repeated-add patterns trade objectives; everything else remains a pure
 win that every good individual applies.
@@ -175,7 +175,7 @@ absolute improvement percentages are not directly comparable with older runs.
 3. `2_pareto_front_2d.png` — Pareto front in 2D (`exec_time` vs
    `instr_count`), final population of the richest-front deep-dive program.
 4. `3_fitness_boxplot.png` — cost distribution across generations 1, 5,
-   10, 20, 30.
+   10, 20, 50.
 5. `4_improvement_bar.png` — best-individual improvement vs. original
    baseline across the 20 deep-dive programs.
 6. `5_elite_optimization_heatmap.png` — which optimizations appear most
@@ -187,7 +187,7 @@ absolute improvement percentages are not directly comparable with older runs.
 ## Expected output (`eco/outputs/reports/`)
 
 - `<program>_report.txt` / `deep_dive_reports.json` — per program: best/avg
-  cost at generations 1, 5, 10, 20, 30, the final Pareto-optimal solutions
+  cost at generations 1, 5, 10, 20, 50, the final Pareto-optimal solutions
   and what each represents, the best-overall (weighted) individual with its
   genome and optimized TAC, and a PASS/FAIL correctness verdict.
 - `aggregate_metrics.md` / `.json` — the Testing & Metrics table above,

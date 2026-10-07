@@ -5,12 +5,11 @@ Best/avg cost at checkpoint generations:
   gen   5: best=0.5330  avg=0.5922
   gen  10: best=0.5167  avg=0.5715
   gen  20: best=0.5167  avg=0.6040
-  gen  30: best=0.5167  avg=0.5355
+  gen  50: best=0.5167  avg=0.5277
 Generations to convergence: 9
 Exec-time improvement vs baseline: 50.0%
-Pareto front: 24 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 53.0, 'instr_count': 44, 'code_size': 192, 'arith_ops': 17}  -> fastest (lowest exec_time), fewest instructions  (23 genomes tie here)
-  genome=['constant_folding', 'constant_folding', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 63.0, 'instr_count': 44, 'code_size': 190, 'arith_ops': 16}  -> fewest instructions, smallest code size, fewest arithmetic ops
+Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 53.0, 'instr_count': 44, 'code_size': 192, 'arith_ops': 17}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
   genome: ['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']
   fitness: {'exec_time': 53.0, 'instr_count': 44, 'code_size': 192, 'arith_ops': 17}

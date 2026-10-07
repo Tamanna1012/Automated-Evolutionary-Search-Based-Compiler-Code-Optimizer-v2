@@ -5,16 +5,16 @@ Best/avg cost at checkpoint generations:
   gen   5: best=0.3923  avg=0.5212
   gen  10: best=0.3923  avg=0.4419
   gen  20: best=0.3923  avg=0.4811
-  gen  30: best=0.3923  avg=0.4143
-Generations to convergence: 5
-Exec-time improvement vs baseline: 58.0%
-Pareto front: 26 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['constant_folding', 'copy_propagation', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 46.0, 'instr_count': 34, 'code_size': 141, 'arith_ops': 11}  -> fastest (lowest exec_time), fewest instructions  (2 genomes tie here)
-  genome=['constant_folding', 'multiply_fusion', 'copy_propagation', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 50.0, 'instr_count': 34, 'code_size': 137, 'arith_ops': 9}  -> fewest instructions, smallest code size, fewest arithmetic ops  (24 genomes tie here)
+  gen  50: best=0.3917  avg=0.4069
+Generations to convergence: 40
+Exec-time improvement vs baseline: 65.5%
+Pareto front: 22 non-dominated individuals, 2 distinct objective-space point(s):
+  genome=['constant_folding', 'copy_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 41.0, 'instr_count': 33, 'code_size': 139, 'arith_ops': 12}  -> fastest (lowest exec_time), fewest instructions, smallest code size  (19 genomes tie here)
+  genome=['constant_folding', 'copy_propagation', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 46.0, 'instr_count': 34, 'code_size': 141, 'arith_ops': 11}  -> fewest arithmetic ops  (3 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'multiply_fusion', 'copy_propagation', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 50.0, 'instr_count': 34, 'code_size': 137, 'arith_ops': 9}
-  cost: 0.3923
+  genome: ['constant_folding', 'copy_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 41.0, 'instr_count': 33, 'code_size': 139, 'arith_ops': 12}
+  cost: 0.3917
   optimized TAC:
     v0 = INPUT in0
     v1 = INPUT in1
@@ -34,20 +34,19 @@ Best-overall (weighted) individual:
     t29 = t17 * t27
     t40 = t10 / t21
     OUTPUT t6
-    k0 = 4
     s0 = 0
     OUTPUT s0
-    k1 = 2
-    s1 = t17 * k1
+    s1 = t17 + t17
     OUTPUT s1
-    k2 = 4
-    s2 = t6 * k2
+    _sr1 = t6 + t6
+    s2 = _sr1 + _sr1
     OUTPUT s2
     s3 = -32
     OUTPUT s3
-    w0 = t29 * k0
+    u0 = t29 + t29
+    w0 = u0 + u0
     OUTPUT w0
-    _mf1 = 3
-    w1 = t40 * _mf1
+    u1 = t40 + t40
+    w1 = u1 + t40
     OUTPUT w1
 Correctness verdict: PASS

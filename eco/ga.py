@@ -22,7 +22,7 @@ MAX_GENOME_LEN = 5
 @dataclass
 class GAConfig:
     pop_size: int = 30
-    num_generations: int = 30
+    num_generations: int = 50
     elitism_frac: float = 0.10
     tournament_k: int = 3
     mutation_add_prob: float = 0.7

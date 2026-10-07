@@ -5,15 +5,15 @@ Best/avg cost at checkpoint generations:
   gen   5: best=0.3986  avg=0.5584
   gen  10: best=0.3310  avg=0.4134
   gen  20: best=0.3310  avg=0.3972
-  gen  30: best=0.3310  avg=0.3728
-Generations to convergence: 9
-Exec-time improvement vs baseline: 63.7%
-Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'copy_propagation', 'copy_propagation', 'dead_code_elimination', 'algebraic_simplification']  fitness={'exec_time': 41.0, 'instr_count': 34, 'code_size': 128, 'arith_ops': 5}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen  50: best=0.2881  avg=0.3662
+Generations to convergence: 40
+Exec-time improvement vs baseline: 68.1%
+Pareto front: 19 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['algebraic_simplification', 'copy_propagation', 'copy_propagation', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 36.0, 'instr_count': 29, 'code_size': 108, 'arith_ops': 5}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (19 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['algebraic_simplification', 'copy_propagation', 'copy_propagation', 'dead_code_elimination', 'algebraic_simplification']
-  fitness: {'exec_time': 41.0, 'instr_count': 34, 'code_size': 128, 'arith_ops': 5}
-  cost: 0.3310
+  genome: ['algebraic_simplification', 'copy_propagation', 'copy_propagation', 'algebraic_simplification', 'dead_code_elimination']
+  fitness: {'exec_time': 36.0, 'instr_count': 29, 'code_size': 108, 'arith_ops': 5}
+  cost: 0.2881
   optimized TAC:
     v2 = INPUT in2
     c1 = 10
@@ -21,25 +21,20 @@ Best-overall (weighted) individual:
     t2 = v2
     t5 = t2
     t6 = t1 / t1
-    t9 = 0
     t10 = 0
     t11 = t6 * t6
-    t15 = 0
     t17 = t5
     t32 = c1
     OUTPUT t11
     OUTPUT t17
     OUTPUT t6
-    k0 = 4
     s0 = 0
     OUTPUT s0
-    k1 = 3
     s1 = 0
     OUTPUT s1
     k2 = 3
     s2 = t32 * k2
     OUTPUT s2
-    k3 = 4
     s3 = 0
     OUTPUT s3
     u0 = t1

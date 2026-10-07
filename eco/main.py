@@ -37,7 +37,7 @@ REPORTS_DIR = os.path.join(HERE, "outputs", "reports")
 N_PROGRAMS = 300
 DEEP_DIVE_N = 20
 POP_SIZE = 30
-NUM_GENERATIONS = 30
+NUM_GENERATIONS = 50
 SEED = 42
 
 

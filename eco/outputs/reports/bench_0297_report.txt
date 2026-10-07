@@ -5,16 +5,16 @@ Best/avg cost at checkpoint generations:
   gen   5: best=0.5021  avg=0.6226
   gen  10: best=0.4986  avg=0.5284
   gen  20: best=0.4721  avg=0.6276
-  gen  30: best=0.4721  avg=0.5378
-Generations to convergence: 20
-Exec-time improvement vs baseline: 48.9%
-Pareto front: 20 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination', 'dead_code_elimination']  fitness={'exec_time': 68.0, 'instr_count': 42, 'code_size': 191, 'arith_ops': 20}  -> fastest (lowest exec_time)  (2 genomes tie here)
-  genome=['multiply_fusion', 'cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 69.0, 'instr_count': 39, 'code_size': 173, 'arith_ops': 17}  -> fewest instructions, smallest code size, fewest arithmetic ops  (18 genomes tie here)
+  gen  50: best=0.4634  avg=0.4748
+Generations to convergence: 35
+Exec-time improvement vs baseline: 50.4%
+Pareto front: 27 non-dominated individuals, 2 distinct objective-space point(s):
+  genome=['strength_reduction', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 61.0, 'instr_count': 41, 'code_size': 195, 'arith_ops': 24}  -> fastest (lowest exec_time)  (4 genomes tie here)
+  genome=['strength_reduction', 'multiply_fusion', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 67.0, 'instr_count': 37, 'code_size': 167, 'arith_ops': 18}  -> fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['multiply_fusion', 'cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 69.0, 'instr_count': 39, 'code_size': 173, 'arith_ops': 17}
-  cost: 0.4721
+  genome: ['strength_reduction', 'multiply_fusion', 'cse', 'copy_propagation', 'dead_code_elimination']
+  fitness: {'exec_time': 67.0, 'instr_count': 37, 'code_size': 167, 'arith_ops': 18}
+  cost: 0.4634
   optimized TAC:
     v2 = INPUT in2
     v3 = INPUT in3
@@ -29,7 +29,7 @@ Best-overall (weighted) individual:
     t12 = c0 * v4
     t13 = t1 / t12
     t16 = t3 * c1
-    t18 = -50
+    t18 = c0 * c2
     t21 = t16 + c0
     t25 = t18 / t1
     t28 = t1
@@ -44,11 +44,9 @@ Best-overall (weighted) individual:
     k1 = 3
     s1 = t1 * k1
     OUTPUT s1
-    k2 = 3
-    s2 = t16 * k2
+    s2 = t16 * k1
     OUTPUT s2
-    k3 = 2
-    s3 = t29 * k3
+    s3 = t29 + t29
     OUTPUT s3
     w0 = t1 * k1
     OUTPUT w0
