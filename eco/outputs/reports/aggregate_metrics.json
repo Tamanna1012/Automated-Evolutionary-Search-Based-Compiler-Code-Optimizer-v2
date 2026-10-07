@@ -1,0 +1,9 @@
+{
+  "num_programs": 300,
+  "validity_rate_pct": 99.97777777777777,
+  "avg_pareto_front_size": 23.19333333333333,
+  "avg_distinct_pareto_points": 1.01,
+  "avg_best_cost_improvement_pct": 85.62068466420578,
+  "avg_generations_to_convergence": 4.476666666666667,
+  "pass_rate_pct": 100.0
+}

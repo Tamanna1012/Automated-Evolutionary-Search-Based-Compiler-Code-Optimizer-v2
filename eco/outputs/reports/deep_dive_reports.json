@@ -1,0 +1,1564 @@
+[
+  {
+    "program": "bench_0044",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 121.0,
+      "instr_count": 58,
+      "code_size": 290,
+      "arith_ops": 39
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.260303541808244,
+        "avg_cost": 0.6213862948267336
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.20097934980380122,
+        "avg_cost": 0.3258178420325756
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.18095410336789647,
+        "avg_cost": 0.27692616422240246
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.18095410336789647,
+        "avg_cost": 0.3127540841255575
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.18095410336789647,
+        "avg_cost": 0.23446611643320106
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "algebraic_simplification",
+          "copy_propagation",
+          "constant_folding",
+          "constant_folding",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 22.0,
+          "instr_count": 13,
+          "code_size": 55,
+          "arith_ops": 5
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 23
+      }
+    ],
+    "pareto_front_raw_size": 23,
+    "best_overall": {
+      "genome": [
+        "algebraic_simplification",
+        "copy_propagation",
+        "constant_folding",
+        "constant_folding",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 22.0,
+        "instr_count": 13,
+        "code_size": 55,
+        "arith_ops": 5
+      },
+      "cost": 0.18095410336789647,
+      "tac": "v3 = INPUT in3\nv4 = INPUT in4\nc1 = -7\nc4 = -10\nt0 = v4\nt9 = 4\nt12 = t9 * c1\nt15 = t12 * c1\nt21 = t15 - c4\nt25 = v3 + t0\nt29 = t21 / c4\nOUTPUT t29\nOUTPUT t25"
+    },
+    "improvement_pct_exec_time": 81.81818181818181,
+    "generations_to_convergence": 9,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0078",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 130.0,
+      "instr_count": 58,
+      "code_size": 292,
+      "arith_ops": 40
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.15153655390429127,
+        "avg_cost": 0.5320871258917433
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.15153655390429127,
+        "avg_cost": 0.2805618739629132
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.15153655390429127,
+        "avg_cost": 0.2664802711262915
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.15153655390429127,
+        "avg_cost": 0.16380890198999556
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.15153655390429127,
+        "avg_cost": 0.15920837723919926
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_folding",
+          "algebraic_simplification",
+          "copy_propagation",
+          "dead_code_elimination",
+          "cse",
+          "constant_propagation"
+        ],
+        "fitness": {
+          "exec_time": 22.0,
+          "instr_count": 11,
+          "code_size": 43,
+          "arith_ops": 4
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 22
+      }
+    ],
+    "pareto_front_raw_size": 22,
+    "best_overall": {
+      "genome": [
+        "constant_folding",
+        "algebraic_simplification",
+        "copy_propagation",
+        "dead_code_elimination",
+        "cse",
+        "constant_propagation"
+      ],
+      "fitness": {
+        "exec_time": 22.0,
+        "instr_count": 11,
+        "code_size": 43,
+        "arith_ops": 4
+      },
+      "cost": 0.15153655390429127,
+      "tac": "v1 = INPUT in1\nv2 = INPUT in2\nv4 = INPUT in4\nt5 = v1 / v2\nt10 = v4 / v2\nt12 = v4 / t5\nt14 = v4 * t10\nt40 = 1\nOUTPUT t12\nOUTPUT t40\nOUTPUT t14"
+    },
+    "improvement_pct_exec_time": 83.07692307692308,
+    "generations_to_convergence": 1,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0254",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 129.0,
+      "instr_count": 58,
+      "code_size": 288,
+      "arith_ops": 38
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.18792792761106186,
+        "avg_cost": 0.5741679506937508
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.17907543162068496,
+        "avg_cost": 0.25590115106665356
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.17907543162068496,
+        "avg_cost": 0.17937051482036426
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.17907543162068496,
+        "avg_cost": 0.22957109367550352
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.17907543162068496,
+        "avg_cost": 0.26865704420629005
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "cse",
+          "constant_folding",
+          "copy_propagation",
+          "dead_code_elimination",
+          "cse"
+        ],
+        "fitness": {
+          "exec_time": 25.0,
+          "instr_count": 12,
+          "code_size": 53,
+          "arith_ops": 5
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 17
+      }
+    ],
+    "pareto_front_raw_size": 17,
+    "best_overall": {
+      "genome": [
+        "cse",
+        "constant_folding",
+        "copy_propagation",
+        "dead_code_elimination",
+        "cse"
+      ],
+      "fitness": {
+        "exec_time": 25.0,
+        "instr_count": 12,
+        "code_size": 53,
+        "arith_ops": 5
+      },
+      "cost": 0.17907543162068496,
+      "tac": "v0 = INPUT in0\nc1 = 5\nc3 = -7\nc4 = 3\nt1 = c4 / c3\nt7 = t1 / c4\nt8 = t7 + t7\nt9 = t7 / c4\nt42 = c1 / v0\nOUTPUT t9\nOUTPUT t42\nOUTPUT t8"
+    },
+    "improvement_pct_exec_time": 80.62015503875969,
+    "generations_to_convergence": 2,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0114",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 120.0,
+      "instr_count": 57,
+      "code_size": 275,
+      "arith_ops": 35
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.15129499886078834,
+        "avg_cost": 0.5603286815523657
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.1363491114149009,
+        "avg_cost": 0.26370998519024835
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.12715254044201413,
+        "avg_cost": 0.21059285524417107
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.12715254044201413,
+        "avg_cost": 0.22376979380268855
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.12715254044201413,
+        "avg_cost": 0.15231854256854255
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_folding",
+          "constant_folding",
+          "constant_folding",
+          "cse",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 14.0,
+          "instr_count": 11,
+          "code_size": 39,
+          "arith_ops": 2
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 27
+      }
+    ],
+    "pareto_front_raw_size": 27,
+    "best_overall": {
+      "genome": [
+        "constant_folding",
+        "constant_folding",
+        "constant_folding",
+        "cse",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 14.0,
+        "instr_count": 11,
+        "code_size": 39,
+        "arith_ops": 2
+      },
+      "cost": 0.12715254044201413,
+      "tac": "v1 = INPUT in1\nv3 = INPUT in3\nc2 = 9\nt1 = v3 * c2\nt3 = t1 + v1\nt8 = t3\nt12 = 36\nt41 = t12\nOUTPUT t8\nOUTPUT t3\nOUTPUT t41"
+    },
+    "improvement_pct_exec_time": 88.33333333333333,
+    "generations_to_convergence": 7,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0049",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 108.0,
+      "instr_count": 56,
+      "code_size": 276,
+      "arith_ops": 36
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.23346560846560846,
+        "avg_cost": 0.6050496990261484
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.20900908672647805,
+        "avg_cost": 0.30543286557779303
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.1673999309868875,
+        "avg_cost": 0.26927502683843263
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.1649197722567288,
+        "avg_cost": 0.3080944233571045
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.1649197722567288,
+        "avg_cost": 0.19430737673491294
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_folding",
+          "constant_folding",
+          "constant_folding",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 18.0,
+          "instr_count": 12,
+          "code_size": 49,
+          "arith_ops": 4
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size",
+        "tied_genome_count": 3
+      },
+      {
+        "genome": [
+          "constant_folding",
+          "constant_folding",
+          "cse",
+          "constant_folding",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 18.0,
+          "instr_count": 13,
+          "code_size": 49,
+          "arith_ops": 3
+        },
+        "tradeoff": "fastest (lowest exec_time), smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 21
+      }
+    ],
+    "pareto_front_raw_size": 24,
+    "best_overall": {
+      "genome": [
+        "constant_folding",
+        "constant_folding",
+        "cse",
+        "constant_folding",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 18.0,
+        "instr_count": 13,
+        "code_size": 49,
+        "arith_ops": 3
+      },
+      "cost": 0.1649197722567288,
+      "tac": "v3 = INPUT in3\nv4 = INPUT in4\nc1 = 1\nc4 = -6\nt8 = c1 - v3\nt9 = t8\nt10 = -189\nt12 = t10 / c4\nt18 = t8 - v4\nt19 = t18\nOUTPUT t12\nOUTPUT t19\nOUTPUT t9"
+    },
+    "improvement_pct_exec_time": 83.33333333333333,
+    "generations_to_convergence": 13,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0095",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 112.0,
+      "instr_count": 56,
+      "code_size": 270,
+      "arith_ops": 34
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.18432247899159665,
+        "avg_cost": 0.5694600386450878
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.16537406629318396,
+        "avg_cost": 0.26434073166303557
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.16537406629318396,
+        "avg_cost": 0.19540557889822605
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.16537406629318396,
+        "avg_cost": 0.3592756315489159
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.16537406629318396,
+        "avg_cost": 0.19477396514161233
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "algebraic_simplification",
+          "copy_propagation",
+          "copy_propagation",
+          "copy_propagation",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 19.0,
+          "instr_count": 11,
+          "code_size": 48,
+          "arith_ops": 4
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 24
+      }
+    ],
+    "pareto_front_raw_size": 24,
+    "best_overall": {
+      "genome": [
+        "algebraic_simplification",
+        "copy_propagation",
+        "copy_propagation",
+        "copy_propagation",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 19.0,
+        "instr_count": 11,
+        "code_size": 48,
+        "arith_ops": 4
+      },
+      "cost": 0.16537406629318396,
+      "tac": "v3 = INPUT in3\nc0 = -7\nc1 = 3\nc3 = 0\nc4 = 1\nt4 = c1 / c0\nt5 = t4 + c4\nt6 = t5 / c3\nt7 = t6 - v3\nOUTPUT t7\nOUTPUT t7"
+    },
+    "improvement_pct_exec_time": 83.03571428571429,
+    "generations_to_convergence": 5,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0116",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 116.0,
+      "instr_count": 56,
+      "code_size": 281,
+      "arith_ops": 37
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.05751034307452273,
+        "avg_cost": 0.5017162343391023
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.05751034307452273,
+        "avg_cost": 0.1701747638457664
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.048221845800536435,
+        "avg_cost": 0.19548970624025847
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.048221845800536435,
+        "avg_cost": 0.21263039890248747
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.048221845800536435,
+        "avg_cost": 0.13716943204533705
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_propagation",
+          "constant_folding",
+          "constant_propagation",
+          "copy_propagation",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 5.0,
+          "instr_count": 5,
+          "code_size": 17,
+          "arith_ops": 0
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 24
+      }
+    ],
+    "pareto_front_raw_size": 24,
+    "best_overall": {
+      "genome": [
+        "constant_propagation",
+        "constant_folding",
+        "constant_propagation",
+        "copy_propagation",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 5.0,
+        "instr_count": 5,
+        "code_size": 17,
+        "arith_ops": 0
+      },
+      "cost": 0.048221845800536435,
+      "tac": "t10 = 0\nt31 = -3\nOUTPUT t31\nOUTPUT t10\nOUTPUT t31"
+    },
+    "improvement_pct_exec_time": 95.6896551724138,
+    "generations_to_convergence": 7,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0183",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 118.0,
+      "instr_count": 56,
+      "code_size": 285,
+      "arith_ops": 39
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.12364514202716699,
+        "avg_cost": 0.5105288093931046
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.11443063329771626,
+        "avg_cost": 0.16421189531303265
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.11443063329771626,
+        "avg_cost": 0.17155671801189196
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.11443063329771626,
+        "avg_cost": 0.1169755549238154
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.11443063329771626,
+        "avg_cost": 0.11510341341184332
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "copy_propagation",
+          "dead_code_elimination",
+          "constant_folding",
+          "cse",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 14.0,
+          "instr_count": 8,
+          "code_size": 34,
+          "arith_ops": 3
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 28
+      }
+    ],
+    "pareto_front_raw_size": 28,
+    "best_overall": {
+      "genome": [
+        "copy_propagation",
+        "dead_code_elimination",
+        "constant_folding",
+        "cse",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 14.0,
+        "instr_count": 8,
+        "code_size": 34,
+        "arith_ops": 3
+      },
+      "cost": 0.11443063329771626,
+      "tac": "v4 = INPUT in4\nc3 = 0\nc4 = -6\nt5 = v4 * c4\nt12 = c4 + t5\nt26 = c3 / t5\nOUTPUT t12\nOUTPUT t26"
+    },
+    "improvement_pct_exec_time": 88.13559322033899,
+    "generations_to_convergence": 2,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0201",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 107.0,
+      "instr_count": 56,
+      "code_size": 269,
+      "arith_ops": 34
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.09534267316696335,
+        "avg_cost": 0.5134172588623401
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.047944192008179426,
+        "avg_cost": 0.10812890989526477
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.038355353606543546,
+        "avg_cost": 0.1070181126770967
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.038355353606543546,
+        "avg_cost": 0.21369988142218635
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.038355353606543546,
+        "avg_cost": 0.07261824017902335
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_folding",
+          "constant_folding",
+          "constant_folding",
+          "copy_propagation",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 4.0,
+          "instr_count": 4,
+          "code_size": 12,
+          "arith_ops": 0
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 23
+      }
+    ],
+    "pareto_front_raw_size": 23,
+    "best_overall": {
+      "genome": [
+        "constant_folding",
+        "constant_folding",
+        "constant_folding",
+        "copy_propagation",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 4.0,
+        "instr_count": 4,
+        "code_size": 12,
+        "arith_ops": 0
+      },
+      "cost": 0.038355353606543546,
+      "tac": "v2 = INPUT in2\nt14 = 4410\nOUTPUT t14\nOUTPUT v2"
+    },
+    "improvement_pct_exec_time": 96.26168224299066,
+    "generations_to_convergence": 7,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0230",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 113.0,
+      "instr_count": 56,
+      "code_size": 272,
+      "arith_ops": 36
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.2535464591441296,
+        "avg_cost": 0.596388091864081
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.2029770425869463,
+        "avg_cost": 0.30718404249605435
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.19198197346785323,
+        "avg_cost": 0.22678140639244881
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.1895018147376945,
+        "avg_cost": 0.3878551322200465
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.1895018147376945,
+        "avg_cost": 0.21878666228044813
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_folding",
+          "constant_folding",
+          "constant_folding",
+          "constant_folding",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 22.0,
+          "instr_count": 14,
+          "code_size": 55,
+          "arith_ops": 4
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 22
+      }
+    ],
+    "pareto_front_raw_size": 22,
+    "best_overall": {
+      "genome": [
+        "constant_folding",
+        "constant_folding",
+        "constant_folding",
+        "constant_folding",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 22.0,
+        "instr_count": 14,
+        "code_size": 55,
+        "arith_ops": 4
+      },
+      "cost": 0.1895018147376945,
+      "tac": "v0 = INPUT in0\nv1 = INPUT in1\nc0 = 7\nt4 = v1\nt5 = v0\nt9 = -21\nt11 = t5 * t9\nt17 = -35\nt19 = t17 / c0\nt30 = t11 - t19\nt33 = t4 * t30\nOUTPUT t4\nOUTPUT t33\nOUTPUT t9"
+    },
+    "improvement_pct_exec_time": 80.53097345132744,
+    "generations_to_convergence": 15,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0054",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 118.0,
+      "instr_count": 55,
+      "code_size": 265,
+      "arith_ops": 34
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.12069896656514162,
+        "avg_cost": 0.4916977384028589
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.12069896656514162,
+        "avg_cost": 0.22799360209822223
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.12069896656514162,
+        "avg_cost": 0.12069896656514166
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.12069896656514162,
+        "avg_cost": 0.17567273166207498
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.12069896656514162,
+        "avg_cost": 0.1762084301697538
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_folding",
+          "algebraic_simplification",
+          "copy_propagation",
+          "dead_code_elimination",
+          "cse",
+          "constant_propagation"
+        ],
+        "fitness": {
+          "exec_time": 13.0,
+          "instr_count": 9,
+          "code_size": 32,
+          "arith_ops": 3
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 28
+      }
+    ],
+    "pareto_front_raw_size": 28,
+    "best_overall": {
+      "genome": [
+        "constant_folding",
+        "algebraic_simplification",
+        "copy_propagation",
+        "dead_code_elimination",
+        "cse",
+        "constant_propagation"
+      ],
+      "fitness": {
+        "exec_time": 13.0,
+        "instr_count": 9,
+        "code_size": 32,
+        "arith_ops": 3
+      },
+      "cost": 0.12069896656514162,
+      "tac": "v0 = INPUT in0\nv1 = INPUT in1\nv2 = INPUT in2\nv3 = INPUT in3\nt0 = v0 * v1\nt4 = v2 + v3\nt10 = v3 - t0\nOUTPUT t4\nOUTPUT t10"
+    },
+    "improvement_pct_exec_time": 88.98305084745763,
+    "generations_to_convergence": 1,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0128",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 118.0,
+      "instr_count": 55,
+      "code_size": 285,
+      "arith_ops": 39
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.3304655350596475,
+        "avg_cost": 0.6507030193515476
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.2914180229523673,
+        "avg_cost": 0.4391643429422198
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.2914180229523673,
+        "avg_cost": 0.35795167415595597
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.2914180229523673,
+        "avg_cost": 0.4156550407665484
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.2914180229523673,
+        "avg_cost": 0.3185657075108458
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_folding",
+          "cse",
+          "copy_propagation",
+          "constant_folding",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 34.0,
+          "instr_count": 20,
+          "code_size": 88,
+          "arith_ops": 8
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 21
+      }
+    ],
+    "pareto_front_raw_size": 21,
+    "best_overall": {
+      "genome": [
+        "constant_folding",
+        "cse",
+        "copy_propagation",
+        "constant_folding",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 34.0,
+        "instr_count": 20,
+        "code_size": 88,
+        "arith_ops": 8
+      },
+      "cost": 0.2914180229523673,
+      "tac": "v1 = INPUT in1\nc0 = 2\nc1 = 0\nc3 = 0\nt1 = c3\nt5 = v1 - c0\nt6 = t1\nt8 = 1\nt9 = 0\nt10 = t5 - t8\nt11 = t6\nt12 = t8 / c1\nt13 = v1 - t5\nt17 = t9 / t13\nt22 = t10 / t6\nt24 = t11 - t12\nt39 = t12 + t22\nOUTPUT t24\nOUTPUT t39\nOUTPUT t17"
+    },
+    "improvement_pct_exec_time": 71.1864406779661,
+    "generations_to_convergence": 5,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0222",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 121.0,
+      "instr_count": 55,
+      "code_size": 288,
+      "arith_ops": 40
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.19568841827364553,
+        "avg_cost": 0.5472462790786655
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.18560462580348944,
+        "avg_cost": 0.3160642408937864
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.17055211202938475,
+        "avg_cost": 0.21485647191613105
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.17055211202938475,
+        "avg_cost": 0.26888511057545145
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.17055211202938475,
+        "avg_cost": 0.21109078474135293
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "algebraic_simplification",
+          "constant_folding",
+          "copy_propagation",
+          "cse",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 20.0,
+          "instr_count": 13,
+          "code_size": 52,
+          "arith_ops": 4
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 24
+      }
+    ],
+    "pareto_front_raw_size": 24,
+    "best_overall": {
+      "genome": [
+        "algebraic_simplification",
+        "constant_folding",
+        "copy_propagation",
+        "cse",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 20.0,
+        "instr_count": 13,
+        "code_size": 52,
+        "arith_ops": 4
+      },
+      "cost": 0.17055211202938475,
+      "tac": "v0 = INPUT in0\nv1 = INPUT in1\nc0 = 6\nc2 = 1\nt3 = v1 + v1\nt9 = c0 / t3\nt10 = t9\nt13 = 7\nt15 = c2 - v0\nt33 = t9 * t15\nOUTPUT t33\nOUTPUT t13\nOUTPUT t10"
+    },
+    "improvement_pct_exec_time": 83.47107438016529,
+    "generations_to_convergence": 7,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0297",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 121.0,
+      "instr_count": 55,
+      "code_size": 265,
+      "arith_ops": 34
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.24602072077856557,
+        "avg_cost": 0.5929865958546212
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.23657896185138644,
+        "avg_cost": 0.35441512032849937
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.23657896185138644,
+        "avg_cost": 0.28404168310080935
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.23657896185138644,
+        "avg_cost": 0.23897071817967802
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.23657896185138644,
+        "avg_cost": 0.24085906996511375
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "dead_code_elimination",
+          "copy_propagation",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 26.0,
+          "instr_count": 15,
+          "code_size": 67,
+          "arith_ops": 7
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 21
+      }
+    ],
+    "pareto_front_raw_size": 21,
+    "best_overall": {
+      "genome": [
+        "dead_code_elimination",
+        "copy_propagation",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 26.0,
+        "instr_count": 15,
+        "code_size": 67,
+        "arith_ops": 7
+      },
+      "cost": 0.23657896185138644,
+      "tac": "v2 = INPUT in2\nv3 = INPUT in3\nc0 = -10\nc1 = 5\nc2 = 5\nt1 = v2 - c1\nt3 = c2 / c0\nt4 = v3 - c1\nt5 = t4 * v2\nt16 = t3 * c1\nt21 = t16 + c0\nt35 = t1 + t21\nOUTPUT t21\nOUTPUT t35\nOUTPUT t5"
+    },
+    "improvement_pct_exec_time": 78.51239669421487,
+    "generations_to_convergence": 2,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0002",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 115.0,
+      "instr_count": 54,
+      "code_size": 271,
+      "arith_ops": 36
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.1065331776506171,
+        "avg_cost": 0.5391426829123364
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.09603959807714019,
+        "avg_cost": 0.14977070718774818
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.09603959807714019,
+        "avg_cost": 0.20096819150558656
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.09372478326232538,
+        "avg_cost": 0.2588792528021899
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.09372478326232538,
+        "avg_cost": 0.12558977703303603
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_propagation",
+          "constant_folding",
+          "constant_folding",
+          "algebraic_simplification",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 11.0,
+          "instr_count": 8,
+          "code_size": 28,
+          "arith_ops": 1
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 23
+      }
+    ],
+    "pareto_front_raw_size": 23,
+    "best_overall": {
+      "genome": [
+        "constant_propagation",
+        "constant_folding",
+        "constant_folding",
+        "algebraic_simplification",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 11.0,
+        "instr_count": 8,
+        "code_size": 28,
+        "arith_ops": 1
+      },
+      "cost": 0.09372478326232538,
+      "tac": "v2 = INPUT in2\nt0 = 36\nt6 = 0\nt17 = v2\nt28 = t6 / t17\nt36 = t28\nOUTPUT t36\nOUTPUT t0"
+    },
+    "improvement_pct_exec_time": 90.43478260869566,
+    "generations_to_convergence": 11,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0005",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 123.0,
+      "instr_count": 54,
+      "code_size": 281,
+      "arith_ops": 39
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.15699978436503043,
+        "avg_cost": 0.5463750203703334
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.15699978436503043,
+        "avg_cost": 0.21096145355939067
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.15699978436503043,
+        "avg_cost": 0.24064609751399094
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.15699978436503043,
+        "avg_cost": 0.24920406503240747
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.15699978436503043,
+        "avg_cost": 0.2192647651223296
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "constant_propagation",
+          "cse",
+          "constant_folding",
+          "algebraic_simplification",
+          "copy_propagation",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 19.0,
+          "instr_count": 11,
+          "code_size": 47,
+          "arith_ops": 4
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 22
+      }
+    ],
+    "pareto_front_raw_size": 22,
+    "best_overall": {
+      "genome": [
+        "constant_propagation",
+        "cse",
+        "constant_folding",
+        "algebraic_simplification",
+        "copy_propagation",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 19.0,
+        "instr_count": 11,
+        "code_size": 47,
+        "arith_ops": 4
+      },
+      "cost": 0.15699978436503043,
+      "tac": "v0 = INPUT in0\nt0 = 0\n_pc5 = -7\nt4 = t0 - _pc5\nt8 = v0 * t4\nt18 = t8 * t4\n_pc15 = 1\nt21 = _pc15 / t18\nOUTPUT t21\nOUTPUT t0\nOUTPUT t8"
+    },
+    "improvement_pct_exec_time": 84.55284552845528,
+    "generations_to_convergence": 1,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0033",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 118.0,
+      "instr_count": 54,
+      "code_size": 268,
+      "arith_ops": 36
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.12998039463698458,
+        "avg_cost": 0.5602383562413918
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.12998039463698458,
+        "avg_cost": 0.38316298685480327
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.12998039463698458,
+        "avg_cost": 0.31743192777481083
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.12998039463698458,
+        "avg_cost": 0.13818365017348916
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.12998039463698458,
+        "avg_cost": 0.26546446205882085
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "algebraic_simplification",
+          "constant_folding",
+          "constant_propagation",
+          "copy_propagation",
+          "dead_code_elimination",
+          "cse"
+        ],
+        "fitness": {
+          "exec_time": 16.0,
+          "instr_count": 9,
+          "code_size": 36,
+          "arith_ops": 3
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 20
+      }
+    ],
+    "pareto_front_raw_size": 20,
+    "best_overall": {
+      "genome": [
+        "algebraic_simplification",
+        "constant_folding",
+        "constant_propagation",
+        "copy_propagation",
+        "dead_code_elimination",
+        "cse"
+      ],
+      "fitness": {
+        "exec_time": 16.0,
+        "instr_count": 9,
+        "code_size": 36,
+        "arith_ops": 3
+      },
+      "cost": 0.12998039463698458,
+      "tac": "v4 = INPUT in4\nv5 = INPUT in5\nt1 = 6\nt13 = v5 / v4\nt16 = v4 / t13\nt17 = t1 - t16\nt26 = 14\nOUTPUT t17\nOUTPUT t26"
+    },
+    "improvement_pct_exec_time": 86.44067796610169,
+    "generations_to_convergence": 1,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0059",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 116.0,
+      "instr_count": 54,
+      "code_size": 262,
+      "arith_ops": 33
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.03954378832636268,
+        "avg_cost": 0.4603314594277128
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.029896390863092627,
+        "avg_cost": 0.13914086205862553
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.020248993399822564,
+        "avg_cost": 0.14239734546778066
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.020248993399822564,
+        "avg_cost": 0.290601205970382
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.020248993399822564,
+        "avg_cost": 0.075782064968364
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "copy_propagation",
+          "copy_propagation",
+          "constant_propagation",
+          "constant_propagation",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 2.0,
+          "instr_count": 2,
+          "code_size": 7,
+          "arith_ops": 0
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 23
+      }
+    ],
+    "pareto_front_raw_size": 23,
+    "best_overall": {
+      "genome": [
+        "copy_propagation",
+        "copy_propagation",
+        "constant_propagation",
+        "constant_propagation",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 2.0,
+        "instr_count": 2,
+        "code_size": 7,
+        "arith_ops": 0
+      },
+      "cost": 0.020248993399822564,
+      "tac": "t3 = 1\nOUTPUT t3"
+    },
+    "improvement_pct_exec_time": 98.27586206896552,
+    "generations_to_convergence": 6,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0089",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 118.0,
+      "instr_count": 54,
+      "code_size": 265,
+      "arith_ops": 35
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.10693515938159368,
+        "avg_cost": 0.5063410746927963
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.10693515938159368,
+        "avg_cost": 0.1709859340815529
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.10693515938159368,
+        "avg_cost": 0.1448521327302907
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.10693515938159368,
+        "avg_cost": 0.24057832757758135
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.10693515938159368,
+        "avg_cost": 0.11306456143200629
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "algebraic_simplification",
+          "constant_folding",
+          "constant_propagation",
+          "copy_propagation",
+          "dead_code_elimination",
+          "cse"
+        ],
+        "fitness": {
+          "exec_time": 12.0,
+          "instr_count": 8,
+          "code_size": 32,
+          "arith_ops": 2
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 23
+      }
+    ],
+    "pareto_front_raw_size": 23,
+    "best_overall": {
+      "genome": [
+        "algebraic_simplification",
+        "constant_folding",
+        "constant_propagation",
+        "copy_propagation",
+        "dead_code_elimination",
+        "cse"
+      ],
+      "fitness": {
+        "exec_time": 12.0,
+        "instr_count": 8,
+        "code_size": 32,
+        "arith_ops": 2
+      },
+      "cost": 0.10693515938159368,
+      "tac": "v1 = INPUT in1\nt13 = 1\n_pc2 = 3\nt15 = _pc2 + v1\nt18 = 3\nt22 = t15 / t18\nOUTPUT t13\nOUTPUT t22"
+    },
+    "improvement_pct_exec_time": 89.83050847457628,
+    "generations_to_convergence": 1,
+    "verdict": "PASS"
+  },
+  {
+    "program": "bench_0108",
+    "num_test_sets": 5,
+    "baseline_fitness": {
+      "exec_time": 114.0,
+      "instr_count": 54,
+      "code_size": 261,
+      "arith_ops": 34
+    },
+    "checkpoints": [
+      {
+        "generation": 1,
+        "best_cost": 0.06720203709634691,
+        "avg_cost": 0.49780711639364367
+      },
+      {
+        "generation": 5,
+        "best_cost": 0.05750586179218612,
+        "avg_cost": 0.09896670673377908
+      },
+      {
+        "generation": 10,
+        "best_cost": 0.05750586179218612,
+        "avg_cost": 0.10755998204887926
+      },
+      {
+        "generation": 20,
+        "best_cost": 0.05750586179218612,
+        "avg_cost": 0.1839065302803248
+      },
+      {
+        "generation": 30,
+        "best_cost": 0.05750586179218612,
+        "avg_cost": 0.08883247861220174
+      }
+    ],
+    "pareto_front": [
+      {
+        "genome": [
+          "algebraic_simplification",
+          "constant_folding",
+          "copy_propagation",
+          "copy_propagation",
+          "dead_code_elimination"
+        ],
+        "fitness": {
+          "exec_time": 7.0,
+          "instr_count": 4,
+          "code_size": 17,
+          "arith_ops": 1
+        },
+        "tradeoff": "fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops",
+        "tied_genome_count": 23
+      }
+    ],
+    "pareto_front_raw_size": 23,
+    "best_overall": {
+      "genome": [
+        "algebraic_simplification",
+        "constant_folding",
+        "copy_propagation",
+        "copy_propagation",
+        "dead_code_elimination"
+      ],
+      "fitness": {
+        "exec_time": 7.0,
+        "instr_count": 4,
+        "code_size": 17,
+        "arith_ops": 1
+      },
+      "cost": 0.05750586179218612,
+      "tac": "c1 = 0\nt25 = 0\nt28 = t25 / c1\nOUTPUT t28"
+    },
+    "improvement_pct_exec_time": 93.85964912280701,
+    "generations_to_convergence": 5,
+    "verdict": "PASS"
+  }
+]
