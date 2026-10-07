@@ -1,47 +1,53 @@
-=== bench_0188 ===
-Baseline fitness: {'exec_time': 116.0, 'instr_count': 68, 'code_size': 319, 'arith_ops': 37}
+=== bench_0188 (trace_and_frobenius) ===
+Original source:
+    def trace_and_frobenius(m00, m01, m02, m10, m11, m12, m20, m21, m22):
+        trace = m00 + m11 + m22
+        frobenius_sq = m00 * m00 + m01 * m01 + m02 * m02 + m10 * m10 + m11 * m11 + m12 * m12 + m20 * m20 + m21 * m21 + m22 * m22
+        return trace, frobenius_sq
+Baseline fitness: {'exec_time': 48.0, 'instr_count': 30, 'code_size': 138, 'arith_ops': 19}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4113  avg=0.7313
-  gen   5: best=0.4113  avg=0.5220
-  gen  10: best=0.3781  avg=0.4664
-  gen  20: best=0.3781  avg=0.5055
-  gen  50: best=0.3483  avg=0.3700
-Generations to convergence: 25
-Exec-time improvement vs baseline: 64.7%
-Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'copy_propagation', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 41.0, 'instr_count': 29, 'code_size': 118, 'arith_ops': 9}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
+  gen   1: best=1.0000  avg=1.0000
+  gen   5: best=1.0000  avg=1.0000
+  gen  10: best=1.0000  avg=1.0000
+  gen  20: best=1.0000  avg=1.0000
+  gen  50: best=1.0000  avg=1.0000
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 48.0, 'instr_count': 30, 'code_size': 138, 'arith_ops': 19}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['algebraic_simplification', 'copy_propagation', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 41.0, 'instr_count': 29, 'code_size': 118, 'arith_ops': 9}
-  cost: 0.3483
+  genome: []
+  fitness: {'exec_time': 48.0, 'instr_count': 30, 'code_size': 138, 'arith_ops': 19}
+  cost: 1.0000
   optimized TAC:
-    v0 = INPUT in0
-    v3 = INPUT in3
-    v4 = INPUT in4
-    c2 = 0
-    t0 = v3
-    t5 = c2 / v4
-    t9 = v0
-    t10 = 0
-    t17 = 2
-    t18 = t9
-    t19 = t10 / v4
-    OUTPUT t0
-    s0 = 6
-    OUTPUT s0
-    k1 = 2
-    s1 = t19 * k1
-    OUTPUT s1
-    k2 = 3
-    s2 = t17 * k2
-    OUTPUT s2
-    k3 = 4
-    s3 = t18 * k3
-    OUTPUT s3
-    u0 = v4 + v4
-    w0 = u0 + v4
-    OUTPUT w0
-    u1 = t5 + t5
-    w1 = u1 + t5
-    OUTPUT w1
+    m00 = INPUT m00
+    m01 = INPUT m01
+    m02 = INPUT m02
+    m10 = INPUT m10
+    m11 = INPUT m11
+    m12 = INPUT m12
+    m20 = INPUT m20
+    m21 = INPUT m21
+    m22 = INPUT m22
+    _e1 = m00 + m11
+    trace = _e1 + m22
+    _e2 = m00 * m00
+    _e3 = m01 * m01
+    _e4 = _e2 + _e3
+    _e5 = m02 * m02
+    _e6 = _e4 + _e5
+    _e7 = m10 * m10
+    _e8 = _e6 + _e7
+    _e9 = m11 * m11
+    _e10 = _e8 + _e9
+    _e11 = m12 * m12
+    _e12 = _e10 + _e11
+    _e13 = m20 * m20
+    _e14 = _e12 + _e13
+    _e15 = m21 * m21
+    _e16 = _e14 + _e15
+    _e17 = m22 * m22
+    frobenius_sq = _e16 + _e17
+    OUTPUT trace
+    OUTPUT frobenius_sq
 Correctness verdict: PASS

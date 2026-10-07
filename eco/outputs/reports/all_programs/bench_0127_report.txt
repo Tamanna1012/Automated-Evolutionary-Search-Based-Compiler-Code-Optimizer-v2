@@ -1,56 +1,38 @@
-=== bench_0127 ===
-Baseline fitness: {'exec_time': 100.0, 'instr_count': 64, 'code_size': 303, 'arith_ops': 36}
+=== bench_0127 (naive_poly) ===
+Original source:
+    def naive_poly(x):
+        r = 1 + 9 * x + 2 * (x*x) + 2 * (x*x*x) + 1 * (x*x*x*x)
+        return r
+Baseline fitness: {'exec_time': 39.0, 'instr_count': 19, 'code_size': 101, 'arith_ops': 14}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.5612  avg=0.8177
-  gen   5: best=0.5327  avg=0.6733
-  gen  10: best=0.5263  avg=0.5787
-  gen  20: best=0.5263  avg=0.6060
-  gen  50: best=0.5263  avg=0.5463
-Generations to convergence: 8
-Exec-time improvement vs baseline: 44.0%
-Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 56.0, 'instr_count': 38, 'code_size': 162, 'arith_ops': 15}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
+  gen   1: best=0.8306  avg=0.9721
+  gen   5: best=0.8147  avg=0.8592
+  gen  10: best=0.8147  avg=0.8226
+  gen  20: best=0.8147  avg=0.8366
+  gen  50: best=0.7766  avg=0.7938
+Generations to convergence: 24
+Exec-time improvement vs baseline: 33.3%
+Pareto front: 23 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'cse', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 26.0, 'instr_count': 16, 'code_size': 82, 'arith_ops': 11}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 56.0, 'instr_count': 38, 'code_size': 162, 'arith_ops': 15}
-  cost: 0.5263
+  genome: ['cse', 'copy_propagation', 'cse', 'strength_reduction', 'dead_code_elimination']
+  fitness: {'exec_time': 26.0, 'instr_count': 16, 'code_size': 82, 'arith_ops': 11}
+  cost: 0.7766
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    v2 = INPUT in2
-    t0 = v1
-    t1 = v1 * v2
-    t2 = t0 - v0
-    t4 = t1 * t1
-    t6 = t4 / t1
-    t7 = t1 + t2
-    t13 = t7
-    t14 = t13
-    t15 = t14
-    t18 = t15
-    t27 = 0
-    t29 = v0 * t14
-    t30 = t0 / t6
-    t32 = t18 + t0
-    OUTPUT t32
-    OUTPUT t27
-    k0 = 2
-    s0 = t30 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t2 * k1
-    OUTPUT s1
-    k2 = 2
-    s2 = t15 * k2
-    OUTPUT s2
-    s3 = 3
-    OUTPUT s3
-    w0 = 324
-    OUTPUT w0
-    u1 = t13 + t13
-    w1 = u1 + t13
-    OUTPUT w1
-    u2 = t29 + t29
-    w2 = u2 + t29
-    OUTPUT w2
+    x = INPUT x
+    _k1 = 1
+    _k2 = 9
+    _e1 = _k2 * x
+    _e2 = _k1 + _e1
+    _e3 = x * x
+    _e4 = _e3 + _e3
+    _e5 = _e2 + _e4
+    _e7 = _e3 * x
+    _e8 = _e7 + _e7
+    _e9 = _e5 + _e8
+    _e11 = _e7
+    _e12 = _e11 * x
+    _e13 = _k1 * _e12
+    r = _e9 + _e13
+    OUTPUT r
 Correctness verdict: PASS

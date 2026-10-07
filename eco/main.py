@@ -1,6 +1,8 @@
 """End-to-end experiment driver.
 
-1. Generates the benchmark dataset (200-500 synthetic TAC programs).
+1. Generates the benchmark dataset (200-500 programs: instances of real
+   hand-written kernels compiled to TAC by the ast front end; ``--synthetic``
+   switches to the old random TAC generator).
 2. Runs the full evolutionary search (with per-generation logging) on a
    "deep-dive" subset of programs, producing the detailed per-program
    reports the assignment asks for.
@@ -12,6 +14,7 @@
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import time
@@ -48,13 +51,19 @@ NUM_GENERATIONS = 50
 SEED = 42
 
 
-def main():
+def main(kind: str = "kernels"):
     t_start = time.time()
+    # The default (real-kernel) run writes to eco/outputs; the optional
+    # synthetic run writes to eco/outputs_synthetic so it never overwrites it.
+    out_root = "outputs" if kind == "kernels" else "outputs_synthetic"
+    PLOTS_DIR = os.path.join(HERE, out_root, "plots")
+    REPORTS_DIR = os.path.join(HERE, out_root, "reports")
+    ALL_REPORTS_DIR = os.path.join(REPORTS_DIR, "all_programs")
     os.makedirs(PLOTS_DIR, exist_ok=True)
     os.makedirs(REPORTS_DIR, exist_ok=True)
 
-    print(f"Generating {N_PROGRAMS} benchmark programs...")
-    programs = generate_dataset(N_PROGRAMS, seed=SEED)
+    print(f"Generating {N_PROGRAMS} benchmark programs (kind={kind})...")
+    programs = generate_dataset(N_PROGRAMS, seed=SEED, kind=kind)
     print("  ", dataset_summary(programs))
 
     config = GAConfig(pop_size=POP_SIZE, num_generations=NUM_GENERATIONS, seed=SEED)
@@ -157,4 +166,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Evolutionary compiler-optimizer experiment")
+    parser.add_argument("--synthetic", action="store_true",
+                        help="use the old random synthetic TAC generator instead of the real kernels")
+    args = parser.parse_args()
+    main("synthetic" if args.synthetic else "kernels")

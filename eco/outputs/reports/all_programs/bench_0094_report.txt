@@ -1,52 +1,46 @@
-=== bench_0094 ===
-Baseline fitness: {'exec_time': 97.0, 'instr_count': 63, 'code_size': 314, 'arith_ops': 40}
+=== bench_0094 (triangle_area_twice) ===
+Original source:
+    def triangle_area_twice(x1, y1, x2, y2, x3, y3):
+        area2 = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)
+        side_ab_sq = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
+        side_ac_sq = (x3 - x1) * (x3 - x1) + (y3 - y1) * (y3 - y1)
+        return area2, side_ab_sq, side_ac_sq
+Baseline fitness: {'exec_time': 42.0, 'instr_count': 30, 'code_size': 147, 'arith_ops': 21}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.5697  avg=0.8505
-  gen   5: best=0.5216  avg=0.5683
-  gen  10: best=0.4163  avg=0.5089
-  gen  20: best=0.4163  avg=0.5480
-  gen  50: best=0.4163  avg=0.4367
-Generations to convergence: 10
-Exec-time improvement vs baseline: 56.7%
+  gen   1: best=0.8639  avg=0.9456
+  gen   5: best=0.7088  avg=0.8672
+  gen  10: best=0.7088  avg=0.7702
+  gen  20: best=0.7088  avg=0.7341
+  gen  50: best=0.7088  avg=0.7496
+Generations to convergence: 4
+Exec-time improvement vs baseline: 19.0%
 Pareto front: 23 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['copy_propagation', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 42.0, 'instr_count': 34, 'code_size': 139, 'arith_ops': 10}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
+  genome=['cse', 'strength_reduction', 'copy_propagation', 'cse', 'dead_code_elimination']  fitness={'exec_time': 34.0, 'instr_count': 22, 'code_size': 99, 'arith_ops': 13}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['copy_propagation', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 42.0, 'instr_count': 34, 'code_size': 139, 'arith_ops': 10}
-  cost: 0.4163
+  genome: ['cse', 'strength_reduction', 'copy_propagation', 'cse', 'dead_code_elimination']
+  fitness: {'exec_time': 34.0, 'instr_count': 22, 'code_size': 99, 'arith_ops': 13}
+  cost: 0.7088
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    c1 = 4
-    c2 = -5
-    c3 = 10
-    t1 = v0 + c1
-    t3 = c2
-    t5 = 16
-    t6 = 16
-    t8 = t3
-    t15 = t8
-    t16 = t6 - v0
-    t19 = t16 - t1
-    t22 = t5 / t1
-    t25 = v1 / c3
-    t30 = t15
-    t34 = t30
-    t35 = t34
-    OUTPUT t19
-    s0 = 64
-    OUTPUT s0
-    s1 = 12
-    OUTPUT s1
-    k2 = 3
-    s2 = t35 * k2
-    OUTPUT s2
-    w0 = 12
-    OUTPUT w0
-    u1 = t25 + t25
-    w1 = u1 + t25
-    OUTPUT w1
-    u2 = t22 + t22
-    w2 = u2 + t22
-    OUTPUT w2
+    x1 = INPUT x1
+    y1 = INPUT y1
+    x2 = INPUT x2
+    y2 = INPUT y2
+    x3 = INPUT x3
+    y3 = INPUT y3
+    _e1 = x2 - x1
+    _e2 = y3 - y1
+    _e3 = _e1 * _e2
+    _e4 = x3 - x1
+    _e5 = y2 - y1
+    _e6 = _e4 * _e5
+    area2 = _e3 - _e6
+    _e9 = _e1 * _e1
+    _e12 = _e5 * _e5
+    side_ab_sq = _e9 + _e12
+    _e15 = _e4 * _e4
+    _e18 = _e2 * _e2
+    side_ac_sq = _e15 + _e18
+    OUTPUT area2
+    OUTPUT side_ab_sq
+    OUTPUT side_ac_sq
 Correctness verdict: PASS

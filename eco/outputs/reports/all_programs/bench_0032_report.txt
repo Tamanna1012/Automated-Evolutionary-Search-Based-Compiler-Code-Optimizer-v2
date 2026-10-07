@@ -1,47 +1,35 @@
-=== bench_0032 ===
-Baseline fitness: {'exec_time': 108.0, 'instr_count': 66, 'code_size': 318, 'arith_ops': 40}
+=== bench_0032 (body_mass_index) ===
+Original source:
+    def body_mass_index(weight, height):
+        bmi = weight * 10000 // (height * height)
+        area = height * height
+        ideal = 22 * area // 10000
+        return bmi, ideal
+Baseline fitness: {'exec_time': 26.0, 'instr_count': 12, 'code_size': 54, 'arith_ops': 6}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.3570  avg=0.6872
-  gen   5: best=0.3204  avg=0.3770
-  gen  10: best=0.3144  avg=0.3611
-  gen  20: best=0.3144  avg=0.4436
-  gen  50: best=0.3144  avg=0.3416
-Generations to convergence: 6
-Exec-time improvement vs baseline: 69.4%
-Pareto front: 26 non-dominated individuals, 3 distinct objective-space point(s):
-  genome=['strength_reduction', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 29.0, 'instr_count': 29, 'code_size': 123, 'arith_ops': 11}  -> fastest (lowest exec_time)  (5 genomes tie here)
-  genome=['strength_reduction', 'multiply_fusion', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 33.0, 'instr_count': 27, 'code_size': 109, 'arith_ops': 8}  -> fewest instructions, smallest code size  (20 genomes tie here)
-  genome=['multiply_fusion', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 36.0, 'instr_count': 28, 'code_size': 111, 'arith_ops': 7}  -> fewest arithmetic ops
+  gen   1: best=0.9252  avg=1.0354
+  gen   5: best=0.8809  avg=0.9272
+  gen  10: best=0.8809  avg=0.8967
+  gen  20: best=0.8809  avg=0.8971
+  gen  50: best=0.8809  avg=0.8997
+Generations to convergence: 3
+Exec-time improvement vs baseline: 11.5%
+Pareto front: 24 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 23.0, 'instr_count': 11, 'code_size': 48, 'arith_ops': 5}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (24 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['strength_reduction', 'multiply_fusion', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 33.0, 'instr_count': 27, 'code_size': 109, 'arith_ops': 8}
-  cost: 0.3144
+  genome: ['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 23.0, 'instr_count': 11, 'code_size': 48, 'arith_ops': 5}
+  cost: 0.8809
   optimized TAC:
-    v0 = INPUT in0
-    v4 = INPUT in4
-    c0 = -10
-    c1 = 3
-    t1 = c0
-    t3 = -30
-    t4 = t1
-    t12 = 1
-    t13 = t4
-    t17 = -2
-    t19 = t17 - c0
-    t21 = v0 - t19
-    t22 = v0 - t19
-    t25 = t19 - t12
-    OUTPUT t3
-    OUTPUT t12
-    OUTPUT t25
-    s0 = t13 * c1
-    OUTPUT s0
-    s1 = 2
-    OUTPUT s1
-    s2 = v4 + v4
-    OUTPUT s2
-    w0 = t21 * c1
-    OUTPUT w0
-    w1 = t22 * c1
-    OUTPUT w1
+    weight = INPUT weight
+    height = INPUT height
+    _k1 = 10000
+    _e1 = weight * _k1
+    _e2 = height * height
+    bmi = _e1 / _e2
+    _k2 = 22
+    _e3 = _k2 * _e2
+    ideal = _e3 / _k1
+    OUTPUT bmi
+    OUTPUT ideal
 Correctness verdict: PASS

@@ -288,3 +288,112 @@ def test_report_contents_cover_required_sections(tmp_path):
 def test_main_runs_50_generations_and_reports_dir_is_under_reports():
     assert eco_main.NUM_GENERATIONS == 50
     assert eco_main.ALL_REPORTS_DIR.replace("\\", "/").endswith("outputs/reports/all_programs")
+
+
+# ---------------------------------------------------------------------------
+# Real-kernel dataset: ast front end, ground truth from the Python source
+# ---------------------------------------------------------------------------
+import pytest
+
+from eco.frontend import UnsupportedSyntax, compile_function, run_source
+from eco.kernels import TEMPLATE_NAMES, TEMPLATES, generate_kernel_program
+
+
+def _agree(source, name, inputs_list):
+    comp = compile_function(source)
+    for inputs in inputs_list:
+        res = run(comp.tac, inputs)
+        assert res.ok
+        assert res.outputs == run_source(source, name, inputs), (source, inputs)
+    return comp
+
+
+def test_frontend_matches_python_for_arithmetic_and_multiple_returns():
+    src = "def f(a, b, c):\n    t = a * b + c\n    u = (a - b) * (a - b) - 3\n    return t, u, a + 7\n"
+    _agree(src, "f", [{"a": a, "b": b, "c": c} for a, b, c in [(1, 2, 3), (-4, 5, 0), (9, -9, 2)]])
+
+
+def test_frontend_integer_division_and_unary_minus_and_augassign():
+    src = ("def g(x, y):\n    q = (x * 10) // y\n    n = -x\n    m = -(x + y)\n"
+           "    q += 5\n    q = q * 2\n    return q, n, m\n")
+    _agree(src, "g", [{"x": x, "y": y} for x, y in [(3, 2), (20, 7), (1, 1)]])
+
+
+def test_frontend_is_single_assignment_even_when_python_reassigns():
+    src = "def h(x):\n    r = x\n    r = r * 2\n    r = r + r\n    return r\n"
+    comp = _agree(src, "h", [{"x": v} for v in (-3, 0, 5)])
+    dests = [i[1] for i in comp.tac if i[0] != "output"]
+    assert len(dests) == len(set(dests))
+
+
+def test_frontend_pools_literals_and_keeps_source_redundancy():
+    comp = compile_function("def f(c):\n    a = c * 9 + 1\n    b = c * 9 + 2\n    return a, b\n")
+    nines = [i for i in comp.tac if i[0] == "const" and i[2] == 9]
+    assert len(nines) == 1                      # one const per distinct literal
+    muls = [i for i in comp.tac if i[0] == "bin" and i[2] == "*"]
+    assert len(muls) == 2                       # the repeated c*9 is NOT pre-eliminated
+    assert len(apply_genome(comp.tac, ["cse"])) == len(comp.tac)  # same count, copy replaces mul
+    assert sum(1 for i in apply_genome(comp.tac, ["cse"]) if i[0] == "bin" and i[2] == "*") == 1
+
+
+@pytest.mark.parametrize("src", [
+    "def f(x):\n    return x / 2\n",            # true division
+    "def f(x):\n    return x ** 2\n",
+    "def f(x):\n    return x % 2\n",
+    "def f(x):\n    return x * 1.5\n",
+    "def f(x):\n    if x:\n        return 1\n    return 2\n",
+    "def f(x):\n    return y\n",                 # undefined name
+    "def f(x):\n    x = 1\n",                    # no return
+    "x = 1\n",                                   # no function
+])
+def test_frontend_rejects_unsupported_code(src):
+    with pytest.raises(UnsupportedSyntax):
+        compile_function(src)
+
+
+def test_there_are_30_to_50_kernel_templates():
+    assert 30 <= len(TEMPLATE_NAMES) <= 50
+
+
+def test_every_template_compiles_and_matches_source_across_seeds():
+    for name, make in TEMPLATES.items():
+        for seed in range(12):
+            inst = make(random.Random(seed))
+            lo, hi = inst.domain
+            rng = random.Random(seed + 100)
+            inputs = [{a: rng.randint(lo, hi) for a in inst.arg_names} for _ in range(6)]
+            _agree(inst.source, inst.kernel, inputs)
+
+
+def test_kernel_program_record_is_complete_and_ground_truth_comes_from_source():
+    for pid in range(len(TEMPLATE_NAMES)):
+        prog = generate_kernel_program(pid, random.Random(pid))
+        assert prog.kernel == TEMPLATE_NAMES[pid]
+        assert prog.source_code.startswith("def ")
+        assert len(prog.test_input_sets) == 5 == len(prog.expected_outputs)
+        for ins, want in zip(prog.test_input_sets, prog.expected_outputs):
+            assert want == run_source(prog.source_code, prog.kernel, ins)
+        assert evaluate(prog.tac, prog.test_input_sets, prog.expected_outputs).valid
+        assert prog.baseline_fitness.instr_count == len(prog.tac)
+
+
+def test_default_dataset_is_real_kernels_and_in_spec_range():
+    progs = generate_dataset(300, seed=1)
+    assert 200 <= len(progs) <= 500
+    assert {p.kernel for p in progs} == set(TEMPLATE_NAMES)   # every template is used
+    assert len({p.source_code for p in progs}) > len(TEMPLATE_NAMES)  # instances differ (constants/sizes)
+    assert len({len(p.input_names) for p in progs}) > 3        # varied argument counts
+
+
+def test_synthetic_generator_remains_available_behind_a_flag():
+    progs = generate_dataset(200, seed=1, kind="synthetic")
+    assert all(p.kernel == "synthetic" for p in progs)
+    with pytest.raises(ValueError):
+        generate_dataset(200, seed=1, kind="nonsense")
+
+
+def test_ga_on_a_real_kernel_stays_correct_and_improves():
+    prog = generate_kernel_program(TEMPLATE_NAMES.index("naive_poly"), random.Random(4))
+    res = run_ga(prog.tac, prog.test_input_sets, prog.expected_outputs, GAConfig(pop_size=20, num_generations=15, seed=2))
+    assert res.best_individual.valid
+    assert res.best_individual.fitness.exec_time < prog.baseline_fitness.exec_time

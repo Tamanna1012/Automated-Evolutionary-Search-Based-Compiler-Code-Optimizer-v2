@@ -1,58 +1,42 @@
-=== bench_0155 ===
-Baseline fitness: {'exec_time': 109.0, 'instr_count': 67, 'code_size': 316, 'arith_ops': 37}
+=== bench_0155 (simple_interest) ===
+Original source:
+    def simple_interest(principal, rate, years):
+        interest = principal * rate * years // 100
+        total = principal + principal * rate * years // 100
+        monthly = (principal + principal * rate * years // 100) // 24
+        return interest, total, monthly
+Baseline fitness: {'exec_time': 44.0, 'instr_count': 20, 'code_size': 95, 'arith_ops': 12}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.5530  avg=0.8012
-  gen   5: best=0.5113  avg=0.5833
-  gen  10: best=0.5113  avg=0.5452
-  gen  20: best=0.4937  avg=0.6058
-  gen  50: best=0.4937  avg=0.5010
-Generations to convergence: 13
-Exec-time improvement vs baseline: 45.0%
-Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['constant_folding', 'constant_folding', 'multiply_fusion', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 60.0, 'instr_count': 40, 'code_size': 159, 'arith_ops': 12}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
+  gen   1: best=0.9198  avg=1.0234
+  gen   5: best=0.7875  avg=0.9041
+  gen  10: best=0.7875  avg=0.8282
+  gen  20: best=0.7875  avg=0.8228
+  gen  50: best=0.7875  avg=0.8130
+Generations to convergence: 4
+Exec-time improvement vs baseline: 22.7%
+Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'cse', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 34.0, 'instr_count': 18, 'code_size': 77, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'constant_folding', 'multiply_fusion', 'algebraic_simplification', 'dead_code_elimination']
-  fitness: {'exec_time': 60.0, 'instr_count': 40, 'code_size': 159, 'arith_ops': 12}
-  cost: 0.4937
+  genome: ['cse', 'copy_propagation', 'cse', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 34.0, 'instr_count': 18, 'code_size': 77, 'arith_ops': 8}
+  cost: 0.7875
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    v2 = INPUT in2
-    v3 = INPUT in3
-    v4 = INPUT in4
-    c0 = 1
-    c1 = 1
-    c3 = 1
-    t2 = v2 / v0
-    t3 = 0
-    t6 = c3 / t3
-    t7 = v2
-    t8 = c1
-    t10 = t8
-    t13 = v1 * v4
-    t15 = t13 - c0
-    t21 = t2 - v1
-    t23 = t10
-    t24 = v0 + t21
-    t25 = t23
-    t28 = t25
-    OUTPUT t23
-    OUTPUT t7
-    OUTPUT t6
-    k0 = 4
-    s0 = t2 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t6 * k1
-    OUTPUT s1
-    k2 = 4
-    s2 = t24 * k2
-    OUTPUT s2
-    k3 = 4
-    s3 = t15 * k3
-    OUTPUT s3
-    w0 = v3 * k1
-    OUTPUT w0
-    w1 = t28 * k1
-    OUTPUT w1
+    principal = INPUT principal
+    rate = INPUT rate
+    years = INPUT years
+    _e1 = principal * rate
+    _e2 = _e1 * years
+    _k1 = 100
+    interest = _e2 / _k1
+    _e4 = _e2
+    _e5 = _e4 / _k1
+    total = principal + _e5
+    _e7 = _e2
+    _e8 = _e7 / _k1
+    _e9 = principal + _e8
+    _k2 = 24
+    monthly = _e9 / _k2
+    OUTPUT interest
+    OUTPUT total
+    OUTPUT monthly
 Correctness verdict: PASS

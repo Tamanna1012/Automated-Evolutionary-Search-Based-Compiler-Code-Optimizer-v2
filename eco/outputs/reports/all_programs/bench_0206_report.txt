@@ -1,45 +1,33 @@
-=== bench_0206 ===
-Baseline fitness: {'exec_time': 110.0, 'instr_count': 69, 'code_size': 347, 'arith_ops': 45}
+=== bench_0206 (ohms_law_power) ===
+Original source:
+    def ohms_law_power(current, resistance):
+        voltage = current * resistance
+        power = current * current * resistance
+        check = voltage * current
+        return voltage, power, check
+Baseline fitness: {'exec_time': 17.0, 'instr_count': 9, 'code_size': 37, 'arith_ops': 4}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4095  avg=0.7545
-  gen   5: best=0.3897  avg=0.4150
-  gen  10: best=0.3306  avg=0.4679
-  gen  20: best=0.2949  avg=0.4415
-  gen  50: best=0.2949  avg=0.3296
-Generations to convergence: 12
-Exec-time improvement vs baseline: 71.8%
-Pareto front: 20 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['copy_propagation', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 31.0, 'instr_count': 27, 'code_size': 114, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (20 genomes tie here)
+  gen   1: best=1.0000  avg=1.0000
+  gen   5: best=1.0000  avg=1.0000
+  gen  10: best=1.0000  avg=1.0000
+  gen  20: best=1.0000  avg=1.0000
+  gen  50: best=1.0000  avg=1.0000
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 17.0, 'instr_count': 9, 'code_size': 37, 'arith_ops': 4}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['copy_propagation', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 31.0, 'instr_count': 27, 'code_size': 114, 'arith_ops': 8}
-  cost: 0.2949
+  genome: []
+  fitness: {'exec_time': 17.0, 'instr_count': 9, 'code_size': 37, 'arith_ops': 4}
+  cost: 1.0000
   optimized TAC:
-    c1 = 9
-    c2 = -9
-    t1 = c1
-    t4 = t1
-    t5 = t4
-    t12 = -90
-    t13 = t12 * c2
-    t14 = 8
-    t16 = t14 + t1
-    t22 = 0
-    t41 = c2 - t5
-    OUTPUT t22
-    s0 = 27
-    OUTPUT s0
-    k1 = 3
-    s1 = t41 * k1
-    OUTPUT s1
-    s2 = 0
-    OUTPUT s2
-    s3 = -30
-    OUTPUT s3
-    u0 = t16 + t16
-    w0 = u0 + t16
-    OUTPUT w0
-    u1 = t13 + t13
-    w1 = u1 + u1
-    OUTPUT w1
+    current = INPUT current
+    resistance = INPUT resistance
+    voltage = current * resistance
+    _e1 = current * current
+    power = _e1 * resistance
+    check = voltage * current
+    OUTPUT voltage
+    OUTPUT power
+    OUTPUT check
 Correctness verdict: PASS

@@ -1,56 +1,46 @@
-=== bench_0002 ===
-Baseline fitness: {'exec_time': 122.0, 'instr_count': 75, 'code_size': 368, 'arith_ops': 46}
+=== bench_0002 (poly_with_derivative) ===
+Original source:
+    def poly_with_derivative(x):
+        x2 = x * x
+        x3 = x2 * x
+        value = 4 + 6 * x + 3 * x2 + 9 * x3
+        slope = 6 + 2 * 3 * x + 3 * 9 * x2
+        return value, slope
+Baseline fitness: {'exec_time': 40.0, 'instr_count': 22, 'code_size': 112, 'arith_ops': 14}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4680  avg=0.7662
-  gen   5: best=0.4241  avg=0.5672
-  gen  10: best=0.4241  avg=0.4670
-  gen  20: best=0.4241  avg=0.5449
-  gen  50: best=0.4241  avg=0.4450
-Generations to convergence: 4
-Exec-time improvement vs baseline: 64.8%
-Pareto front: 22 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['constant_folding', 'algebraic_simplification', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']  fitness={'exec_time': 43.0, 'instr_count': 37, 'code_size': 169, 'arith_ops': 18}  -> fastest (lowest exec_time), fewest instructions, smallest code size  (21 genomes tie here)
-  genome=['constant_folding', 'constant_folding', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 53.0, 'instr_count': 39, 'code_size': 172, 'arith_ops': 16}  -> fewest arithmetic ops
+  gen   1: best=0.9304  avg=1.0709
+  gen   5: best=0.9038  avg=0.9339
+  gen  10: best=0.9038  avg=0.9191
+  gen  20: best=0.9038  avg=0.9153
+  gen  50: best=0.9038  avg=0.9114
+Generations to convergence: 3
+Exec-time improvement vs baseline: 12.5%
+Pareto front: 24 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['copy_propagation', 'dead_code_elimination', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 35.0, 'instr_count': 21, 'code_size': 104, 'arith_ops': 12}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (24 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'algebraic_simplification', 'copy_propagation', 'strength_reduction', 'dead_code_elimination']
-  fitness: {'exec_time': 43.0, 'instr_count': 37, 'code_size': 169, 'arith_ops': 18}
-  cost: 0.4241
+  genome: ['copy_propagation', 'dead_code_elimination', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 35.0, 'instr_count': 21, 'code_size': 104, 'arith_ops': 12}
+  cost: 0.9038
   optimized TAC:
-    v2 = INPUT in2
-    c0 = -6
-    c3 = 0
-    t0 = 36
-    t1 = c3
-    t7 = 0
-    t12 = t7 + c0
-    t13 = t12
-    t19 = v2
-    t20 = 1
-    t24 = t13
-    t25 = c3 - t20
-    t26 = t1 + v2
-    t27 = t26 / t1
-    t28 = t1 / v2
-    t36 = t28 + t1
-    t40 = c3 - v2
-    OUTPUT t36
-    OUTPUT t0
-    _sr1 = t25 + t25
-    s0 = _sr1 + t25
-    OUTPUT s0
-    s1 = t24 + t24
-    OUTPUT s1
-    s2 = t40 + t40
-    OUTPUT s2
-    s3 = t1 + t1
-    OUTPUT s3
-    u0 = t27 + t27
-    w0 = u0 + t27
-    OUTPUT w0
-    u1 = t19 + t19
-    w1 = u1 + t19
-    OUTPUT w1
-    u2 = t19 + t19
-    w2 = u2 + t19
-    OUTPUT w2
+    x = INPUT x
+    x2 = x * x
+    x3 = x2 * x
+    _k1 = 4
+    _k2 = 6
+    _e1 = _k2 * x
+    _e2 = _k1 + _e1
+    _k3 = 3
+    _e3 = _k3 * x2
+    _e4 = _e2 + _e3
+    _k4 = 9
+    _e5 = _k4 * x3
+    value = _e4 + _e5
+    _e6 = 6
+    _e7 = _e6 * x
+    _e8 = _k2 + _e7
+    _e9 = 27
+    _e10 = _e9 * x2
+    slope = _e8 + _e10
+    OUTPUT value
+    OUTPUT slope
 Correctness verdict: PASS

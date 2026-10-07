@@ -1,45 +1,36 @@
-=== bench_0293 ===
-Baseline fitness: {'exec_time': 102.0, 'instr_count': 61, 'code_size': 286, 'arith_ops': 34}
+=== bench_0293 (rgb_to_gray) ===
+Original source:
+    def rgb_to_gray(r, g, b):
+        gray = (299 * r + 587 * g + 114 * b) // 1000
+        return gray
+Baseline fitness: {'exec_time': 23.0, 'instr_count': 14, 'code_size': 61, 'arith_ops': 6}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4070  avg=0.7385
-  gen   5: best=0.4010  avg=0.5097
-  gen  10: best=0.3735  avg=0.4502
-  gen  20: best=0.3701  avg=0.5075
-  gen  50: best=0.3701  avg=0.3810
-Generations to convergence: 15
-Exec-time improvement vs baseline: 58.8%
-Pareto front: 22 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'copy_propagation', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 40.0, 'instr_count': 28, 'code_size': 120, 'arith_ops': 11}  -> fastest (lowest exec_time)
-  genome=['algebraic_simplification', 'copy_propagation', 'copy_propagation', 'multiply_fusion', 'dead_code_elimination']  fitness={'exec_time': 42.0, 'instr_count': 26, 'code_size': 108, 'arith_ops': 9}  -> fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=1.0000  avg=1.0662
+  gen   5: best=1.0000  avg=1.0000
+  gen  10: best=1.0000  avg=1.0120
+  gen  20: best=1.0000  avg=1.0060
+  gen  50: best=1.0000  avg=1.0241
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 27 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 23.0, 'instr_count': 14, 'code_size': 61, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (27 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['algebraic_simplification', 'copy_propagation', 'copy_propagation', 'multiply_fusion', 'dead_code_elimination']
-  fitness: {'exec_time': 42.0, 'instr_count': 26, 'code_size': 108, 'arith_ops': 9}
-  cost: 0.3701
+  genome: []
+  fitness: {'exec_time': 23.0, 'instr_count': 14, 'code_size': 61, 'arith_ops': 6}
+  cost: 1.0000
   optimized TAC:
-    v2 = INPUT in2
-    v4 = INPUT in4
-    c0 = -5
-    t0 = c0
-    t1 = t0
-    t2 = v4 * c0
-    t5 = t2 * c0
-    t6 = v2 - t2
-    t10 = t1
-    t11 = 0
-    t19 = t0 * t10
-    t22 = t11
-    t29 = t5 * t22
-    OUTPUT t11
-    k0 = 2
-    s0 = t0 * k0
-    OUTPUT s0
-    s1 = 0
-    OUTPUT s1
-    k2 = 3
-    s2 = t19 * k2
-    OUTPUT s2
-    w0 = t6 * k2
-    OUTPUT w0
-    w1 = t29 * k2
-    OUTPUT w1
+    r = INPUT r
+    g = INPUT g
+    b = INPUT b
+    _k1 = 299
+    _e1 = _k1 * r
+    _k2 = 587
+    _e2 = _k2 * g
+    _e3 = _e1 + _e2
+    _k3 = 114
+    _e4 = _k3 * b
+    _e5 = _e3 + _e4
+    _k4 = 1000
+    gray = _e5 / _k4
+    OUTPUT gray
 Correctness verdict: PASS

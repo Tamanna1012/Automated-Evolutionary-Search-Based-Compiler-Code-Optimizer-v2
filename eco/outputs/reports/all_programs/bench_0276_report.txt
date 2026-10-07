@@ -1,42 +1,43 @@
-=== bench_0276 ===
-Baseline fitness: {'exec_time': 102.0, 'instr_count': 59, 'code_size': 271, 'arith_ops': 30}
+=== bench_0276 (weighted_average) ===
+Original source:
+    def weighted_average(x0, x1, x2, w0, w1, w2):
+        avg = (w0 * x0 + w1 * x1 + w2 * x2) // (w0 + w1 + w2)
+        total_weight = w0 + w1 + w2
+        scaled = (w0 * x0 + w1 * x1 + w2 * x2) // total_weight
+        return avg, total_weight, scaled
+Baseline fitness: {'exec_time': 43.0, 'instr_count': 25, 'code_size': 117, 'arith_ops': 16}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4829  avg=0.7718
-  gen   5: best=0.4393  avg=0.5184
-  gen  10: best=0.3848  avg=0.4680
-  gen  20: best=0.3848  avg=0.4822
-  gen  50: best=0.3848  avg=0.4342
-Generations to convergence: 7
-Exec-time improvement vs baseline: 55.9%
-Pareto front: 19 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['copy_propagation', 'constant_folding', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 45.0, 'instr_count': 24, 'code_size': 106, 'arith_ops': 9}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (19 genomes tie here)
+  gen   1: best=0.8770  avg=0.9508
+  gen   5: best=0.7440  avg=0.8819
+  gen  10: best=0.7440  avg=0.7939
+  gen  20: best=0.7440  avg=0.7795
+  gen  50: best=0.6996  avg=0.7173
+Generations to convergence: 46
+Exec-time improvement vs baseline: 27.9%
+Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 31.0, 'instr_count': 19, 'code_size': 81, 'arith_ops': 10}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['copy_propagation', 'constant_folding', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 45.0, 'instr_count': 24, 'code_size': 106, 'arith_ops': 9}
-  cost: 0.3848
+  genome: ['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']
+  fitness: {'exec_time': 31.0, 'instr_count': 19, 'code_size': 81, 'arith_ops': 10}
+  cost: 0.6996
   optimized TAC:
-    c1 = 0
-    c3 = 0
-    c4 = 0
-    t1 = c4 / c3
-    t8 = t1 / c4
-    t14 = 0
-    t19 = c3 + t8
-    t22 = t14 / c1
-    t25 = c4 / c1
-    t31 = t25 / c1
-    OUTPUT t19
-    OUTPUT t8
-    OUTPUT c1
-    s0 = 0
-    OUTPUT s0
-    k1 = 4
-    s1 = t22 * k1
-    OUTPUT s1
-    w0 = t1 * k1
-    OUTPUT w0
-    w1 = 28
-    OUTPUT w1
-    w2 = t31 * k1
-    OUTPUT w2
+    x0 = INPUT x0
+    x1 = INPUT x1
+    x2 = INPUT x2
+    w0 = INPUT w0
+    w1 = INPUT w1
+    w2 = INPUT w2
+    _e1 = w0 * x0
+    _e2 = w1 * x1
+    _e3 = _e1 + _e2
+    _e4 = w2 * x2
+    _e5 = _e3 + _e4
+    _e6 = w0 + w1
+    _e7 = _e6 + w2
+    avg = _e5 / _e7
+    _e13 = _e3 + _e4
+    scaled = _e13 / _e7
+    OUTPUT avg
+    OUTPUT _e7
+    OUTPUT scaled
 Correctness verdict: PASS

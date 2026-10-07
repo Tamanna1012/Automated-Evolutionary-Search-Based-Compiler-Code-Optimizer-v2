@@ -1,47 +1,38 @@
-=== bench_0231 ===
-Baseline fitness: {'exec_time': 103.0, 'instr_count': 58, 'code_size': 258, 'arith_ops': 28}
+=== bench_0231 (affine_transform_2d) ===
+Original source:
+    def affine_transform_2d(x, y):
+        x2 = 4 * x + (-3) * y + 0
+        y2 = 2 * x + (-2) * y + (-8)
+        return x2, y2
+Baseline fitness: {'exec_time': 26.0, 'instr_count': 18, 'code_size': 82, 'arith_ops': 8}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4309  avg=0.7432
-  gen   5: best=0.3924  avg=0.5290
-  gen  10: best=0.3914  avg=0.4183
-  gen  20: best=0.3820  avg=0.5466
-  gen  50: best=0.3820  avg=0.4091
-Generations to convergence: 11
-Exec-time improvement vs baseline: 61.2%
-Pareto front: 23 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['strength_reduction', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 33.0, 'instr_count': 31, 'code_size': 127, 'arith_ops': 12}  -> fastest (lowest exec_time)  (2 genomes tie here)
-  genome=['strength_reduction', 'algebraic_simplification', 'copy_propagation', 'multiply_fusion', 'dead_code_elimination']  fitness={'exec_time': 40.0, 'instr_count': 28, 'code_size': 105, 'arith_ops': 7}  -> fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=0.8467  avg=1.0404
+  gen   5: best=0.8467  avg=0.9498
+  gen  10: best=0.8467  avg=0.8668
+  gen  20: best=0.8140  avg=0.8759
+  gen  50: best=0.8140  avg=0.8361
+Generations to convergence: 15
+Exec-time improvement vs baseline: 26.9%
+Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['strength_reduction', 'cse', 'copy_propagation', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 19.0, 'instr_count': 15, 'code_size': 67, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['strength_reduction', 'algebraic_simplification', 'copy_propagation', 'multiply_fusion', 'dead_code_elimination']
-  fitness: {'exec_time': 40.0, 'instr_count': 28, 'code_size': 105, 'arith_ops': 7}
-  cost: 0.3820
+  genome: ['strength_reduction', 'cse', 'copy_propagation', 'algebraic_simplification', 'dead_code_elimination']
+  fitness: {'exec_time': 19.0, 'instr_count': 15, 'code_size': 67, 'arith_ops': 7}
+  cost: 0.8140
   optimized TAC:
-    v0 = INPUT in0
-    v4 = INPUT in4
-    v5 = INPUT in5
-    t1 = v4
-    t2 = v0 * v0
-    t3 = 1
-    t4 = t1
-    t5 = t4
-    t12 = t5
-    t13 = t12
-    t16 = t13
-    OUTPUT t5
-    OUTPUT t3
-    OUTPUT t13
-    k0 = 3
-    s0 = t16 * k0
-    OUTPUT s0
-    k1 = 4
-    s1 = v5 * k1
-    OUTPUT s1
-    s2 = v0 + v0
-    OUTPUT s2
-    s3 = t2 * k1
-    OUTPUT s3
-    w0 = v4 * k0
-    OUTPUT w0
-    w1 = t3 * k0
-    OUTPUT w1
+    x = INPUT x
+    y = INPUT y
+    _sr1 = x + x
+    _e1 = _sr1 + _sr1
+    _k2 = -3
+    _e2 = _k2 * y
+    _e3 = _e1 + _e2
+    x2 = _e3
+    _k5 = -2
+    _e5 = _k5 * y
+    _e6 = _sr1 + _e5
+    _k6 = -8
+    y2 = _e6 + _k6
+    OUTPUT x2
+    OUTPUT y2
 Correctness verdict: PASS

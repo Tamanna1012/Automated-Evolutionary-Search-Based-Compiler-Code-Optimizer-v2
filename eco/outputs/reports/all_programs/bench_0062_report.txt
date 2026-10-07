@@ -1,49 +1,53 @@
-=== bench_0062 ===
-Baseline fitness: {'exec_time': 104.0, 'instr_count': 59, 'code_size': 301, 'arith_ops': 40}
+=== bench_0062 (trace_and_frobenius) ===
+Original source:
+    def trace_and_frobenius(m00, m01, m02, m10, m11, m12, m20, m21, m22):
+        trace = m00 + m11 + m22
+        frobenius_sq = m00 * m00 + m01 * m01 + m02 * m02 + m10 * m10 + m11 * m11 + m12 * m12 + m20 * m20 + m21 * m21 + m22 * m22
+        return trace, frobenius_sq
+Baseline fitness: {'exec_time': 48.0, 'instr_count': 30, 'code_size': 138, 'arith_ops': 19}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4607  avg=0.7933
-  gen   5: best=0.4607  avg=0.5779
-  gen  10: best=0.4238  avg=0.4974
-  gen  20: best=0.4128  avg=0.5636
-  gen  50: best=0.4128  avg=0.4458
-Generations to convergence: 13
-Exec-time improvement vs baseline: 51.9%
-Pareto front: 21 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'copy_propagation', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 46.0, 'instr_count': 32, 'code_size': 138, 'arith_ops': 13}  -> fastest (lowest exec_time)
-  genome=['multiply_fusion', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination', 'algebraic_simplification']  fitness={'exec_time': 50.0, 'instr_count': 30, 'code_size': 124, 'arith_ops': 10}  -> fewest instructions, smallest code size, fewest arithmetic ops  (20 genomes tie here)
+  gen   1: best=1.0000  avg=1.0000
+  gen   5: best=1.0000  avg=1.0000
+  gen  10: best=1.0000  avg=1.0000
+  gen  20: best=1.0000  avg=1.0000
+  gen  50: best=1.0000  avg=1.0000
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 48.0, 'instr_count': 30, 'code_size': 138, 'arith_ops': 19}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['multiply_fusion', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination', 'algebraic_simplification']
-  fitness: {'exec_time': 50.0, 'instr_count': 30, 'code_size': 124, 'arith_ops': 10}
-  cost: 0.4128
+  genome: []
+  fitness: {'exec_time': 48.0, 'instr_count': 30, 'code_size': 138, 'arith_ops': 19}
+  cost: 1.0000
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    c0 = 1
-    c2 = -8
-    c3 = 1
-    t2 = c0
-    t3 = v0
-    t10 = v0 * v1
-    t12 = v0 * v1
-    t13 = t2 + c3
-    t17 = t10
-    t20 = t3
-    t29 = t13 * c2
-    t31 = c2 / t20
-    t33 = t29 / c2
-    OUTPUT t17
-    OUTPUT t33
-    k0 = 4
-    s0 = k0
-    OUTPUT s0
-    k1 = 4
-    s1 = t10 * k1
-    OUTPUT s1
-    _mf1 = 3
-    w0 = t12 * _mf1
-    OUTPUT w0
-    w1 = t31 * _mf1
-    OUTPUT w1
-    w2 = t17 * _mf1
-    OUTPUT w2
+    m00 = INPUT m00
+    m01 = INPUT m01
+    m02 = INPUT m02
+    m10 = INPUT m10
+    m11 = INPUT m11
+    m12 = INPUT m12
+    m20 = INPUT m20
+    m21 = INPUT m21
+    m22 = INPUT m22
+    _e1 = m00 + m11
+    trace = _e1 + m22
+    _e2 = m00 * m00
+    _e3 = m01 * m01
+    _e4 = _e2 + _e3
+    _e5 = m02 * m02
+    _e6 = _e4 + _e5
+    _e7 = m10 * m10
+    _e8 = _e6 + _e7
+    _e9 = m11 * m11
+    _e10 = _e8 + _e9
+    _e11 = m12 * m12
+    _e12 = _e10 + _e11
+    _e13 = m20 * m20
+    _e14 = _e12 + _e13
+    _e15 = m21 * m21
+    _e16 = _e14 + _e15
+    _e17 = m22 * m22
+    frobenius_sq = _e16 + _e17
+    OUTPUT trace
+    OUTPUT frobenius_sq
 Correctness verdict: PASS

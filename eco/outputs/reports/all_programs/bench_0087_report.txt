@@ -1,49 +1,37 @@
-=== bench_0087 ===
-Baseline fitness: {'exec_time': 101.0, 'instr_count': 59, 'code_size': 286, 'arith_ops': 36}
+=== bench_0087 (quadratic_value_and_slope) ===
+Original source:
+    def quadratic_value_and_slope(a, b, c, x):
+        y = a * x * x + b * x + c
+        dy = 2 * a * x + b
+        return y, dy
+Baseline fitness: {'exec_time': 25.0, 'instr_count': 15, 'code_size': 66, 'arith_ops': 8}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.5199  avg=0.7850
-  gen   5: best=0.4820  avg=0.5392
-  gen  10: best=0.4667  avg=0.5428
-  gen  20: best=0.4480  avg=0.6111
-  gen  50: best=0.4480  avg=0.4821
-Generations to convergence: 12
-Exec-time improvement vs baseline: 52.5%
-Pareto front: 19 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['multiply_fusion', 'algebraic_simplification', 'constant_folding', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 48.0, 'instr_count': 31, 'code_size': 131, 'arith_ops': 12}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (19 genomes tie here)
+  gen   1: best=0.9382  avg=0.9853
+  gen   5: best=0.9382  avg=0.9396
+  gen  10: best=0.9382  avg=0.9458
+  gen  20: best=0.9382  avg=0.9499
+  gen  50: best=0.9382  avg=0.9479
+Generations to convergence: 1
+Exec-time improvement vs baseline: 12.0%
+Pareto front: 25 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'constant_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 22.0, 'instr_count': 14, 'code_size': 62, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (25 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['multiply_fusion', 'algebraic_simplification', 'constant_folding', 'copy_propagation', 'dead_code_elimination']
-  fitness: {'exec_time': 48.0, 'instr_count': 31, 'code_size': 131, 'arith_ops': 12}
-  cost: 0.4480
+  genome: ['cse', 'constant_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 22.0, 'instr_count': 14, 'code_size': 62, 'arith_ops': 8}
+  cost: 0.9382
   optimized TAC:
-    v0 = INPUT in0
-    v3 = INPUT in3
-    v4 = INPUT in4
-    v5 = INPUT in5
-    c0 = 6
-    c2 = 1
-    t2 = c0 * v3
-    t3 = v4 + c0
-    t5 = c0 / t3
-    t6 = 54
-    t7 = t6
-    t12 = t7 - c2
-    t18 = t12 - c0
-    t19 = v5 + t2
-    OUTPUT t18
-    OUTPUT t6
-    k0 = 3
-    s0 = t5 * k0
-    OUTPUT s0
-    k1 = 2
-    s1 = t19 * k1
-    OUTPUT s1
-    k2 = 2
-    s2 = v0 * k2
-    OUTPUT s2
-    w0 = t6 * k0
-    OUTPUT w0
-    w1 = v5 * k0
-    OUTPUT w1
-    w2 = v3 * k0
-    OUTPUT w2
+    a = INPUT a
+    b = INPUT b
+    c = INPUT c
+    x = INPUT x
+    _e1 = a * x
+    _e2 = _e1 * x
+    _e3 = b * x
+    _e4 = _e2 + _e3
+    y = _e4 + c
+    _e5 = a + a
+    _e6 = _e5 * x
+    dy = _e6 + b
+    OUTPUT y
+    OUTPUT dy
 Correctness verdict: PASS

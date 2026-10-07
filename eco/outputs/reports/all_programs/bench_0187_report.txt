@@ -1,45 +1,37 @@
-=== bench_0187 ===
-Baseline fitness: {'exec_time': 88.0, 'instr_count': 53, 'code_size': 250, 'arith_ops': 29}
+=== bench_0187 (matrix_vector) ===
+Original source:
+    def matrix_vector(m00, m01, m10, m11, v0, v1):
+        y0 = m00 * v0 + m01 * v1
+        y1 = m10 * v0 + m11 * v1
+        return y0, y1
+Baseline fitness: {'exec_time': 22.0, 'instr_count': 14, 'code_size': 54, 'arith_ops': 6}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.5432  avg=0.7877
-  gen   5: best=0.5105  avg=0.5797
-  gen  10: best=0.4549  avg=0.5275
-  gen  20: best=0.4549  avg=0.5897
-  gen  50: best=0.4549  avg=0.4834
-Generations to convergence: 9
-Exec-time improvement vs baseline: 58.0%
-Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['constant_folding', 'copy_propagation', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 37.0, 'instr_count': 27, 'code_size': 119, 'arith_ops': 12}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=1.0000  avg=1.0000
+  gen   5: best=1.0000  avg=1.0000
+  gen  10: best=1.0000  avg=1.0000
+  gen  20: best=1.0000  avg=1.0000
+  gen  50: best=1.0000  avg=1.0000
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 22.0, 'instr_count': 14, 'code_size': 54, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'copy_propagation', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 37.0, 'instr_count': 27, 'code_size': 119, 'arith_ops': 12}
-  cost: 0.4549
+  genome: []
+  fitness: {'exec_time': 22.0, 'instr_count': 14, 'code_size': 54, 'arith_ops': 6}
+  cost: 1.0000
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    v2 = INPUT in2
-    c0 = -7
-    c2 = -7
-    c3 = 1
-    t0 = v2 + c2
-    t1 = v0 + v2
-    t2 = v0 + v2
-    t5 = v1 * t1
-    t6 = v1
-    t12 = t5 / c0
-    t18 = v1 + t6
-    t21 = c3 / c2
-    t23 = t18 - t21
-    t30 = t23 - t2
-    OUTPUT t12
-    OUTPUT t2
-    OUTPUT t1
-    s0 = 3
-    OUTPUT s0
-    k1 = 3
-    s1 = t30 * k1
-    OUTPUT s1
-    u0 = t0 + t0
-    w0 = u0 + u0
-    OUTPUT w0
+    m00 = INPUT m00
+    m01 = INPUT m01
+    m10 = INPUT m10
+    m11 = INPUT m11
+    v0 = INPUT v0
+    v1 = INPUT v1
+    _e1 = m00 * v0
+    _e2 = m01 * v1
+    y0 = _e1 + _e2
+    _e3 = m10 * v0
+    _e4 = m11 * v1
+    y1 = _e3 + _e4
+    OUTPUT y0
+    OUTPUT y1
 Correctness verdict: PASS

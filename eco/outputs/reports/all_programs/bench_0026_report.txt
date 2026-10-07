@@ -1,36 +1,57 @@
-=== bench_0026 ===
-Baseline fitness: {'exec_time': 60.0, 'instr_count': 39, 'code_size': 188, 'arith_ops': 23}
+=== bench_0026 (regression_slope_parts) ===
+Original source:
+    def regression_slope_parts(x0, x1, x2, y0, y1, y2):
+        sx = x0 + x1 + x2
+        sy = y0 + y1 + y2
+        sxy = x0 * y0 + x1 * y1 + x2 * y2
+        sxx = x0 * x0 + x1 * x1 + x2 * x2
+        numerator = 3 * sxy - sx * sy
+        denominator = 3 * sxx - sx * sx
+        return numerator, denominator
+Baseline fitness: {'exec_time': 49.0, 'instr_count': 29, 'code_size': 142, 'arith_ops': 20}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4466  avg=0.7404
-  gen   5: best=0.4466  avg=0.5337
-  gen  10: best=0.4168  avg=0.4907
-  gen  20: best=0.4074  avg=0.5615
-  gen  50: best=0.4074  avg=0.4317
-Generations to convergence: 11
-Exec-time improvement vs baseline: 60.0%
-Pareto front: 20 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['copy_propagation', 'copy_propagation', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 24.0, 'instr_count': 18, 'code_size': 79, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (20 genomes tie here)
+  gen   1: best=1.0000  avg=1.0465
+  gen   5: best=1.0000  avg=1.0032
+  gen  10: best=1.0000  avg=1.0070
+  gen  20: best=1.0000  avg=1.0063
+  gen  50: best=1.0000  avg=1.0049
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 29 non-dominated individuals, 2 distinct objective-space point(s):
+  genome=['constant_folding', 'dead_code_elimination', 'multiply_fusion', 'constant_folding', 'strength_reduction']  fitness={'exec_time': 47.0, 'instr_count': 31, 'code_size': 154, 'arith_ops': 22}  -> fastest (lowest exec_time)  (2 genomes tie here)
+  genome=[]  fitness={'exec_time': 49.0, 'instr_count': 29, 'code_size': 142, 'arith_ops': 20}  -> fewest instructions, smallest code size, fewest arithmetic ops  (27 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['copy_propagation', 'copy_propagation', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']
-  fitness: {'exec_time': 24.0, 'instr_count': 18, 'code_size': 79, 'arith_ops': 8}
-  cost: 0.4074
+  genome: []
+  fitness: {'exec_time': 49.0, 'instr_count': 29, 'code_size': 142, 'arith_ops': 20}
+  cost: 1.0000
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    c1 = 6
-    t0 = c1 - v1
-    t2 = v1 - t0
-    t8 = v1 * v0
-    t23 = t2 - t8
-    OUTPUT v1
-    OUTPUT t8
-    k0 = 4
-    s0 = v1 * k0
-    OUTPUT s0
-    k1 = 4
-    s1 = t23 * k1
-    OUTPUT s1
-    u0 = v1 + v1
-    w0 = u0 + v1
-    OUTPUT w0
+    x0 = INPUT x0
+    x1 = INPUT x1
+    x2 = INPUT x2
+    y0 = INPUT y0
+    y1 = INPUT y1
+    y2 = INPUT y2
+    _e1 = x0 + x1
+    sx = _e1 + x2
+    _e2 = y0 + y1
+    sy = _e2 + y2
+    _e3 = x0 * y0
+    _e4 = x1 * y1
+    _e5 = _e3 + _e4
+    _e6 = x2 * y2
+    sxy = _e5 + _e6
+    _e7 = x0 * x0
+    _e8 = x1 * x1
+    _e9 = _e7 + _e8
+    _e10 = x2 * x2
+    sxx = _e9 + _e10
+    _k1 = 3
+    _e11 = _k1 * sxy
+    _e12 = sx * sy
+    numerator = _e11 - _e12
+    _e13 = _k1 * sxx
+    _e14 = sx * sx
+    denominator = _e13 - _e14
+    OUTPUT numerator
+    OUTPUT denominator
 Correctness verdict: PASS

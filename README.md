@@ -10,13 +10,15 @@ four competing compiler metrics: **execution time**, **instruction count**,
 
 ```bash
 pip install -r requirements.txt
-python -m eco.main          # runs the full experiment end-to-end
+python -m eco.main          # runs the full experiment end-to-end (real kernels)
+python -m eco.main --synthetic   # same, on the old random synthetic TAC (-> eco/outputs_synthetic/)
 python -m pytest tests/ -q  # unit / correctness tests
 ```
 
 `python -m eco.main` will:
 
-1. Generate a 300-program synthetic TAC benchmark suite.
+1. Generate a 300-program benchmark suite by instantiating 42 real hand-written
+   kernels and compiling their Python source to TAC with an `ast` front end.
 2. Run the evolutionary search (population 30, 50 generations) on **every**
    program to compute the aggregate Testing & Metrics table.
 3. Produce detailed per-program reports for the 20 largest ("deep-dive")
@@ -27,7 +29,7 @@ python -m pytest tests/ -q  # unit / correctness tests
 5. Render all six required plots to `eco/outputs/plots/` and write text /
    JSON reports to `eco/outputs/reports/`.
 
-A full run (300 programs x 50 generations) takes about 5 minutes on a single core.
+A full run (300 programs x 50 generations) takes about 1-2 minutes on a single core.
 
 ## System design
 
@@ -118,55 +120,57 @@ non-dominated set; `describe_tradeoff()` labels what each front member is
 best at (fastest / fewest instructions / smallest code / fewest arithmetic
 ops / balanced).
 
-### Benchmark dataset (`eco/benchmark_generator.py`, `eco/dataset.py`)
+### Benchmark dataset (`eco/kernels.py`, `eco/frontend.py`, `eco/dataset.py`)
 
-`generate_dataset(n, seed)` synthesizes `200 <= n <= 500` (default 300)
-straight-line arithmetic programs (38-78 instructions each), each with:
-pseudo-C source, its TAC, 5 randomized test-input sets, ground-truth
-expected outputs (from executing the un-optimized TAC), and baseline
-metrics. Programs deliberately contain redundant/repeated subexpressions
-(CSE fodder), dead temporaries (DCE fodder), multi-hop copy chains (copy
-propagation fodder), deep constant-arithmetic chains (constant folding
-fodder), identity-friendly literals like 0/1 (algebraic simplification
-fodder), and a final "scaling" block of `x*k` multiplies (`k` = 2, 3, 4) and
-repeated-add chains (`strength_reduction` / `multiply_fusion` fodder) — so
-every optimization has genuine opportunities to fire. The scaling block uses
-its own RNG stream, so the rest of each program and its test inputs are
-generated exactly as before.
+`generate_dataset(n, seed)` builds `200 <= n <= 500` (default 300) programs.
+See "Dataset and measurement methodology" below for how they are made; the
+old random generator (`eco/benchmark_generator.py`) is kept behind
+`generate_dataset(..., kind="synthetic")` / `python -m eco.main --synthetic`.
 
 ## Testing & Metrics (last full run, 300 programs)
 
 | Metric | Result | Target |
 |---|---|---|
 | Validity Rate | 100.0% | > 90% |
-| Avg. Pareto Front Size | 21.5 individuals (avg. 1.65 distinct objective-space points) | identify trade-offs |
-| Best Cost Improvement (exec_time vs. baseline) | 54.5% | > 30% |
-| Avg. Generations to Convergence | 15.2 | tracked per program |
+| Avg. Pareto Front Size | 24.9 individuals (avg. 1.04 distinct objective-space points) | identify trade-offs |
+| Best Cost Improvement (simulated exec_time vs. baseline) | **13.1%** | > 30% (**not met** on real kernels, see below) |
+| Avg. Generations to Convergence | 9.1 | tracked per program |
 | Correctness PASS rate | 100.0% | — |
 
 Regenerate this table with `python -m eco.main` (see
 `eco/outputs/reports/aggregate_metrics.md`/`.json`).
 
-### A note on the Pareto front
+### Honest reading of these numbers (real kernels)
 
-Before the trade-off passes existed, all six optimizations were
-simplifications, so the final front collapsed to a single distinct
-objective-space point (avg. 1.01 per program). With `strength_reduction` and
-`multiply_fusion` the final front now holds more than one point for most
-programs (avg. 1.65; many genomes still tie on the same point, hence the
-much larger raw front size). Fronts are still small because only the `x*k`
-and repeated-add patterns trade objectives; everything else remains a pure
-win that every good individual applies.
+These are the results on the **real kernels**, and two of them are weaker than
+the earlier results on the random synthetic programs (54.5% improvement and
+1.65 distinct Pareto points per program with `--synthetic`):
+
+* **Improvement is 13.1%, below the 30% target.** The distribution is very
+  uneven: 100 of 300 programs improve by exactly 0% (kernels such as
+  `dot_product`, `determinant_3x3`, `matrix_vector`, `trace_and_frobenius`,
+  `rgb_to_gray` are already tight - there is nothing to remove), 39 programs
+  improve by 30% or more (best: `difference_of_squares` 40%, `binomial_expansion`
+  39%, `length_conversions` 36%, `naive_poly` 32%), and the maximum is 47.8%.
+  Per-kernel averages are in `all_programs/all_programs_summary.csv`.
+* **Where redundancy exists the search still leaves some on the table.** For
+  example a variance kernel that recomputes its mean inline reaches only ~8%
+  although most of its TAC is redundant, because CSE rewrites a repeat as a
+  copy and `copy_propagation` / `cse` / `constant_*` are single-hop passes, so
+  deeply nested repeats need many rounds. This is a limit of the pass set, not
+  of the genome length: raising the genome cap from 5 to 15 in an experiment
+  moved the average only from 13.8% to 15.2%. A value-numbering CSE that looks
+  through copies would be the real fix; it is not part of this change.
+* **Pareto fronts are mostly a single point (avg. 1.04; 13 of 300 programs
+  have more than one).** `strength_reduction` / `multiply_fusion` only trade
+  objectives when a program multiplies by 2, 3 or 4 or adds the same value
+  repeatedly, which real kernels rarely do. The two trade-off passes are
+  still correct and tested; they simply have few targets in real code.
 
 `eco/outputs/plots/2_pareto_front_2d.png` and `6_pareto_front_3d.png` plot
-the **final population** of the deep-dive program whose final front has the
-most distinct points; the plot title names that program, the generation and
-the number of distinct front points (and says so if the richest front is
-still a single point).
-
-Note on comparing runs: the cost-model change (add/sub 2 -> 1 cycle) and the
-extra scaling block in the benchmark generator change the baselines, so
-absolute improvement percentages are not directly comparable with older runs.
+the **final population** of the deep-dive program with the richest final
+front; the title names the program, the generation and the number of
+distinct front points (and says so when the richest front is a single point).
 
 ## Plots (`eco/outputs/plots/`)
 
@@ -210,6 +214,8 @@ absolute improvement percentages are not directly comparable with older runs.
 
 ```
 eco/
+  frontend.py             ast front end: Python source -> TAC
+  kernels.py              42 real kernel templates + dataset-record builder
   tac.py                 TAC instruction representation + pretty-printers
   interpreter.py          TAC interpreter (correctness + simulated cycles)
   metrics.py               instr_count / arith_ops / code_size / exec_time
@@ -218,7 +224,7 @@ eco/
   pareto.py                 dominance + Pareto front + trade-off labels
   ga.py                     population init, selection, mutation, crossover,
                             generational loop
-  benchmark_generator.py   synthesizes one random benchmark program
+  benchmark_generator.py   (optional) random synthetic program generator
   dataset.py                 assembles the 200-500 program dataset
   report.py                  per-program, all-program + aggregate report builders
   visualize.py                the six required plots
@@ -231,3 +237,73 @@ tests/
   test_eco.py              correctness + regression tests
 ```
 
+## Dataset and measurement methodology
+
+### Where the programs come from
+
+The default dataset is **real source code, not random TAC**. `eco/kernels.py`
+holds 42 hand-written Python functions from real domains:
+
+* polynomials: Horner and naive evaluation, polynomial with derivative,
+  quadratic value/slope and discriminant, `(a+b)^2/^3`, difference of squares
+* geometry: squared distance 2D/3D, midpoint, triangle area, rectangle,
+  circle and sphere formulas, 3D cross product, 2D affine transform
+* linear algebra: dot product, cosine-similarity parts, 3x3 determinant
+  (cofactor and full expansion), 2x2 inverse parts, matrix-vector product,
+  trace/Frobenius norm
+* statistics: mean, variance, weighted average, sum/sum of squares,
+  regression-slope parts, moving average
+* finance: compound interest, simple interest, income tax, discount chain
+* health, units, physics: BMI, temperature and length conversions, speed,
+  kinetic/potential energy, projectile position, Ohm's law power, uniform
+  acceleration, linear interpolation, RGB to gray
+
+Each template is a function of a random generator that picks constants,
+sizes (polynomial degree, vector length, number of years) and therefore the
+number of arguments, and renders ordinary source such as
+`r = r * x + 5`. The 300 programs are the templates instantiated round-robin
+(about 7 instances each) with different constants, sizes and argument counts.
+The source is written the way a person writes it - repeated subexpressions,
+literal chains such as `2 * 314`, a negation used twice, an alias like
+`inv_a = d` - and some kernels randomly choose between a tidy and a naive
+spelling (for example naming the mean versus recomputing it inline). Nothing
+was added to the code purely to give the optimizer something to do, and many
+kernels (see above) have nothing to optimize.
+
+### Front end (`eco/frontend.py`)
+
+A small compiler built on Python's `ast` module turns one function into TAC.
+It supports exactly what is needed: assignments and augmented assignments to
+names, integer literals, `+ - * //`, unary minus, and `return` of one or more
+values (each becomes an `output`). Anything else (true division, `**`, `%`,
+floats, branches, loops, undefined names) raises `UnsupportedSyntax`.
+`//` maps to the TAC `/`. Code generation is naive on purpose: no expression
+value is ever reused, so source-level redundancy survives for the optimizer;
+like any real compiler it pools literals (one `const` per distinct value) and
+it renames reassigned variables so the TAC stays in single-assignment form.
+
+### Ground truth
+
+For every program the expected outputs are produced by **running the original
+Python function** on each of 5 random input sets (`run_source`). The TAC
+interpreter must reproduce them exactly before the program is admitted;
+generation raises an error otherwise. Python's `//` floors while the TAC
+interpreter truncates toward zero, so kernels that divide are given positive
+input domains with non-negative numerators, where the two agree.
+
+### Fitness during the search
+
+The GA's `exec_time` objective is a deterministic **simulated cycle count**
+(add/sub 1, multiply 3, divide 4, everything else 1). It is used because it
+is fast and reproducible; it is not a hardware measurement.
+
+## Limitations
+
+* The kernels are **straight-line integer arithmetic**: no loops, branches,
+  memory, floating point or function calls, so none of the classic
+  loop/inlining/vectorization trade-offs exist here.
+* GA fitness uses a **cycle model**, not real time. Measured runtime is not
+  yet part of this report (see the measurement section when present).
+* Real kernels are often already tight; the average simulated improvement is
+  13.1% and the 30% target is not met on this dataset.
+* The search is a single seed (42); results are not averaged over seeds.

@@ -1,39 +1,46 @@
-=== bench_0075 ===
-Baseline fitness: {'exec_time': 77.0, 'instr_count': 47, 'code_size': 203, 'arith_ops': 20}
+=== bench_0075 (temperature_conversions) ===
+Original source:
+    def temperature_conversions(c):
+        fahrenheit = c * 9 // 5 + 32
+        kelvin = c + 273
+        reaumur = c * 4 // 5
+        rankine = c * 9 // 5 + 32 + 460
+        return fahrenheit, kelvin, reaumur, rankine
+Baseline fitness: {'exec_time': 36.0, 'instr_count': 21, 'code_size': 98, 'arith_ops': 10}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4677  avg=0.7498
-  gen   5: best=0.4136  avg=0.4840
-  gen  10: best=0.4110  avg=0.4510
-  gen  20: best=0.4110  avg=0.4352
-  gen  50: best=0.4110  avg=0.4376
-Generations to convergence: 7
-Exec-time improvement vs baseline: 57.1%
-Pareto front: 19 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['copy_propagation', 'copy_propagation', 'cse', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 33.0, 'instr_count': 21, 'code_size': 85, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (19 genomes tie here)
+  gen   1: best=0.9535  avg=1.1468
+  gen   5: best=0.9535  avg=0.9848
+  gen  10: best=0.8735  avg=0.9552
+  gen  20: best=0.8673  avg=0.8815
+  gen  50: best=0.8673  avg=0.8760
+Generations to convergence: 14
+Exec-time improvement vs baseline: 13.9%
+Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'cse', 'copy_propagation', 'cse']  fitness={'exec_time': 31.0, 'instr_count': 21, 'code_size': 89, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['copy_propagation', 'copy_propagation', 'cse', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 33.0, 'instr_count': 21, 'code_size': 85, 'arith_ops': 7}
-  cost: 0.4110
+  genome: ['cse', 'copy_propagation', 'cse', 'copy_propagation', 'cse']
+  fitness: {'exec_time': 31.0, 'instr_count': 21, 'code_size': 89, 'arith_ops': 7}
+  cost: 0.8673
   optimized TAC:
-    v1 = INPUT in1
-    v2 = INPUT in2
-    v3 = INPUT in3
-    c0 = 5
-    t8 = c0 * v2
-    t13 = t8 / v3
-    t15 = t13
-    t17 = t13 / c0
-    OUTPUT v3
-    OUTPUT c0
-    s0 = 10
-    OUTPUT s0
-    k1 = 3
-    s1 = t15 * k1
-    OUTPUT s1
-    k2 = 3
-    s2 = v1 * k2
-    OUTPUT s2
-    u0 = t17 + t17
-    w0 = u0 + t17
-    OUTPUT w0
+    c = INPUT c
+    _k1 = 9
+    _e1 = c * _k1
+    _k2 = 5
+    _e2 = _e1 / _k2
+    _k3 = 32
+    fahrenheit = _e2 + _k3
+    _k4 = 273
+    kelvin = c + _k4
+    _k5 = 4
+    _e3 = c * _k5
+    reaumur = _e3 / _k2
+    _e4 = _e1
+    _e5 = _e2
+    _e6 = fahrenheit
+    _k6 = 460
+    rankine = _e6 + _k6
+    OUTPUT fahrenheit
+    OUTPUT kelvin
+    OUTPUT reaumur
+    OUTPUT rankine
 Correctness verdict: PASS

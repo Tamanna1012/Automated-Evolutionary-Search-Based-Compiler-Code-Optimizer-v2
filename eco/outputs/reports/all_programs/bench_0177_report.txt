@@ -1,52 +1,34 @@
-=== bench_0177 ===
-Baseline fitness: {'exec_time': 108.0, 'instr_count': 62, 'code_size': 304, 'arith_ops': 39}
+=== bench_0177 (midpoint_2d) ===
+Original source:
+    def midpoint_2d(x1, y1, x2, y2):
+        mx = (x1 + x2) // 2
+        my = (y1 + y2) // 2
+        return mx, my
+Baseline fitness: {'exec_time': 17.0, 'instr_count': 11, 'code_size': 42, 'arith_ops': 4}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.5602  avg=0.8084
-  gen   5: best=0.5120  avg=0.6049
-  gen  10: best=0.5040  avg=0.5743
-  gen  20: best=0.4879  avg=0.5720
-  gen  50: best=0.4879  avg=0.4978
-Generations to convergence: 11
-Exec-time improvement vs baseline: 41.7%
-Pareto front: 26 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 60.0, 'instr_count': 36, 'code_size': 163, 'arith_ops': 17}  -> fastest (lowest exec_time)  (5 genomes tie here)
-  genome=['constant_folding', 'multiply_fusion', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 63.0, 'instr_count': 33, 'code_size': 145, 'arith_ops': 14}  -> fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=1.0000  avg=1.0592
+  gen   5: best=1.0000  avg=1.0082
+  gen  10: best=1.0000  avg=1.0020
+  gen  20: best=1.0000  avg=1.0041
+  gen  50: best=1.0000  avg=1.0041
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 29 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 17.0, 'instr_count': 11, 'code_size': 42, 'arith_ops': 4}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (29 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'multiply_fusion', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 63.0, 'instr_count': 33, 'code_size': 145, 'arith_ops': 14}
-  cost: 0.4879
+  genome: []
+  fitness: {'exec_time': 17.0, 'instr_count': 11, 'code_size': 42, 'arith_ops': 4}
+  cost: 1.0000
   optimized TAC:
-    v0 = INPUT in0
-    v2 = INPUT in2
-    v3 = INPUT in3
-    v4 = INPUT in4
-    c0 = -7
-    t0 = 5
-    t1 = -4
-    t6 = -3
-    t7 = t6 / t0
-    t8 = 5
-    t9 = t1 * t7
-    t10 = t8 * c0
-    t11 = t10 * v4
-    t13 = v0 / t1
-    t14 = c0 / t9
-    t21 = v2 + t13
-    t25 = t8 / t11
-    OUTPUT t9
-    k0 = 4
-    s0 = t9 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t14 * k1
-    OUTPUT s1
-    k2 = 3
-    s2 = t21 * k2
-    OUTPUT s2
-    w0 = v3 * k1
-    OUTPUT w0
-    w1 = t25 * k1
-    OUTPUT w1
-    w2 = t10 * k1
-    OUTPUT w2
+    x1 = INPUT x1
+    y1 = INPUT y1
+    x2 = INPUT x2
+    y2 = INPUT y2
+    _e1 = x1 + x2
+    _k1 = 2
+    mx = _e1 / _k1
+    _e2 = y1 + y2
+    my = _e2 / _k1
+    OUTPUT mx
+    OUTPUT my
 Correctness verdict: PASS

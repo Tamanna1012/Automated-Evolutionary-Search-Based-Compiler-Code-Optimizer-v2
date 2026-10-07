@@ -1,38 +1,47 @@
-=== bench_0028 ===
-Baseline fitness: {'exec_time': 74.0, 'instr_count': 50, 'code_size': 232, 'arith_ops': 28}
+=== bench_0028 (compound_interest) ===
+Original source:
+    def compound_interest(principal):
+        p0 = principal
+        p1 = p0 * (100 + 2) // 100
+        p2 = p1 * (100 + 2) // 100
+        p3 = p2 * (100 + 2) // 100
+        p4 = p3 * (100 + 2) // 100
+        p5 = p4 * (100 + 2) // 100
+        p6 = p5 * (100 + 2) // 100
+        gain = p6 - principal
+        return p6, gain
+Baseline fitness: {'exec_time': 55.0, 'instr_count': 25, 'code_size': 133, 'arith_ops': 19}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.3918  avg=0.7224
-  gen   5: best=0.3704  avg=0.4743
-  gen  10: best=0.3399  avg=0.4009
-  gen  20: best=0.3399  avg=0.4830
-  gen  50: best=0.3399  avg=0.3862
-Generations to convergence: 6
-Exec-time improvement vs baseline: 60.8%
-Pareto front: 17 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'multiply_fusion', 'copy_propagation', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 29.0, 'instr_count': 20, 'code_size': 82, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (17 genomes tie here)
+  gen   1: best=0.8891  avg=1.0894
+  gen   5: best=0.8562  avg=0.8972
+  gen  10: best=0.8562  avg=0.8808
+  gen  20: best=0.7459  avg=0.7845
+  gen  50: best=0.7459  avg=0.7858
+Generations to convergence: 16
+Exec-time improvement vs baseline: 12.7%
+Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination', 'algebraic_simplification']  fitness={'exec_time': 48.0, 'instr_count': 18, 'code_size': 94, 'arith_ops': 13}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['algebraic_simplification', 'multiply_fusion', 'copy_propagation', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 29.0, 'instr_count': 20, 'code_size': 82, 'arith_ops': 6}
-  cost: 0.3399
+  genome: ['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination', 'algebraic_simplification']
+  fitness: {'exec_time': 48.0, 'instr_count': 18, 'code_size': 94, 'arith_ops': 13}
+  cost: 0.7459
   optimized TAC:
-    v1 = INPUT in1
-    v3 = INPUT in3
-    t2 = -7
-    t6 = 0
-    t7 = v3 + v3
-    t13 = v1 * v1
-    t20 = v3 / t6
-    t26 = t2 + v1
-    OUTPUT t13
-    OUTPUT t7
-    k0 = 4
-    s0 = t20 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t26 * k1
-    OUTPUT s1
-    w0 = 0
-    OUTPUT w0
-    w1 = 0
-    OUTPUT w1
+    principal = INPUT principal
+    _k1 = 100
+    _e1 = 102
+    _e2 = principal * _e1
+    p1 = _e2 / _k1
+    _e4 = p1 * _e1
+    p2 = _e4 / _k1
+    _e6 = p2 * _e1
+    p3 = _e6 / _k1
+    _e8 = p3 * _e1
+    p4 = _e8 / _k1
+    _e10 = p4 * _e1
+    p5 = _e10 / _k1
+    _e12 = p5 * _e1
+    p6 = _e12 / _k1
+    gain = p6 - principal
+    OUTPUT p6
+    OUTPUT gain
 Correctness verdict: PASS

@@ -1,48 +1,30 @@
-=== bench_0057 ===
-Baseline fitness: {'exec_time': 79.0, 'instr_count': 49, 'code_size': 239, 'arith_ops': 29}
+=== bench_0057 (dot_product) ===
+Original source:
+    def dot_product(a0, a1, b0, b1):
+        s = a0 * b0 + a1 * b1
+        return s
+Baseline fitness: {'exec_time': 12.0, 'instr_count': 8, 'code_size': 29, 'arith_ops': 3}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.6517  avg=0.8977
-  gen   5: best=0.5133  avg=0.5820
-  gen  10: best=0.4901  avg=0.5352
-  gen  20: best=0.4838  avg=0.5640
-  gen  50: best=0.4838  avg=0.5034
-Generations to convergence: 13
-Exec-time improvement vs baseline: 50.6%
-Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 39.0, 'instr_count': 30, 'code_size': 124, 'arith_ops': 9}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=1.0000  avg=1.0000
+  gen   5: best=1.0000  avg=1.0000
+  gen  10: best=1.0000  avg=1.0000
+  gen  20: best=1.0000  avg=1.0000
+  gen  50: best=1.0000  avg=1.0000
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 12.0, 'instr_count': 8, 'code_size': 29, 'arith_ops': 3}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 39.0, 'instr_count': 30, 'code_size': 124, 'arith_ops': 9}
-  cost: 0.4838
+  genome: []
+  fitness: {'exec_time': 12.0, 'instr_count': 8, 'code_size': 29, 'arith_ops': 3}
+  cost: 1.0000
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    c0 = -2
-    c1 = -2
-    c2 = 1
-    t2 = -3
-    t3 = t2
-    t10 = v0 - c0
-    t11 = v0 - c0
-    t14 = -6
-    t16 = t3
-    t19 = t16
-    t20 = t14 / c2
-    t22 = c1 * v1
-    t23 = t20 + c2
-    OUTPUT t22
-    OUTPUT t11
-    k0 = 4
-    s0 = t23 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t19 * k1
-    OUTPUT s1
-    w0 = -21
-    OUTPUT w0
-    u1 = t10 + t10
-    w1 = u1 + t10
-    OUTPUT w1
-    w2 = -12
-    OUTPUT w2
+    a0 = INPUT a0
+    a1 = INPUT a1
+    b0 = INPUT b0
+    b1 = INPUT b1
+    _e1 = a0 * b0
+    _e2 = a1 * b1
+    s = _e1 + _e2
+    OUTPUT s
 Correctness verdict: PASS

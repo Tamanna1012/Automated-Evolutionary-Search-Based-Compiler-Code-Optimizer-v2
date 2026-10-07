@@ -1,53 +1,42 @@
-=== bench_0197 ===
-Baseline fitness: {'exec_time': 93.0, 'instr_count': 66, 'code_size': 316, 'arith_ops': 40}
+=== bench_0197 (simple_interest) ===
+Original source:
+    def simple_interest(principal, rate, years):
+        interest = principal * rate * years // 100
+        total = principal + principal * rate * years // 100
+        monthly = (principal + principal * rate * years // 100) // 6
+        return interest, total, monthly
+Baseline fitness: {'exec_time': 44.0, 'instr_count': 20, 'code_size': 95, 'arith_ops': 12}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4648  avg=0.7495
-  gen   5: best=0.4016  avg=0.4379
-  gen  10: best=0.3930  avg=0.4490
-  gen  20: best=0.3930  avg=0.5396
-  gen  50: best=0.3930  avg=0.4692
-Generations to convergence: 7
-Exec-time improvement vs baseline: 54.8%
-Pareto front: 20 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 39.0, 'instr_count': 35, 'code_size': 136, 'arith_ops': 10}  -> fastest (lowest exec_time)
-  genome=['constant_folding', 'constant_folding', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 42.0, 'instr_count': 34, 'code_size': 128, 'arith_ops': 8}  -> fewest instructions, smallest code size, fewest arithmetic ops  (19 genomes tie here)
+  gen   1: best=0.9198  avg=1.0234
+  gen   5: best=0.7875  avg=0.9041
+  gen  10: best=0.7875  avg=0.8282
+  gen  20: best=0.7875  avg=0.8228
+  gen  50: best=0.7875  avg=0.8130
+Generations to convergence: 4
+Exec-time improvement vs baseline: 22.7%
+Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'cse', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 34.0, 'instr_count': 18, 'code_size': 77, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'constant_folding', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 42.0, 'instr_count': 34, 'code_size': 128, 'arith_ops': 8}
-  cost: 0.3930
+  genome: ['cse', 'copy_propagation', 'cse', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 34.0, 'instr_count': 18, 'code_size': 77, 'arith_ops': 8}
+  cost: 0.7875
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    v2 = INPUT in2
-    v4 = INPUT in4
-    c1 = 1
-    t0 = 4
-    t1 = v4 + v0
-    t3 = -2
-    t5 = c1 - v2
-    t6 = t3
-    t11 = 7
-    t14 = t6
-    t15 = t14
-    t18 = t5 + c1
-    t22 = t15
-    t24 = t22
-    t26 = t24
-    t33 = t26
-    t34 = t33
-    t38 = v1 - v4
-    t42 = t34
-    OUTPUT t42
-    OUTPUT t11
-    OUTPUT t33
-    k0 = 3
-    s0 = t38 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t18 * k1
-    OUTPUT s1
-    w0 = t1 * t0
-    OUTPUT w0
-    w1 = v1 * k0
-    OUTPUT w1
+    principal = INPUT principal
+    rate = INPUT rate
+    years = INPUT years
+    _e1 = principal * rate
+    _e2 = _e1 * years
+    _k1 = 100
+    interest = _e2 / _k1
+    _e4 = _e2
+    _e5 = _e4 / _k1
+    total = principal + _e5
+    _e7 = _e2
+    _e8 = _e7 / _k1
+    _e9 = principal + _e8
+    _k2 = 6
+    monthly = _e9 / _k2
+    OUTPUT interest
+    OUTPUT total
+    OUTPUT monthly
 Correctness verdict: PASS

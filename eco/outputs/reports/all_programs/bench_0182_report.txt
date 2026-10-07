@@ -1,53 +1,49 @@
-=== bench_0182 ===
-Baseline fitness: {'exec_time': 73.0, 'instr_count': 49, 'code_size': 237, 'arith_ops': 29}
+=== bench_0182 (cross_product_3d) ===
+Original source:
+    def cross_product_3d(ax, ay, az, bx, by, bz):
+        cx = ay * bz - az * by
+        cy = az * bx - ax * bz
+        cz = ax * by - ay * bx
+        norm_sq = (ay * bz - az * by) * (ay * bz - az * by) + cy * cy + cz * cz
+        return cx, cy, cz, norm_sq
+Baseline fitness: {'exec_time': 56.0, 'instr_count': 30, 'code_size': 144, 'arith_ops': 20}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.8053  avg=0.9694
-  gen   5: best=0.7517  avg=0.8125
-  gen  10: best=0.7397  avg=0.7742
-  gen  20: best=0.7289  avg=0.7860
-  gen  50: best=0.6823  avg=0.7046
-Generations to convergence: 37
-Exec-time improvement vs baseline: 24.7%
+  gen   1: best=0.8935  avg=0.9574
+  gen   5: best=0.7860  avg=0.8981
+  gen  10: best=0.7860  avg=0.8266
+  gen  20: best=0.7860  avg=0.8147
+  gen  50: best=0.7500  avg=0.7643
+Generations to convergence: 46
+Exec-time improvement vs baseline: 25.0%
 Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['cse', 'copy_propagation', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 55.0, 'instr_count': 35, 'code_size': 160, 'arith_ops': 17}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
+  genome=['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 42.0, 'instr_count': 24, 'code_size': 108, 'arith_ops': 14}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['cse', 'copy_propagation', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 55.0, 'instr_count': 35, 'code_size': 160, 'arith_ops': 17}
-  cost: 0.6823
+  genome: ['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']
+  fitness: {'exec_time': 42.0, 'instr_count': 24, 'code_size': 108, 'arith_ops': 14}
+  cost: 0.7500
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    c0 = -2
-    c1 = -1
-    t0 = c1 + v1
-    t2 = c1 * v1
-    t4 = t2 / c1
-    t5 = v0 - v1
-    t7 = c0 + t5
-    t8 = t7 + t4
-    t10 = 4
-    t11 = t8
-    t12 = t5 + t2
-    t13 = t8 - t0
-    t14 = t13 + t4
-    t20 = t14 / t11
-    t23 = t10 + c1
-    OUTPUT t23
-    OUTPUT t2
-    OUTPUT t20
-    k0 = 4
-    s0 = t12 * k0
-    OUTPUT s0
-    k1 = 4
-    s1 = t12 * k1
-    OUTPUT s1
-    k2 = 3
-    s2 = t8 * k2
-    OUTPUT s2
-    w0 = t8 * k2
-    OUTPUT w0
-    w1 = t14 * k0
-    OUTPUT w1
-    w2 = t8 * k2
-    OUTPUT w2
+    ax = INPUT ax
+    ay = INPUT ay
+    az = INPUT az
+    bx = INPUT bx
+    by = INPUT by
+    bz = INPUT bz
+    _e1 = ay * bz
+    _e2 = az * by
+    cx = _e1 - _e2
+    _e3 = az * bx
+    _e4 = ax * bz
+    cy = _e3 - _e4
+    _e5 = ax * by
+    _e6 = ay * bx
+    cz = _e5 - _e6
+    _e13 = cx * cx
+    _e14 = cy * cy
+    _e15 = _e13 + _e14
+    _e16 = cz * cz
+    norm_sq = _e15 + _e16
+    OUTPUT cx
+    OUTPUT cy
+    OUTPUT cz
+    OUTPUT norm_sq
 Correctness verdict: PASS

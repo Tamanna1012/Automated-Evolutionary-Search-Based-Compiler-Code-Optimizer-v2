@@ -1,46 +1,46 @@
-=== bench_0227 ===
-Baseline fitness: {'exec_time': 103.0, 'instr_count': 62, 'code_size': 303, 'arith_ops': 38}
+=== bench_0227 (determinant_3x3) ===
+Original source:
+    def determinant_3x3(a, b, c, d, e, f, g, h, i):
+        det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g)
+        return det
+Baseline fitness: {'exec_time': 42.0, 'instr_count': 24, 'code_size': 105, 'arith_ops': 14}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4605  avg=0.7807
-  gen   5: best=0.4014  avg=0.5742
-  gen  10: best=0.4014  avg=0.4686
-  gen  20: best=0.3508  avg=0.4797
-  gen  50: best=0.3508  avg=0.3896
-Generations to convergence: 12
-Exec-time improvement vs baseline: 59.2%
-Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 42.0, 'instr_count': 28, 'code_size': 109, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=1.0000  avg=1.0000
+  gen   5: best=1.0000  avg=1.0000
+  gen  10: best=1.0000  avg=1.0000
+  gen  20: best=1.0000  avg=1.0000
+  gen  50: best=1.0000  avg=1.0000
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 42.0, 'instr_count': 24, 'code_size': 105, 'arith_ops': 14}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['algebraic_simplification', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 42.0, 'instr_count': 28, 'code_size': 109, 'arith_ops': 7}
-  cost: 0.3508
+  genome: []
+  fitness: {'exec_time': 42.0, 'instr_count': 24, 'code_size': 105, 'arith_ops': 14}
+  cost: 1.0000
   optimized TAC:
-    v1 = INPUT in1
-    v2 = INPUT in2
-    c3 = 9
-    t0 = v1
-    t6 = v2
-    t9 = t6
-    t12 = v1 / t6
-    t14 = t6 / t0
-    t16 = t6 / t0
-    t20 = 10
-    t29 = t9
-    t33 = t20
-    t34 = t33 / c3
-    OUTPUT t29
-    OUTPUT t16
-    OUTPUT t12
-    s0 = 40
-    OUTPUT s0
-    k1 = 4
-    s1 = t14 * k1
-    OUTPUT s1
-    u0 = t34 + t34
-    w0 = u0 + t34
-    OUTPUT w0
-    w1 = 27
-    OUTPUT w1
-    w2 = 24
-    OUTPUT w2
+    a = INPUT a
+    b = INPUT b
+    c = INPUT c
+    d = INPUT d
+    e = INPUT e
+    f = INPUT f
+    g = INPUT g
+    h = INPUT h
+    i = INPUT i
+    _e1 = e * i
+    _e2 = f * h
+    _e3 = _e1 - _e2
+    _e4 = a * _e3
+    _e5 = d * i
+    _e6 = f * g
+    _e7 = _e5 - _e6
+    _e8 = b * _e7
+    _e9 = _e4 - _e8
+    _e10 = d * h
+    _e11 = e * g
+    _e12 = _e10 - _e11
+    _e13 = c * _e12
+    det = _e9 + _e13
+    OUTPUT det
 Correctness verdict: PASS

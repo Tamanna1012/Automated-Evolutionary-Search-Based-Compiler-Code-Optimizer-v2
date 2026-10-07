@@ -51,6 +51,8 @@ def program_report(program: BenchmarkProgram, result: GAResult) -> dict:
 
     return {
         "program": program.name,
+        "kernel": getattr(program, "kernel", "synthetic"),
+        "source_code": program.source_code,
         "num_test_sets": len(program.test_input_sets),
         "baseline_fitness": baseline.as_dict(),
         "checkpoints": checkpoints,
@@ -69,7 +71,9 @@ def program_report(program: BenchmarkProgram, result: GAResult) -> dict:
 
 
 def format_program_report_text(report: dict) -> str:
-    lines = [f"=== {report['program']} ==="]
+    lines = [f"=== {report['program']} ({report['kernel']}) ==="]
+    lines.append("Original source:")
+    lines.extend(f"    {ln}" for ln in report["source_code"].splitlines())
     lines.append(f"Baseline fitness: {report['baseline_fitness']}")
     lines.append("Best/avg cost at checkpoint generations:")
     for cp in report["checkpoints"]:
@@ -120,7 +124,7 @@ def aggregate_metrics(programs: List[BenchmarkProgram], results: List[GAResult])
 
 
 SUMMARY_COLUMNS = [
-    "program", "baseline_cost", "best_cost", "baseline_exec_time", "best_exec_time",
+    "program", "kernel", "baseline_cost", "best_cost", "baseline_exec_time", "best_exec_time",
     "improvement_pct", "generations_to_convergence", "pareto_front_size",
     "distinct_points", "verdict",
 ]
@@ -143,6 +147,7 @@ def write_all_program_reports(programs: List[BenchmarkProgram], results: List[GA
             f.write(format_program_report_text(report))
         rows.append({
             "program": program.name,
+            "kernel": report["kernel"],
             "baseline_cost": 1.0,
             "best_cost": round(report["best_overall"]["cost"], 6),
             "baseline_exec_time": round(report["baseline_fitness"]["exec_time"], 4),

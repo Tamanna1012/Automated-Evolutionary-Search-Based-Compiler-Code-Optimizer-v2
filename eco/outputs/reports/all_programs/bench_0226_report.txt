@@ -1,41 +1,48 @@
-=== bench_0226 ===
-Baseline fitness: {'exec_time': 121.0, 'instr_count': 62, 'code_size': 310, 'arith_ops': 41}
+=== bench_0226 (cosine_similarity_parts) ===
+Original source:
+    def cosine_similarity_parts(a0, a1, a2, b0, b1, b2):
+        dot = a0 * b0 + a1 * b1 + a2 * b2
+        norm_a = a0 * a0 + a1 * a1 + a2 * a2
+        norm_b = b0 * b0 + b1 * b1 + b2 * b2
+        return dot, norm_a, norm_b
+Baseline fitness: {'exec_time': 42.0, 'instr_count': 24, 'code_size': 111, 'arith_ops': 15}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.3769  avg=0.6832
-  gen   5: best=0.3447  avg=0.4286
-  gen  10: best=0.3447  avg=0.3896
-  gen  20: best=0.3447  avg=0.4707
-  gen  50: best=0.3219  avg=0.3761
-Generations to convergence: 39
-Exec-time improvement vs baseline: 66.1%
-Pareto front: 18 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['strength_reduction', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination', 'dead_code_elimination']  fitness={'exec_time': 37.0, 'instr_count': 24, 'code_size': 115, 'arith_ops': 14}  -> fastest (lowest exec_time)
-  genome=['algebraic_simplification', 'strength_reduction', 'multiply_fusion', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 41.0, 'instr_count': 22, 'code_size': 101, 'arith_ops': 11}  -> fewest instructions, smallest code size, fewest arithmetic ops  (17 genomes tie here)
+  gen   1: best=1.0000  avg=1.0000
+  gen   5: best=1.0000  avg=1.0000
+  gen  10: best=1.0000  avg=1.0000
+  gen  20: best=1.0000  avg=1.0000
+  gen  50: best=1.0000  avg=1.0000
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 30 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 42.0, 'instr_count': 24, 'code_size': 111, 'arith_ops': 15}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (30 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['algebraic_simplification', 'strength_reduction', 'multiply_fusion', 'copy_propagation', 'dead_code_elimination']
-  fitness: {'exec_time': 41.0, 'instr_count': 22, 'code_size': 101, 'arith_ops': 11}
-  cost: 0.3219
+  genome: []
+  fitness: {'exec_time': 42.0, 'instr_count': 24, 'code_size': 111, 'arith_ops': 15}
+  cost: 1.0000
   optimized TAC:
-    v0 = INPUT in0
-    v4 = INPUT in4
-    c0 = 0
-    c1 = 1
-    c2 = 0
-    t0 = c2 / c0
-    t2 = t0 / c2
-    t4 = t2 * v4
-    t5 = t0 - c1
-    t6 = t4 + v0
-    t9 = c0 / t6
-    t27 = v4 * t5
-    OUTPUT t0
-    k0 = 4
-    s0 = t5 * k0
-    OUTPUT s0
-    s1 = v0 * k0
-    OUTPUT s1
-    s2 = t9 + t9
-    OUTPUT s2
-    w0 = t27 * k0
-    OUTPUT w0
+    a0 = INPUT a0
+    a1 = INPUT a1
+    a2 = INPUT a2
+    b0 = INPUT b0
+    b1 = INPUT b1
+    b2 = INPUT b2
+    _e1 = a0 * b0
+    _e2 = a1 * b1
+    _e3 = _e1 + _e2
+    _e4 = a2 * b2
+    dot = _e3 + _e4
+    _e5 = a0 * a0
+    _e6 = a1 * a1
+    _e7 = _e5 + _e6
+    _e8 = a2 * a2
+    norm_a = _e7 + _e8
+    _e9 = b0 * b0
+    _e10 = b1 * b1
+    _e11 = _e9 + _e10
+    _e12 = b2 * b2
+    norm_b = _e11 + _e12
+    OUTPUT dot
+    OUTPUT norm_a
+    OUTPUT norm_b
 Correctness verdict: PASS

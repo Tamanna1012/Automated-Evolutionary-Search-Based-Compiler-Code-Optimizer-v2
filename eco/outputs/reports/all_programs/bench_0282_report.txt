@@ -1,51 +1,36 @@
-=== bench_0282 ===
-Baseline fitness: {'exec_time': 80.0, 'instr_count': 52, 'code_size': 239, 'arith_ops': 27}
+=== bench_0282 (income_tax) ===
+Original source:
+    def income_tax(income):
+        tax = income * 16 // 100 + income * 4 // 100
+        net = income - tax
+        return tax, net
+Baseline fitness: {'exec_time': 22.0, 'instr_count': 12, 'code_size': 56, 'arith_ops': 6}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.6089  avg=0.8447
-  gen   5: best=0.5322  avg=0.5826
-  gen  10: best=0.5200  avg=0.5348
-  gen  20: best=0.5200  avg=0.6023
-  gen  50: best=0.5200  avg=0.5296
-Generations to convergence: 6
-Exec-time improvement vs baseline: 41.2%
-Pareto front: 23 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 44.0, 'instr_count': 35, 'code_size': 148, 'arith_ops': 12}  -> fastest (lowest exec_time)  (2 genomes tie here)
-  genome=['multiply_fusion', 'algebraic_simplification', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 47.0, 'instr_count': 32, 'code_size': 130, 'arith_ops': 9}  -> fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=1.0000  avg=1.1258
+  gen   5: best=1.0000  avg=1.0100
+  gen  10: best=1.0000  avg=1.0159
+  gen  20: best=1.0000  avg=1.0119
+  gen  50: best=1.0000  avg=1.0026
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 30 non-dominated individuals, 2 distinct objective-space point(s):
+  genome=['constant_folding', 'strength_reduction', 'cse', 'cse', 'constant_folding']  fitness={'exec_time': 21.0, 'instr_count': 13, 'code_size': 62, 'arith_ops': 7}  -> fastest (lowest exec_time)
+  genome=[]  fitness={'exec_time': 22.0, 'instr_count': 12, 'code_size': 56, 'arith_ops': 6}  -> fewest instructions, smallest code size, fewest arithmetic ops  (29 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['multiply_fusion', 'algebraic_simplification', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 47.0, 'instr_count': 32, 'code_size': 130, 'arith_ops': 9}
-  cost: 0.5200
+  genome: []
+  fitness: {'exec_time': 22.0, 'instr_count': 12, 'code_size': 56, 'arith_ops': 6}
+  cost: 1.0000
   optimized TAC:
-    c0 = -9
-    c1 = 1
-    c2 = 9
-    t0 = -18
-    t1 = t0
-    t3 = c1 / c0
-    t5 = t1
-    t7 = t3
-    t9 = t5
-    t11 = t9
-    t14 = t5 * t0
-    t16 = t11
-    t17 = t7 + c2
-    t19 = t16
-    t21 = t17 + c2
-    OUTPUT t14
-    OUTPUT t7
-    OUTPUT t16
-    k0 = 4
-    s0 = t1 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t14 * k1
-    OUTPUT s1
-    s2 = -54
-    OUTPUT s2
-    w0 = t21 * k0
-    OUTPUT w0
-    w1 = t21 * k1
-    OUTPUT w1
-    w2 = t19 * k0
-    OUTPUT w2
+    income = INPUT income
+    _k1 = 16
+    _e1 = income * _k1
+    _k2 = 100
+    _e2 = _e1 / _k2
+    _k3 = 4
+    _e3 = income * _k3
+    _e4 = _e3 / _k2
+    tax = _e2 + _e4
+    net = income - tax
+    OUTPUT tax
+    OUTPUT net
 Correctness verdict: PASS

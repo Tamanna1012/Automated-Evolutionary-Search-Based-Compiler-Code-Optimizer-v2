@@ -1,40 +1,36 @@
-=== bench_0279 ===
-Baseline fitness: {'exec_time': 121.0, 'instr_count': 59, 'code_size': 293, 'arith_ops': 38}
+=== bench_0279 (moving_average) ===
+Original source:
+    def moving_average(x0, x1, x2):
+        window = x0 + x1 + x2
+        avg = window // 3
+        prev = (window - x0 + x2) // 3
+        return avg, prev
+Baseline fitness: {'exec_time': 18.0, 'instr_count': 12, 'code_size': 52, 'arith_ops': 6}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.3032  avg=0.6674
-  gen   5: best=0.3032  avg=0.4514
-  gen  10: best=0.2908  avg=0.3488
-  gen  20: best=0.2855  avg=0.4263
-  gen  50: best=0.2855  avg=0.2934
-Generations to convergence: 15
-Exec-time improvement vs baseline: 71.9%
-Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'cse', 'copy_propagation', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 34.0, 'instr_count': 22, 'code_size': 89, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=1.0000  avg=1.0522
+  gen   5: best=1.0000  avg=1.0072
+  gen  10: best=1.0000  avg=1.0018
+  gen  20: best=1.0000  avg=1.0036
+  gen  50: best=1.0000  avg=1.0036
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 29 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 18.0, 'instr_count': 12, 'code_size': 52, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (29 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['algebraic_simplification', 'cse', 'copy_propagation', 'copy_propagation', 'dead_code_elimination']
-  fitness: {'exec_time': 34.0, 'instr_count': 22, 'code_size': 89, 'arith_ops': 7}
-  cost: 0.2855
+  genome: []
+  fitness: {'exec_time': 18.0, 'instr_count': 12, 'code_size': 52, 'arith_ops': 6}
+  cost: 1.0000
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    c0 = 0
-    t0 = v0 * v1
-    t2 = v0
-    t3 = t2
-    t5 = t3
-    t6 = t5
-    t15 = c0 / c0
-    t22 = t15 / t6
-    t25 = 0
-    OUTPUT t22
-    k0 = 2
-    s0 = t2 * k0
-    OUTPUT s0
-    k1 = 4
-    s1 = t22 * k1
-    OUTPUT s1
-    u0 = t0 + t0
-    w0 = u0 + u0
-    OUTPUT w0
-    OUTPUT t25
+    x0 = INPUT x0
+    x1 = INPUT x1
+    x2 = INPUT x2
+    _e1 = x0 + x1
+    window = _e1 + x2
+    _k1 = 3
+    avg = window / _k1
+    _e2 = window - x0
+    _e3 = _e2 + x2
+    prev = _e3 / _k1
+    OUTPUT avg
+    OUTPUT prev
 Correctness verdict: PASS

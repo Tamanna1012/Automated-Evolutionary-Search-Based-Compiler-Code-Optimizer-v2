@@ -1,51 +1,38 @@
-=== bench_0250 ===
-Baseline fitness: {'exec_time': 102.0, 'instr_count': 66, 'code_size': 317, 'arith_ops': 39}
+=== bench_0250 (linear_interpolation) ===
+Original source:
+    def linear_interpolation(y0, y1, t):
+        y = (y0 * (20 - t) + y1 * t) // 20
+        mirror = (y1 * (20 - t) + y0 * t) // 20
+        return y, mirror
+Baseline fitness: {'exec_time': 30.0, 'instr_count': 16, 'code_size': 76, 'arith_ops': 10}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.5206  avg=0.7981
-  gen   5: best=0.4609  avg=0.5374
-  gen  10: best=0.4561  avg=0.5019
-  gen  20: best=0.4561  avg=0.5775
-  gen  50: best=0.4561  avg=0.4726
-Generations to convergence: 10
-Exec-time improvement vs baseline: 56.9%
-Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 44.0, 'instr_count': 33, 'code_size': 153, 'arith_ops': 16}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
+  gen   1: best=0.9651  avg=1.0709
+  gen   5: best=0.9651  avg=0.9793
+  gen  10: best=0.9651  avg=0.9663
+  gen  20: best=0.9313  avg=0.9584
+  gen  50: best=0.9313  avg=0.9392
+Generations to convergence: 18
+Exec-time improvement vs baseline: 3.3%
+Pareto front: 23 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'dead_code_elimination', 'copy_propagation', 'dead_code_elimination', 'cse']  fitness={'exec_time': 29.0, 'instr_count': 15, 'code_size': 70, 'arith_ops': 9}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 44.0, 'instr_count': 33, 'code_size': 153, 'arith_ops': 16}
-  cost: 0.4561
+  genome: ['cse', 'dead_code_elimination', 'copy_propagation', 'dead_code_elimination', 'cse']
+  fitness: {'exec_time': 29.0, 'instr_count': 15, 'code_size': 70, 'arith_ops': 9}
+  cost: 0.9313
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    c0 = 1
-    c1 = 10
-    c3 = 1
-    c4 = 1
-    t7 = 3
-    t10 = t7 + c1
-    t11 = t10 / c3
-    t13 = c3 - v1
-    t21 = t11 * c0
-    t22 = t21 + c3
-    t23 = t22 * c1
-    t24 = t23 - c0
-    t28 = t24 - c4
-    t32 = t21 - t11
-    t34 = t28 * c0
-    t37 = t34 + c3
-    OUTPUT t32
-    OUTPUT t13
-    s0 = 6
-    OUTPUT s0
-    k1 = 4
-    s1 = v0 * k1
-    OUTPUT s1
-    u0 = t37 + t37
-    w0 = u0 + u0
-    OUTPUT w0
-    u1 = t11 + t11
-    w1 = u1 + t11
-    OUTPUT w1
-    w2 = 28
-    OUTPUT w2
+    y0 = INPUT y0
+    y1 = INPUT y1
+    t = INPUT t
+    _k1 = 20
+    _e1 = _k1 - t
+    _e2 = y0 * _e1
+    _e3 = y1 * t
+    _e4 = _e2 + _e3
+    y = _e4 / _k1
+    _e6 = y1 * _e1
+    _e7 = y0 * t
+    _e8 = _e6 + _e7
+    mirror = _e8 / _k1
+    OUTPUT y
+    OUTPUT mirror
 Correctness verdict: PASS

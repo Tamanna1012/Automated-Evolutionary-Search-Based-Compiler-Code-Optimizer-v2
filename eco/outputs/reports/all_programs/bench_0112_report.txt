@@ -1,50 +1,47 @@
-=== bench_0112 ===
-Baseline fitness: {'exec_time': 77.0, 'instr_count': 55, 'code_size': 241, 'arith_ops': 25}
+=== bench_0112 (compound_interest) ===
+Original source:
+    def compound_interest(principal):
+        p0 = principal
+        p1 = p0 * (100 + 10) // 100
+        p2 = p1 * (100 + 10) // 100
+        p3 = p2 * (100 + 10) // 100
+        p4 = p3 * (100 + 10) // 100
+        p5 = p4 * (100 + 10) // 100
+        p6 = p5 * (100 + 10) // 100
+        gain = p6 - principal
+        return p6, gain
+Baseline fitness: {'exec_time': 55.0, 'instr_count': 25, 'code_size': 133, 'arith_ops': 19}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.5861  avg=0.8782
-  gen   5: best=0.5077  avg=0.6405
-  gen  10: best=0.5077  avg=0.5617
-  gen  20: best=0.5077  avg=0.5796
-  gen  50: best=0.5077  avg=0.5458
-Generations to convergence: 5
-Exec-time improvement vs baseline: 35.1%
-Pareto front: 18 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['constant_folding', 'copy_propagation', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 48.0, 'instr_count': 33, 'code_size': 132, 'arith_ops': 10}  -> fastest (lowest exec_time)
-  genome=['constant_folding', 'multiply_fusion', 'copy_propagation', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 50.0, 'instr_count': 31, 'code_size': 120, 'arith_ops': 8}  -> fewest instructions, smallest code size, fewest arithmetic ops  (17 genomes tie here)
+  gen   1: best=0.8891  avg=1.0894
+  gen   5: best=0.8562  avg=0.8972
+  gen  10: best=0.8562  avg=0.8808
+  gen  20: best=0.7459  avg=0.7845
+  gen  50: best=0.7459  avg=0.7858
+Generations to convergence: 16
+Exec-time improvement vs baseline: 12.7%
+Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination', 'algebraic_simplification']  fitness={'exec_time': 48.0, 'instr_count': 18, 'code_size': 94, 'arith_ops': 13}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'multiply_fusion', 'copy_propagation', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 50.0, 'instr_count': 31, 'code_size': 120, 'arith_ops': 8}
-  cost: 0.5077
+  genome: ['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination', 'algebraic_simplification']
+  fitness: {'exec_time': 48.0, 'instr_count': 18, 'code_size': 94, 'arith_ops': 13}
+  cost: 0.7459
   optimized TAC:
-    v1 = INPUT in1
-    v3 = INPUT in3
-    v4 = INPUT in4
-    v5 = INPUT in5
-    c2 = -7
-    t0 = 0
-    t5 = v1
-    t6 = t5
-    t7 = -2
-    t9 = t6
-    t14 = t7 / c2
-    t16 = v3 / t0
-    t17 = v3 / t0
-    t21 = t16 * t17
-    OUTPUT t14
-    OUTPUT t16
-    OUTPUT t21
-    s0 = -36
-    OUTPUT s0
-    k1 = 3
-    s1 = t5 * k1
-    OUTPUT s1
-    k2 = 4
-    s2 = v5 * k2
-    OUTPUT s2
-    w0 = v4 * k1
-    OUTPUT w0
-    w1 = t9 * k1
-    OUTPUT w1
-    w2 = 0
-    OUTPUT w2
+    principal = INPUT principal
+    _k1 = 100
+    _e1 = 110
+    _e2 = principal * _e1
+    p1 = _e2 / _k1
+    _e4 = p1 * _e1
+    p2 = _e4 / _k1
+    _e6 = p2 * _e1
+    p3 = _e6 / _k1
+    _e8 = p3 * _e1
+    p4 = _e8 / _k1
+    _e10 = p4 * _e1
+    p5 = _e10 / _k1
+    _e12 = p5 * _e1
+    p6 = _e12 / _k1
+    gain = p6 - principal
+    OUTPUT p6
+    OUTPUT gain
 Correctness verdict: PASS

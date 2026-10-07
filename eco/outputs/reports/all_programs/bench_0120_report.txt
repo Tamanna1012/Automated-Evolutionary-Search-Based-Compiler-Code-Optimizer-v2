@@ -1,42 +1,39 @@
-=== bench_0120 ===
-Baseline fitness: {'exec_time': 111.0, 'instr_count': 59, 'code_size': 288, 'arith_ops': 37}
+=== bench_0120 (kinetic_and_potential_energy) ===
+Original source:
+    def kinetic_and_potential_energy(m, v, h):
+        ke = m * v * v // 2
+        pe = m * 10 * h // 1
+        mechanical = m * v * v // 2 + m * 10 * h // 1
+        return mechanical, ke
+Baseline fitness: {'exec_time': 49.0, 'instr_count': 21, 'code_size': 102, 'arith_ops': 13}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.3487  avg=0.6676
-  gen   5: best=0.3194  avg=0.3979
-  gen  10: best=0.3004  avg=0.3812
-  gen  20: best=0.3004  avg=0.4058
-  gen  50: best=0.3004  avg=0.3295
-Generations to convergence: 10
-Exec-time improvement vs baseline: 72.1%
-Pareto front: 20 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['constant_folding', 'copy_propagation', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 31.0, 'instr_count': 24, 'code_size': 94, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (20 genomes tie here)
+  gen   1: best=0.7328  avg=0.8907
+  gen   5: best=0.7060  avg=0.7356
+  gen  10: best=0.7060  avg=0.7373
+  gen  20: best=0.6572  avg=0.7106
+  gen  50: best=0.6205  avg=0.6515
+Generations to convergence: 25
+Exec-time improvement vs baseline: 40.8%
+Pareto front: 21 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['algebraic_simplification', 'cse', 'copy_propagation', 'dead_code_elimination', 'cse']  fitness={'exec_time': 29.0, 'instr_count': 15, 'code_size': 65, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'copy_propagation', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 31.0, 'instr_count': 24, 'code_size': 94, 'arith_ops': 7}
-  cost: 0.3004
+  genome: ['algebraic_simplification', 'cse', 'copy_propagation', 'dead_code_elimination', 'cse']
+  fitness: {'exec_time': 29.0, 'instr_count': 15, 'code_size': 65, 'arith_ops': 7}
+  cost: 0.6205
   optimized TAC:
-    v0 = INPUT in0
-    v2 = INPUT in2
-    v3 = INPUT in3
-    c0 = -1
-    t3 = v3
-    t4 = v2 + v3
-    t16 = t4 / v0
-    t17 = c0
-    t18 = t17
-    t20 = t18
-    t27 = t20
-    t31 = 1
-    t35 = t16 - t3
-    OUTPUT t27
-    OUTPUT t35
-    k0 = 3
-    s0 = v3 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = v3 * k1
-    OUTPUT s1
-    u0 = t31 + t31
-    w0 = u0 + u0
-    OUTPUT w0
+    m = INPUT m
+    v = INPUT v
+    h = INPUT h
+    _e1 = m * v
+    _e2 = _e1 * v
+    _k1 = 2
+    ke = _e2 / _k1
+    _k2 = 10
+    _e3 = m * _k2
+    _e6 = _e2
+    _e7 = _e6 / _k1
+    _e9 = _e3 * h
+    mechanical = _e7 + _e9
+    OUTPUT mechanical
+    OUTPUT ke
 Correctness verdict: PASS

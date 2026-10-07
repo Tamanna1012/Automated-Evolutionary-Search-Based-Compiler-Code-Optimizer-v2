@@ -1,40 +1,41 @@
-=== bench_0022 ===
-Baseline fitness: {'exec_time': 83.0, 'instr_count': 50, 'code_size': 225, 'arith_ops': 24}
+=== bench_0022 (mean_of_values) ===
+Original source:
+    def mean_of_values(x0, x1, x2, x3, x4, x5):
+        total = x0 + x1 + x2 + x3 + x4 + x5
+        mean = total // 6
+        remainder = total - mean * 6
+        return mean, remainder
+Baseline fitness: {'exec_time': 22.0, 'instr_count': 17, 'code_size': 70, 'arith_ops': 8}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.5636  avg=0.8480
-  gen   5: best=0.3573  avg=0.4755
-  gen  10: best=0.3197  avg=0.3309
-  gen  20: best=0.3197  avg=0.4150
-  gen  50: best=0.3197  avg=0.3399
-Generations to convergence: 6
-Exec-time improvement vs baseline: 65.1%
-Pareto front: 23 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 29.0, 'instr_count': 22, 'code_size': 82, 'arith_ops': 3}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (23 genomes tie here)
+  gen   1: best=1.0000  avg=1.0390
+  gen   5: best=1.0000  avg=1.0054
+  gen  10: best=1.0000  avg=1.0013
+  gen  20: best=1.0000  avg=1.0027
+  gen  50: best=1.0000  avg=1.0027
+Generations to convergence: 1
+Exec-time improvement vs baseline: 0.0%
+Pareto front: 29 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=[]  fitness={'exec_time': 22.0, 'instr_count': 17, 'code_size': 70, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (29 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 29.0, 'instr_count': 22, 'code_size': 82, 'arith_ops': 3}
-  cost: 0.3197
+  genome: []
+  fitness: {'exec_time': 22.0, 'instr_count': 17, 'code_size': 70, 'arith_ops': 8}
+  cost: 1.0000
   optimized TAC:
-    v3 = INPUT in3
-    t0 = -2
-    t2 = -2
-    t5 = v3
-    t13 = t5
-    t18 = v3 / t0
-    OUTPUT t13
-    OUTPUT t2
-    k0 = 3
-    s0 = t5 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t18 * k1
-    OUTPUT s1
-    s2 = -4
-    OUTPUT s2
-    s3 = 4
-    OUTPUT s3
-    w0 = -6
-    OUTPUT w0
-    w1 = 3
-    OUTPUT w1
+    x0 = INPUT x0
+    x1 = INPUT x1
+    x2 = INPUT x2
+    x3 = INPUT x3
+    x4 = INPUT x4
+    x5 = INPUT x5
+    _e1 = x0 + x1
+    _e2 = _e1 + x2
+    _e3 = _e2 + x3
+    _e4 = _e3 + x4
+    total = _e4 + x5
+    _k1 = 6
+    mean = total / _k1
+    _e5 = mean * _k1
+    remainder = total - _e5
+    OUTPUT mean
+    OUTPUT remainder
 Correctness verdict: PASS

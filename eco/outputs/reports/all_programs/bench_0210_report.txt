@@ -1,40 +1,42 @@
-=== bench_0210 ===
-Baseline fitness: {'exec_time': 80.0, 'instr_count': 42, 'code_size': 192, 'arith_ops': 21}
+=== bench_0210 (horner_poly) ===
+Original source:
+    def horner_poly(x):
+        r = 5
+        r = r * x + (-2)
+        r = r * x + 3
+        r = r * x + 0
+        r = r * x + 1
+        r = r * x + 1
+        return r
+Baseline fitness: {'exec_time': 27.0, 'instr_count': 17, 'code_size': 85, 'arith_ops': 10}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.3766  avg=0.7487
-  gen   5: best=0.3766  avg=0.5864
-  gen  10: best=0.3766  avg=0.4802
-  gen  20: best=0.3766  avg=0.5104
-  gen  50: best=0.3766  avg=0.4987
-Generations to convergence: 1
-Exec-time improvement vs baseline: 72.5%
-Pareto front: 11 non-dominated individuals, 3 distinct objective-space point(s):
-  genome=['constant_folding', 'multiply_fusion', 'copy_propagation', 'algebraic_simplification', 'constant_propagation', 'strength_reduction', 'dead_code_elimination', 'cse']  fitness={'exec_time': 22.0, 'instr_count': 20, 'code_size': 81, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size
-  genome=['constant_folding', 'strength_reduction', 'multiply_fusion', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 30.0, 'instr_count': 22, 'code_size': 86, 'arith_ops': 6}  -> fewest arithmetic ops
-  genome=['constant_folding', 'multiply_fusion', 'copy_propagation', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 32.0, 'instr_count': 20, 'code_size': 81, 'arith_ops': 6}  -> fewest instructions, smallest code size, fewest arithmetic ops  (9 genomes tie here)
+  gen   1: best=0.9662  avg=1.0606
+  gen   5: best=0.8977  avg=0.9623
+  gen  10: best=0.8977  avg=0.9089
+  gen  20: best=0.8977  avg=0.9204
+  gen  50: best=0.8977  avg=0.9147
+Generations to convergence: 5
+Exec-time improvement vs baseline: 7.4%
+Pareto front: 24 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['copy_propagation', 'constant_folding', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 25.0, 'instr_count': 15, 'code_size': 75, 'arith_ops': 9}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (24 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'multiply_fusion', 'copy_propagation', 'algebraic_simplification', 'constant_propagation', 'strength_reduction', 'dead_code_elimination', 'cse']
-  fitness: {'exec_time': 22.0, 'instr_count': 20, 'code_size': 81, 'arith_ops': 7}
-  cost: 0.3766
+  genome: ['copy_propagation', 'constant_folding', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']
+  fitness: {'exec_time': 25.0, 'instr_count': 15, 'code_size': 75, 'arith_ops': 9}
+  cost: 0.8977
   optimized TAC:
-    v0 = INPUT in0
-    v2 = INPUT in2
-    c1 = 2
-    c3 = 2
-    t3 = v0 + v0
-    t4 = t3 * v2
-    t17 = t4
-    OUTPUT c3
-    OUTPUT c1
-    _sr1 = t4 + t4
-    s0 = _sr1 + _sr1
-    OUTPUT s0
-    s1 = t17 + t17
-    OUTPUT s1
-    _sr2 = s1
-    s2 = _sr2 + t17
-    OUTPUT s2
-    _sr3 = t3
-    w0 = _sr3 + _sr3
-    OUTPUT w0
+    x = INPUT x
+    r = 5
+    _e1 = r * x
+    _k1 = -2
+    r_1 = _e1 + _k1
+    _e2 = r_1 * x
+    _k2 = 3
+    r_2 = _e2 + _k2
+    _e3 = r_2 * x
+    _e4 = _e3 * x
+    _k4 = 1
+    r_4 = _e4 + _k4
+    _e5 = r_4 * x
+    r_5 = _e5 + _k4
+    OUTPUT r_5
 Correctness verdict: PASS

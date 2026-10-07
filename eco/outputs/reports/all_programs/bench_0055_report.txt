@@ -1,52 +1,36 @@
-=== bench_0055 ===
-Baseline fitness: {'exec_time': 117.0, 'instr_count': 67, 'code_size': 322, 'arith_ops': 40}
+=== bench_0055 (sphere_properties) ===
+Original source:
+    def sphere_properties(r):
+        volume = 4 * 314 * r * r * r // 300
+        surface = 4 * 314 * r * r // 100
+        return volume, surface
+Baseline fitness: {'exec_time': 36.0, 'instr_count': 16, 'code_size': 78, 'arith_ops': 9}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4621  avg=0.7536
-  gen   5: best=0.4188  avg=0.4723
-  gen  10: best=0.4188  avg=0.4665
-  gen  20: best=0.4188  avg=0.5515
-  gen  50: best=0.4052  avg=0.4323
-Generations to convergence: 40
-Exec-time improvement vs baseline: 61.5%
-Pareto front: 19 non-dominated individuals, 1 distinct objective-space point(s):
-  genome=['constant_folding', 'copy_propagation', 'constant_folding', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 45.0, 'instr_count': 34, 'code_size': 138, 'arith_ops': 12}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (19 genomes tie here)
+  gen   1: best=0.8299  avg=1.0015
+  gen   5: best=0.8299  avg=0.8586
+  gen  10: best=0.7977  avg=0.8469
+  gen  20: best=0.7464  avg=0.7844
+  gen  50: best=0.7464  avg=0.7767
+Generations to convergence: 15
+Exec-time improvement vs baseline: 25.0%
+Pareto front: 20 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination', 'cse']  fitness={'exec_time': 27.0, 'instr_count': 13, 'code_size': 59, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (20 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'copy_propagation', 'constant_folding', 'algebraic_simplification', 'dead_code_elimination']
-  fitness: {'exec_time': 45.0, 'instr_count': 34, 'code_size': 138, 'arith_ops': 12}
-  cost: 0.4052
+  genome: ['cse', 'copy_propagation', 'constant_folding', 'dead_code_elimination', 'cse']
+  fitness: {'exec_time': 27.0, 'instr_count': 13, 'code_size': 59, 'arith_ops': 6}
+  cost: 0.7464
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    v2 = INPUT in2
-    v3 = INPUT in3
-    v4 = INPUT in4
-    t0 = v1
-    t7 = t0 - v2
-    t10 = -9
-    t13 = v0 / v3
-    t14 = v2 * v0
-    t15 = v3 + t14
-    t18 = t13
-    t20 = t10 - t15
-    t25 = v3 + t20
-    t28 = t18
-    t35 = t13 - v4
-    OUTPUT t28
-    OUTPUT t10
-    OUTPUT t25
-    k0 = 4
-    s0 = k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t35 * k1
-    OUTPUT s1
-    k2 = 3
-    s2 = t14 * k2
-    OUTPUT s2
-    k3 = 4
-    s3 = v1 * k3
-    OUTPUT s3
-    u0 = t7 + t7
-    w0 = u0 + t7
-    OUTPUT w0
+    r = INPUT r
+    _e1 = 1256
+    _e2 = _e1 * r
+    _e3 = _e2 * r
+    _e4 = _e3 * r
+    _k3 = 300
+    volume = _e4 / _k3
+    _e6 = _e2
+    _e7 = _e6 * r
+    _k4 = 100
+    surface = _e7 / _k4
+    OUTPUT volume
+    OUTPUT surface
 Correctness verdict: PASS

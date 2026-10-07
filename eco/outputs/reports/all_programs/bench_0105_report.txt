@@ -1,39 +1,40 @@
-=== bench_0105 ===
-Baseline fitness: {'exec_time': 66.0, 'instr_count': 39, 'code_size': 178, 'arith_ops': 20}
+=== bench_0105 (affine_transform_2d) ===
+Original source:
+    def affine_transform_2d(x, y):
+        x2 = 1 * x + 4 * y + (-8)
+        y2 = (-2) * x + (-4) * y + 6
+        return x2, y2
+Baseline fitness: {'exec_time': 26.0, 'instr_count': 18, 'code_size': 82, 'arith_ops': 8}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4788  avg=0.8257
-  gen   5: best=0.4788  avg=0.6350
-  gen  10: best=0.4398  avg=0.5842
-  gen  20: best=0.4087  avg=0.5390
-  gen  50: best=0.4087  avg=0.4672
-Generations to convergence: 18
-Exec-time improvement vs baseline: 56.1%
-Pareto front: 21 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['algebraic_simplification', 'cse', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 27.0, 'instr_count': 20, 'code_size': 79, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions
-  genome=['multiply_fusion', 'algebraic_simplification', 'cse', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 29.0, 'instr_count': 20, 'code_size': 77, 'arith_ops': 5}  -> fewest instructions, smallest code size, fewest arithmetic ops  (20 genomes tie here)
+  gen   1: best=0.9228  avg=1.0660
+  gen   5: best=0.9047  avg=0.9164
+  gen  10: best=0.8720  avg=0.8945
+  gen  20: best=0.8720  avg=0.8955
+  gen  50: best=0.8720  avg=0.8890
+Generations to convergence: 6
+Exec-time improvement vs baseline: 15.4%
+Pareto front: 23 non-dominated individuals, 2 distinct objective-space point(s):
+  genome=['algebraic_simplification', 'strength_reduction', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 20.0, 'instr_count': 16, 'code_size': 74, 'arith_ops': 8}  -> fastest (lowest exec_time), fewest instructions
+  genome=['constant_folding', 'constant_folding', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 22.0, 'instr_count': 16, 'code_size': 72, 'arith_ops': 7}  -> fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['multiply_fusion', 'algebraic_simplification', 'cse', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 29.0, 'instr_count': 20, 'code_size': 77, 'arith_ops': 5}
-  cost: 0.4087
+  genome: ['constant_folding', 'constant_folding', 'algebraic_simplification', 'copy_propagation', 'dead_code_elimination']
+  fitness: {'exec_time': 22.0, 'instr_count': 16, 'code_size': 72, 'arith_ops': 7}
+  cost: 0.8720
   optimized TAC:
-    v0 = INPUT in0
-    v1 = INPUT in1
-    v2 = INPUT in2
-    c1 = 3
-    t7 = -3
-    t10 = 0
-    t11 = t10 - v2
-    t15 = t7 / v1
-    t19 = t15
-    t20 = t15
-    OUTPUT t15
-    OUTPUT t20
-    k0 = 4
-    s0 = t19 * k0
-    OUTPUT s0
-    k1 = 3
-    s1 = t11 * k1
-    OUTPUT s1
-    w0 = v0 * c1
-    OUTPUT w0
+    x = INPUT x
+    y = INPUT y
+    _k2 = 4
+    _e2 = _k2 * y
+    _e3 = x + _e2
+    _k3 = -8
+    x2 = _e3 + _k3
+    _k4 = -2
+    _e4 = _k4 * x
+    _k5 = -4
+    _e5 = _k5 * y
+    _e6 = _e4 + _e5
+    _k6 = 6
+    y2 = _e6 + _k6
+    OUTPUT x2
+    OUTPUT y2
 Correctness verdict: PASS

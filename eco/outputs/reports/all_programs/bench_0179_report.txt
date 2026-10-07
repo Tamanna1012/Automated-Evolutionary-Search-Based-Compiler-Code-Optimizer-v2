@@ -1,52 +1,35 @@
-=== bench_0179 ===
-Baseline fitness: {'exec_time': 132.0, 'instr_count': 67, 'code_size': 324, 'arith_ops': 39}
+=== bench_0179 (rectangle_properties) ===
+Original source:
+    def rectangle_properties(w, h):
+        area = w * h
+        perimeter = 2 * (w + h)
+        diagonal_sq = w * w + h * h
+        return area, perimeter, diagonal_sq
+Baseline fitness: {'exec_time': 20.0, 'instr_count': 12, 'code_size': 53, 'arith_ops': 6}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4209  avg=0.7726
-  gen   5: best=0.3952  avg=0.5584
-  gen  10: best=0.3740  avg=0.4568
-  gen  20: best=0.3633  avg=0.4140
-  gen  50: best=0.3633  avg=0.3882
-Generations to convergence: 11
-Exec-time improvement vs baseline: 63.6%
-Pareto front: 25 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['strength_reduction', 'cse', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 45.0, 'instr_count': 40, 'code_size': 164, 'arith_ops': 14}  -> fastest (lowest exec_time)  (4 genomes tie here)
-  genome=['strength_reduction', 'multiply_fusion', 'cse', 'algebraic_simplification', 'dead_code_elimination']  fitness={'exec_time': 48.0, 'instr_count': 33, 'code_size': 127, 'arith_ops': 8}  -> fewest instructions, smallest code size, fewest arithmetic ops  (21 genomes tie here)
+  gen   1: best=0.9228  avg=0.9816
+  gen   5: best=0.9228  avg=0.9245
+  gen  10: best=0.9228  avg=0.9323
+  gen  20: best=0.9228  avg=0.9375
+  gen  50: best=0.9228  avg=0.9349
+Generations to convergence: 1
+Exec-time improvement vs baseline: 15.0%
+Pareto front: 25 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'constant_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 17.0, 'instr_count': 11, 'code_size': 49, 'arith_ops': 6}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (25 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['strength_reduction', 'multiply_fusion', 'cse', 'algebraic_simplification', 'dead_code_elimination']
-  fitness: {'exec_time': 48.0, 'instr_count': 33, 'code_size': 127, 'arith_ops': 8}
-  cost: 0.3633
+  genome: ['cse', 'constant_propagation', 'strength_reduction', 'constant_folding', 'dead_code_elimination']
+  fitness: {'exec_time': 17.0, 'instr_count': 11, 'code_size': 49, 'arith_ops': 6}
+  cost: 0.9228
   optimized TAC:
-    v1 = INPUT in1
-    c0 = 4
-    c2 = 0
-    c3 = 0
-    t0 = c2
-    t1 = c3
-    t4 = t0
-    t5 = c3 / t4
-    t6 = t1
-    t9 = t5
-    t11 = v1 * t5
-    t12 = t9 * c0
-    t14 = t6
-    t15 = t14
-    t16 = t12
-    OUTPUT t16
-    OUTPUT t9
-    OUTPUT t1
-    s0 = t11 + t11
-    OUTPUT s0
-    k1 = 3
-    s1 = 0
-    OUTPUT s1
-    s2 = t6 * k1
-    OUTPUT s2
-    s3 = t9 * k1
-    OUTPUT s3
-    w0 = t15 * k1
-    OUTPUT w0
-    w1 = t12 * k1
-    OUTPUT w1
-    w2 = s2
-    OUTPUT w2
+    w = INPUT w
+    h = INPUT h
+    area = w * h
+    _e1 = w + h
+    perimeter = _e1 + _e1
+    _e2 = w * w
+    _e3 = h * h
+    diagonal_sq = _e2 + _e3
+    OUTPUT area
+    OUTPUT perimeter
+    OUTPUT diagonal_sq
 Correctness verdict: PASS

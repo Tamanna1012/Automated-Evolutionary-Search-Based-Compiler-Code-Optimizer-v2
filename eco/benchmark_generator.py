@@ -34,6 +34,7 @@ class BenchmarkProgram:
     test_input_sets: List[Dict[str, int]]
     expected_outputs: List[List[int]]
     baseline_fitness: Fitness
+    kernel: str = "synthetic"   # template name for real-kernel programs
 
 
 def _gen_test_input_sets(rng: random.Random, input_names: List[str]) -> List[Dict[str, int]]:

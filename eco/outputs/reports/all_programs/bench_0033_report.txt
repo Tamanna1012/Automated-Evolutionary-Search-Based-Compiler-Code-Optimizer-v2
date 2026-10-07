@@ -1,58 +1,46 @@
-=== bench_0033 ===
-Baseline fitness: {'exec_time': 131.0, 'instr_count': 75, 'code_size': 365, 'arith_ops': 46}
+=== bench_0033 (temperature_conversions) ===
+Original source:
+    def temperature_conversions(c):
+        fahrenheit = c * 9 // 5 + 32
+        kelvin = c + 273
+        reaumur = c * 4 // 5
+        rankine = c * 9 // 5 + 32 + 460
+        return fahrenheit, kelvin, reaumur, rankine
+Baseline fitness: {'exec_time': 36.0, 'instr_count': 21, 'code_size': 98, 'arith_ops': 10}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4824  avg=0.7774
-  gen   5: best=0.4493  avg=0.5151
-  gen  10: best=0.4244  avg=0.4758
-  gen  20: best=0.4244  avg=0.5702
-  gen  50: best=0.4244  avg=0.4374
-Generations to convergence: 6
-Exec-time improvement vs baseline: 51.9%
-Pareto front: 23 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['constant_folding', 'constant_folding', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 59.0, 'instr_count': 41, 'code_size': 173, 'arith_ops': 15}  -> fastest (lowest exec_time)  (3 genomes tie here)
-  genome=['constant_folding', 'constant_folding', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']  fitness={'exec_time': 63.0, 'instr_count': 39, 'code_size': 159, 'arith_ops': 12}  -> fewest instructions, smallest code size, fewest arithmetic ops  (20 genomes tie here)
+  gen   1: best=0.9535  avg=1.1468
+  gen   5: best=0.9535  avg=0.9848
+  gen  10: best=0.8735  avg=0.9552
+  gen  20: best=0.8673  avg=0.8815
+  gen  50: best=0.8673  avg=0.8760
+Generations to convergence: 14
+Exec-time improvement vs baseline: 13.9%
+Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'cse', 'copy_propagation', 'cse']  fitness={'exec_time': 31.0, 'instr_count': 21, 'code_size': 89, 'arith_ops': 7}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['constant_folding', 'constant_folding', 'multiply_fusion', 'constant_folding', 'dead_code_elimination']
-  fitness: {'exec_time': 63.0, 'instr_count': 39, 'code_size': 159, 'arith_ops': 12}
-  cost: 0.4244
+  genome: ['cse', 'copy_propagation', 'cse', 'copy_propagation', 'cse']
+  fitness: {'exec_time': 31.0, 'instr_count': 21, 'code_size': 89, 'arith_ops': 7}
+  cost: 0.8673
   optimized TAC:
-    v1 = INPUT in1
-    v2 = INPUT in2
-    v4 = INPUT in4
-    v5 = INPUT in5
-    c2 = -4
-    c3 = 1
-    t1 = 6
-    t3 = 42
-    t9 = c2 + v2
-    t10 = t3 / c3
-    t12 = v4
-    t13 = v5 / v4
-    t16 = v4 / t13
-    t17 = t1 - t16
-    t22 = t12
-    t25 = t3 / t10
-    t26 = 14
-    t28 = v1
-    t29 = t28
-    OUTPUT t17
-    OUTPUT t26
-    k0 = 3
-    s0 = t29 * k0
-    OUTPUT s0
-    s1 = -112
-    OUTPUT s1
-    k2 = 3
-    s2 = t22 * k2
-    OUTPUT s2
-    k3 = 3
-    s3 = t28 * k3
-    OUTPUT s3
-    w0 = t25 * k0
-    OUTPUT w0
-    w1 = t9 * k0
-    OUTPUT w1
-    _mf1 = 4
-    w2 = t12 * _mf1
-    OUTPUT w2
+    c = INPUT c
+    _k1 = 9
+    _e1 = c * _k1
+    _k2 = 5
+    _e2 = _e1 / _k2
+    _k3 = 32
+    fahrenheit = _e2 + _k3
+    _k4 = 273
+    kelvin = c + _k4
+    _k5 = 4
+    _e3 = c * _k5
+    reaumur = _e3 / _k2
+    _e4 = _e1
+    _e5 = _e2
+    _e6 = fahrenheit
+    _k6 = 460
+    rankine = _e6 + _k6
+    OUTPUT fahrenheit
+    OUTPUT kelvin
+    OUTPUT reaumur
+    OUTPUT rankine
 Correctness verdict: PASS

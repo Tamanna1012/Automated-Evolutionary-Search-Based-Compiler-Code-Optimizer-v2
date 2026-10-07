@@ -1,43 +1,34 @@
-=== bench_0076 ===
-Baseline fitness: {'exec_time': 103.0, 'instr_count': 61, 'code_size': 311, 'arith_ops': 42}
+=== bench_0076 (length_conversions) ===
+Original source:
+    def length_conversions(km):
+        meters = km * 1000
+        centimeters = km * 1000 * 100
+        millimeters = km * 1000 * 100 * 10
+        return meters, centimeters, millimeters
+Baseline fitness: {'exec_time': 25.0, 'instr_count': 13, 'code_size': 59, 'arith_ops': 6}
 Best/avg cost at checkpoint generations:
-  gen   1: best=0.4007  avg=0.6832
-  gen   5: best=0.3918  avg=0.5022
-  gen  10: best=0.3775  avg=0.3891
-  gen  20: best=0.3739  avg=0.5252
-  gen  50: best=0.3739  avg=0.3781
-Generations to convergence: 13
-Exec-time improvement vs baseline: 63.1%
-Pareto front: 20 non-dominated individuals, 2 distinct objective-space point(s):
-  genome=['copy_propagation', 'copy_propagation', 'strength_reduction', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 38.0, 'instr_count': 24, 'code_size': 117, 'arith_ops': 15}  -> fastest (lowest exec_time), fewest instructions, smallest code size  (17 genomes tie here)
-  genome=['copy_propagation', 'copy_propagation', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 43.0, 'instr_count': 25, 'code_size': 119, 'arith_ops': 14}  -> fewest arithmetic ops  (3 genomes tie here)
+  gen   1: best=0.8512  avg=1.0999
+  gen   5: best=0.8512  avg=0.8902
+  gen  10: best=0.7674  avg=0.8460
+  gen  20: best=0.6510  avg=0.7019
+  gen  50: best=0.6510  avg=0.6749
+Generations to convergence: 15
+Exec-time improvement vs baseline: 36.0%
+Pareto front: 22 non-dominated individuals, 1 distinct objective-space point(s):
+  genome=['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']  fitness={'exec_time': 16.0, 'instr_count': 10, 'code_size': 41, 'arith_ops': 3}  -> fastest (lowest exec_time), fewest instructions, smallest code size, fewest arithmetic ops  (22 genomes tie here)
 Best-overall (weighted) individual:
-  genome: ['copy_propagation', 'copy_propagation', 'strength_reduction', 'copy_propagation', 'dead_code_elimination']
-  fitness: {'exec_time': 38.0, 'instr_count': 24, 'code_size': 117, 'arith_ops': 15}
-  cost: 0.3739
+  genome: ['cse', 'copy_propagation', 'cse', 'copy_propagation', 'dead_code_elimination']
+  fitness: {'exec_time': 16.0, 'instr_count': 10, 'code_size': 41, 'arith_ops': 3}
+  cost: 0.6510
   optimized TAC:
-    v1 = INPUT in1
-    v3 = INPUT in3
-    c1 = 0
-    c3 = 0
-    t1 = c1 - v1
-    t2 = t1 / c1
-    t6 = v1 + v3
-    t9 = v3 / c3
-    t11 = v1 / t9
-    t13 = t9 / t1
-    t15 = t11 + t13
-    t25 = t15 - t13
-    t26 = t25 * v1
-    t35 = t6 + t2
-    OUTPUT t15
-    OUTPUT t26
-    _sr1 = t2 + t2
-    s0 = _sr1 + _sr1
-    OUTPUT s0
-    s1 = t35 + t35
-    OUTPUT s1
-    u0 = v1 + v1
-    w0 = u0 + v1
-    OUTPUT w0
+    km = INPUT km
+    _k1 = 1000
+    meters = km * _k1
+    _k2 = 100
+    centimeters = meters * _k2
+    _k3 = 10
+    millimeters = centimeters * _k3
+    OUTPUT meters
+    OUTPUT centimeters
+    OUTPUT millimeters
 Correctness verdict: PASS
