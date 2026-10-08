@@ -176,7 +176,6 @@ textarea:focus,select:focus,input:focus{outline:2px solid var(--accent);outline-
     <span class="ic sun" aria-hidden="true">&#9728;</span><span class="ic moon" aria-hidden="true">&#9790;</span><span class="knob"></span>
   </button>
   <h1>Automated Evolutionary Search-Based<br>Compiler Code Optimizer</h1>
-  <div class="sub" id="subtitle"></div>
 </header>
 <nav id="nav">
   <button data-tab="optimize" class="active">Code Optimization</button>
@@ -571,7 +570,6 @@ function renderOpt(r){
 }
 
 // ------------------------------------------------------------------ boot
-$("#subtitle").textContent = `${M.dataset} | ${P.length} programs | population ${M.population_size} | ${M.generations} generations | seed ${M.seed}`;
 codeOpt(); overview(); explorer();
 document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));
