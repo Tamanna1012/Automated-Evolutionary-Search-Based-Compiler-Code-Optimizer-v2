@@ -39,8 +39,6 @@ nav button{background:transparent;border:1px solid var(--line);border-radius:999
 nav button.active{background:var(--accent);border-color:var(--accent);color:#fff}
 main{max-width:1280px;margin:0 auto;padding:12px 24px 40px}
 .flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 2px}
-.flow .step{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px}
-.flow .step.main{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
 .flow .arrow{color:var(--muted)}
 .mono{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12.5px}
 table.t.left th,table.t.left td{text-align:left}
@@ -166,8 +164,85 @@ svg polyline:hover{stroke-width:3.6}
 .btn{transition:transform .15s,box-shadow .15s,filter .15s;padding:9px 22px}
 .btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.1);box-shadow:0 8px 18px color-mix(in srgb,var(--accent) 40%,transparent)}
 textarea:focus,select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
-.flow .step{transition:transform .15s,border-color .15s}
-.flow .step:hover{transform:translateY(-2px);border-color:var(--accent)}
+
+/* ============ charts, stage viewer, tooltip (additions) ============ */
+:root{--cyan:#0891b2;--purple:#9333ea;--good-hi:#34d399;--muted-hi:#a3afbd}
+:root[data-theme="dark"]{--cyan:#37d0ea;--purple:#b985ff;--good-hi:#6ee7b7;--muted-hi:#8b9bad}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--cyan:#37d0ea;--purple:#b985ff;--good-hi:#6ee7b7;--muted-hi:#8b9bad}}
+main{overflow-x:clip}
+.charts-col{display:grid;grid-template-columns:1fr;gap:18px;margin-top:6px}
+.chartcard{padding:18px 20px 16px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 5%,var(--panel)),var(--panel))}
+.chartcard .explain{font-size:13px;color:var(--muted);margin:2px 0 12px;max-width:80ch}
+.chart{width:100%;min-height:140px}
+.chart svg{overflow:visible}
+.emptystate{border:1px dashed var(--line);border-radius:12px;padding:28px 16px;text-align:center;color:var(--muted);font-size:13.5px}
+.gridline{stroke:var(--grid);stroke-dasharray:3 5}
+.axisline{stroke:var(--line)}
+svg text{font-size:11.5px;fill:var(--muted)}
+svg text.lbl{fill:var(--text)}
+svg text.val{fill:var(--text);font-weight:600}
+svg text.axtitle{fill:var(--muted);font-size:12px}
+.col{outline:none;cursor:pointer}
+.col .hit{fill:transparent;stroke:transparent}
+.col:focus-visible .hit{stroke:var(--accent);stroke-width:2;rx:8}
+.col .bar-el{transition:filter .15s ease,opacity .15s ease;transform-box:fill-box;animation:growV .55s cubic-bezier(.2,.8,.2,1) both}
+.col .bar-el.h{transform-origin:left center;animation-name:growH}
+.col .bar-el.v{transform-origin:center bottom}
+.col:hover .bar-el,.col:focus-visible .bar-el{filter:brightness(1.22) saturate(1.1)}
+.bars:hover .col:not(:hover) .bar-el{opacity:.5}
+.bars:hover .col:not(:hover) text{opacity:.6}
+svg rect:hover{filter:none}
+@keyframes growV{from{transform:scaleY(.04);opacity:.4}to{transform:none;opacity:1}}
+@keyframes growH{from{transform:scaleX(.04);opacity:.4}to{transform:none;opacity:1}}
+svg circle:focus-visible{outline:none;stroke:var(--accent);stroke-width:3}
+.tip{position:fixed;z-index:60;pointer-events:none;display:grid;gap:2px;max-width:270px;padding:9px 12px;background:var(--panel);color:var(--text);
+  border:1px solid color-mix(in srgb,var(--accent) 70%,var(--line));border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.35);font-size:12.5px}
+.tip[hidden]{display:none}
+.tip .tc{font-weight:700}
+.tip .tm{color:var(--muted)}
+.tip .tv{font-size:16px;font-weight:800;background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* clickable compiler stages */
+.flow{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;overflow-x:auto;padding:10px 4px 14px;margin:0 -4px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.flow .arrow{flex:0 0 auto;color:var(--muted)}
+.stage{flex:0 0 auto;font:inherit;font-size:13px;font-weight:600;color:var(--text);background:var(--code);border:1px solid var(--line);border-radius:12px;
+  padding:9px 16px;cursor:pointer;scroll-snap-align:center;transition:transform .18s,border-color .18s,box-shadow .2s,background .2s,color .2s}
+.stage:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 8px 18px rgba(0,0,0,.18)}
+.stage:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.stage[aria-selected="true"]{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent),0 10px 26px color-mix(in srgb,var(--accent2) 38%,transparent)}
+.stagecard{margin-top:12px}
+.stagecard.swap{animation:stageIn .28s ease both}
+@keyframes stageIn{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:none}}
+.stagehead{gap:8px;flex-wrap:wrap}
+.codeview{margin:0;background:var(--code);border:1px solid var(--line);border-radius:12px;padding:12px 0;max-height:440px;overflow:auto;
+  font:13px/1.7 ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;tab-size:4}
+.codeview:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.codeview code{display:block;min-width:max-content;font:inherit}
+.cl{display:block;white-space:pre;padding-right:16px}
+.cl:hover{background:color-mix(in srgb,var(--accent) 11%,transparent)}
+.ln{display:inline-block;width:3.4em;padding-right:1.1em;text-align:right;color:var(--muted);opacity:.65;user-select:none}
+.tok-kw{color:var(--purple);font-weight:600}
+.tok-fn{color:var(--accent);font-weight:600}
+.tok-num{color:var(--warn)}
+.tok-tmp{color:var(--cyan)}
+.tok-op{color:var(--muted)}
+.tok-cmt{color:var(--muted);font-style:italic}
+.tok-tag{display:inline-block;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:6px;padding:0 8px;font-size:11.5px;font-weight:600}
+.tok-arrow{color:var(--cyan);font-weight:700}
+.tok-rm{color:var(--bad);text-decoration:line-through}
+.btn.loading{position:relative;padding-right:44px;cursor:progress}
+.btn.loading::after{content:"";position:absolute;right:16px;top:50%;width:16px;height:16px;margin-top:-8px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn:disabled{cursor:not-allowed}
+nav button:focus-visible,.theme-pill:focus-visible,.btn:focus-visible,.plist tr:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.flow,.codeview,.scroll,textarea,.plist{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--accent) 65%,transparent) transparent}
+.flow::-webkit-scrollbar,.codeview::-webkit-scrollbar,.scroll::-webkit-scrollbar,textarea::-webkit-scrollbar,.plist::-webkit-scrollbar{height:9px;width:9px}
+.flow::-webkit-scrollbar-thumb,.codeview::-webkit-scrollbar-thumb,.scroll::-webkit-scrollbar-thumb,textarea::-webkit-scrollbar-thumb,.plist::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--accent) 60%,transparent);border-radius:9px}
+.flow::-webkit-scrollbar-track,.codeview::-webkit-scrollbar-track,.scroll::-webkit-scrollbar-track,textarea::-webkit-scrollbar-track,.plist::-webkit-scrollbar-track{background:transparent}
+.stage.main-stage:not([aria-selected="true"]){border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+@media (max-width:760px){.stage{padding:8px 13px;font-size:12.5px}.chartcard{padding:14px 12px}.codeview{font-size:12px}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -177,15 +252,15 @@ textarea:focus,select:focus,input:focus{outline:2px solid var(--accent);outline-
   </button>
   <h1>Automated Evolutionary Search-Based<br>Compiler Code Optimizer</h1>
 </header>
-<nav id="nav">
-  <button data-tab="optimize" class="active">Code Optimization</button>
-  <button data-tab="overview">Overview</button>
-  <button data-tab="explorer">Program explorer</button>
+<nav id="nav" role="tablist" aria-label="Dashboard sections">
+  <button data-tab="optimize" class="active" role="tab" aria-selected="true">Code Optimization</button>
+  <button data-tab="overview" role="tab" aria-selected="false" tabindex="-1">Overview</button>
+  <button data-tab="explorer" role="tab" aria-selected="false" tabindex="-1">Program explorer</button>
 </nav>
 <main>
-  <section class="tab active" id="tab-optimize"></section>
-  <section class="tab" id="tab-overview"></section>
-  <section class="tab" id="tab-explorer"></section>
+  <section class="tab active" id="tab-optimize" role="tabpanel"></section>
+  <section class="tab" id="tab-overview" role="tabpanel"></section>
+  <section class="tab" id="tab-explorer" role="tabpanel"></section>
 </main>
 
 <script>
@@ -218,6 +293,8 @@ function sv(tag, attrs, parent){
   if (parent) parent.append(e);
   return e;
 }
+// ------------------------------------------------------------------ charts (responsive SVG, gradients, tooltips)
+let chartSeq = 0;
 function ticks(lo, hi, n){
   if (hi === lo) { hi = lo + 1; }
   const span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -225,94 +302,164 @@ function ticks(lo, hi, n){
   const out = []; for (let v = Math.ceil(lo/step)*step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(10));
   return out;
 }
+function niceMax(max){
+  const t = ticks(0, max, 4), step = t.length > 1 ? t[1] - t[0] : (max || 1);
+  return Math.ceil(max / step - 1e-9) * step || 1;
+}
+const textW = (s, px=11.5) => String(s).length * px * 0.6;
+function pad(lo, hi, p=0.08){ const d = (hi-lo)||Math.abs(hi)||1; return [lo-d*p, hi+d*p]; }
 function frame(w, hgt, m){
   const s = sv("svg", {viewBox:`0 0 ${w} ${hgt}`, width:"100%", role:"img"});
   return {s, w, h:hgt, m, iw:w-m.l-m.r, ih:hgt-m.t-m.b};
 }
-function axes(f, xr, yr, xl, yl, xt=6, yt=5, xfmt=v=>v, yfmt=v=>v){
+// a chart is rebuilt at the real width of its container, so text stays readable at any screen size
+function chartHost(build, label){
+  const host = h("div",{class:"chart"});
+  let last = 0;
+  const draw = () => {
+    const w = Math.floor(host.clientWidth);
+    if (w < 120 || w === last) return;
+    last = w;
+    const svg = build(Math.max(w, 300));
+    if (label) svg.setAttribute("aria-label", label);
+    host.replaceChildren(svg);
+  };
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => requestAnimationFrame(draw)).observe(host);
+  else window.addEventListener("resize", draw);
+  requestAnimationFrame(draw);
+  return host;
+}
+const GRADS = {blue:["--cyan","--accent"], violet:["--purple","--accent2"], good:["--good-hi","--good"], muted:["--muted-hi","--muted"]};
+function gradients(svg, dir){
+  const d = sv("defs", {}, svg), id = ++chartSeq, out = {};
+  for (const [k,[a,b]] of Object.entries(GRADS)) {
+    const g = sv("linearGradient", {id:`g${id}${k}`, x1:0, y1:dir==="V"?0:0, x2:dir==="V"?0:1, y2:dir==="V"?1:0}, d);
+    sv("stop", {offset:"0%", style:`stop-color:var(${a})`}, g);
+    sv("stop", {offset:"100%", style:`stop-color:var(${b})`}, g);
+    out[k] = `url(#g${id}${k})`;
+  }
+  return out;
+}
+const tipAttrs = (cat, metric, val, focusable=true) => Object.assign(
+  {"data-cat":cat, "data-metric":metric||"", "data-val":val, "aria-label":`${cat}${metric?", "+metric:""}: ${val}`}, focusable ? {tabindex:"0"} : {});
+const barTop = (x,y,w,hh,r) => { r = Math.max(0, Math.min(r, w/2, hh)); return `M${x},${y+hh}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+hh}Z`; };
+const barEnd = (x,y,w,hh,r) => { r = Math.max(0, Math.min(r, hh/2, w)); return `M${x},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+hh-r}Q${x+w},${y+hh} ${x+w-r},${y+hh}H${x}Z`; };
+
+function axes(f, xr, yr, xl, yl, xt=6, yt=4, xfmt=v=>v, yfmt=v=>v){
   const X = v => f.m.l + (v-xr[0])/(xr[1]-xr[0]||1)*f.iw;
   const Y = v => f.m.t + f.ih - (v-yr[0])/(yr[1]-yr[0]||1)*f.ih;
   for (const t of ticks(yr[0], yr[1], yt)) {
     sv("line", {x1:f.m.l, x2:f.m.l+f.iw, y1:Y(t), y2:Y(t), class:"gridline"}, f.s);
-    sv("text", {x:f.m.l-6, y:Y(t)+4, "text-anchor":"end"}, f.s).textContent = yfmt(t);
+    sv("text", {x:f.m.l-8, y:Y(t)+4, "text-anchor":"end"}, f.s).textContent = yfmt(t);
   }
-  for (const t of ticks(xr[0], xr[1], xt)) {
-    sv("text", {x:X(t), y:f.m.t+f.ih+16, "text-anchor":"middle"}, f.s).textContent = xfmt(t);
-  }
+  for (const t of ticks(xr[0], xr[1], xt)) sv("text", {x:X(t), y:f.m.t+f.ih+17, "text-anchor":"middle"}, f.s).textContent = xfmt(t);
   sv("line", {x1:f.m.l, x2:f.m.l+f.iw, y1:f.m.t+f.ih, y2:f.m.t+f.ih, class:"axisline"}, f.s);
-  sv("line", {x1:f.m.l, x2:f.m.l, y1:f.m.t, y2:f.m.t+f.ih, class:"axisline"}, f.s);
-  sv("text", {x:f.m.l+f.iw/2, y:f.h-4, "text-anchor":"middle"}, f.s).textContent = xl;
-  const yt2 = sv("text", {transform:`translate(14 ${f.m.t+f.ih/2}) rotate(-90)`, "text-anchor":"middle"}, f.s);
-  yt2.textContent = yl;
+  if (xl) sv("text", {x:f.m.l+f.iw/2, y:f.h-8, "text-anchor":"middle", class:"axtitle"}, f.s).textContent = xl;
+  if (yl) sv("text", {transform:`translate(14 ${f.m.t+f.ih/2}) rotate(-90)`, "text-anchor":"middle", class:"axtitle"}, f.s).textContent = yl;
   return {X, Y};
 }
-function pad(lo, hi, p=0.08){ const d = (hi-lo)||Math.abs(hi)||1; return [lo-d*p, hi+d*p]; }
-
-function lineChart(series, xl, yl){
-  const n = series[0].values.length;
-  const all = series.flatMap(s=>s.values);
+function lineChart(series, o){
+  const n = series[0].values.length, all = series.flatMap(s=>s.values);
   const yr = pad(Math.min(...all), Math.max(...all));
-  const f = frame(560, 260, {l:48,r:12,t:10,b:34});
-  const {X,Y} = axes(f, [1,n], yr, xl, yl, 8, 5, v=>Math.round(v), v=>fmt(v,2));
-  for (const s of series){
-    sv("polyline", {points:s.values.map((v,i)=>`${X(i+1)},${Y(v)}`).join(" "), fill:"none", stroke:s.color, "stroke-width":2}, f.s);
-    s.values.forEach((v,i)=>{ if (n<=60) { const c = sv("circle",{cx:X(i+1),cy:Y(v),r:2.6,fill:s.color},f.s); sv("title",{},c).textContent = `generation ${i+1}: ${fmt(v,3)}`; } });
+  const f = frame(o.w, o.h || 300, {l:58,r:18,t:14,b:o.xl?54:36});
+  const {X,Y} = axes(f, [1,n], yr, o.xl, o.yl, Math.min(10, Math.max(3, Math.floor(o.w/80))), 4, v=>Math.round(v), v=>fmt(v,2));
+  for (const s of series) {
+    sv("polyline", {points:s.values.map((v,i)=>`${X(i+1)},${Y(v)}`).join(" "), fill:"none", stroke:s.color, "stroke-width":2.4, "stroke-linejoin":"round"}, f.s);
+    if (n <= 60) s.values.forEach((v,i) => sv("circle", Object.assign({cx:X(i+1), cy:Y(v), r:3.2, fill:s.color},
+      tipAttrs(`Generation ${i+1}`, s.name, fmt(v,3), false)), f.s));
   }
   return f.s;
 }
-function scatter(points, xl, yl, opts={}){
+function scatter(points, o){
   const xs = points.map(p=>p.x), ys = points.map(p=>p.y);
-  const xr = opts.xr || pad(Math.min(...xs), Math.max(...xs), .1), yr = opts.yr || pad(Math.min(...ys), Math.max(...ys), .1);
-  const f = frame(opts.w||560, opts.h||280, {l:52,r:14,t:10,b:36});
-  const {X,Y} = axes(f, xr, yr, xl, yl, 6, 5, v=>fmt(v, opts.xd ?? 0), v=>fmt(v, opts.yd ?? 0));
-  if (opts.diag) {   // the y = x line, kept inside the plot area
+  const xr = o.xr || pad(Math.min(...xs), Math.max(...xs), .1), yr = o.yr || pad(Math.min(...ys), Math.max(...ys), .1);
+  const f = frame(o.w, o.h || (o.w < 520 ? 300 : 380), {l:62,r:18,t:14,b:o.xl?56:36});
+  const {X,Y} = axes(f, xr, yr, o.xl, o.yl, Math.min(8, Math.max(3, Math.floor(o.w/90))), 5, v=>fmt(v, o.xd ?? 0), v=>fmt(v, o.yd ?? 0));
+  if (o.diag) {   // the y = x line, kept inside the plot area
     const d0 = Math.max(xr[0], yr[0]), d1 = Math.min(xr[1], yr[1]);
-    if (d1 > d0) sv("line",{x1:X(d0),y1:Y(d0),x2:X(d1),y2:Y(d1),stroke:"var(--muted)","stroke-dasharray":"4 4"},f.s);
+    if (d1 > d0) sv("line", {x1:X(d0), y1:Y(d0), x2:X(d1), y2:Y(d1), stroke:"var(--muted)", "stroke-dasharray":"5 5", "stroke-width":1.2}, f.s);
   }
-  const draw = (pts, fill, r, op) => pts.forEach(p=>{ const c = sv("circle",{cx:X(p.x),cy:Y(p.y),r,fill,"fill-opacity":op,stroke:"var(--panel)","stroke-width":.8},f.s); sv("title",{},c).textContent = p.tip || `${xl}: ${fmt(p.x,2)}, ${yl}: ${fmt(p.y,2)}`; });
-  draw(points.filter(p=>!p.front), opts.color || "var(--muted)", opts.r || 4, opts.op ?? .55);
-  draw(points.filter(p=>p.front), "var(--bad)", 6, 1);
+  const few = points.length <= 60;
+  const draw = (pts, fill, r, op) => pts.forEach(p => sv("circle", Object.assign({cx:X(p.x), cy:Y(p.y), r, fill, "fill-opacity":op, stroke:"var(--panel)", "stroke-width":.8},
+    tipAttrs(p.tip || (p.front ? "Pareto front" : "Individual"), `${o.xl} / ${o.yl}`, `${fmt(p.x,2)}, ${fmt(p.y,2)}`, few)), f.s));
+  draw(points.filter(p=>!p.front), o.color || "var(--muted)", o.r || 4.5, o.op ?? .6);
+  draw(points.filter(p=>p.front), "var(--bad)", 6.5, 1);
   return f.s;
 }
-function barsH(items, xl, opts={}){
-  const rowH = 17, f = frame(560, items.length*rowH+40, {l:opts.lm||170,r:44,t:6,b:32});
-  const max = Math.max(...items.map(i=>i.value), 1);
-  const X = v => f.m.l + v/max*f.iw;
-  for (const t of ticks(0, max, 5)) {
-    sv("line",{x1:X(t),x2:X(t),y1:f.m.t,y2:f.m.t+items.length*rowH,class:"gridline"},f.s);
-    sv("text",{x:X(t),y:f.m.t+items.length*rowH+14,"text-anchor":"middle"},f.s).textContent = t;
+function barsH(items, o){
+  const W = o.w, rowH = o.rowH || 26, barH = rowH - 9;
+  const lm = Math.min(Math.max(...items.map(i => textW(i.label))) + 18, W * 0.44);
+  const maxChars = Math.max(6, Math.floor((lm - 18) / 6.9));
+  const m = {l:lm, r:Math.min(74, W*.14), t:8, b:o.xl ? 52 : 34};
+  const Hh = m.t + items.length * rowH + m.b;
+  const svg = frame(W, Hh, m).s, G = gradients(svg, "H");
+  const iw = W - m.l - m.r, max = niceMax(Math.max(...items.map(i=>i.value), 0.0001)), X = v => m.l + v / max * iw;
+  for (const t of ticks(0, max, 4)) {
+    sv("line", {x1:X(t), x2:X(t), y1:m.t, y2:m.t+items.length*rowH, class:"gridline"}, svg);
+    sv("text", {x:X(t), y:m.t+items.length*rowH+17, "text-anchor":"middle"}, svg).textContent = t + (o.unit || "");
   }
-  items.forEach((it,i)=>{
-    const y = f.m.t + i*rowH;
-    const rb = sv("rect",{x:f.m.l,y:y+2,width:Math.max(X(it.value)-f.m.l,0),height:rowH-5,rx:3,fill:it.color||"var(--accent)"},f.s);
-    sv("title",{},rb).textContent = `${it.label}: ${fmt(it.value,1)}`;
-    sv("text",{x:f.m.l-6,y:y+rowH-5,"text-anchor":"end",class:"lbl"},f.s).textContent = it.label;
-    sv("text",{x:X(it.value)+5,y:y+rowH-5},f.s).textContent = fmt(it.value,1);
+  const g = sv("g", {class:"bars"}, svg);
+  items.forEach((it, i) => {
+    const y = m.t + i * rowH, val = `${fmt(it.value, o.dec ?? 1)}${o.unit || ""}`;
+    const col = sv("g", Object.assign({class:"col"}, tipAttrs(it.label, o.metric, val)), g);
+    sv("rect", {class:"hit", x:0, y, width:W, height:rowH}, col);
+    const bw = Math.max(X(it.value) - m.l, it.value > 0 ? 2 : 0);
+    if (bw > 0) sv("path", {class:"bar-el h", d:barEnd(m.l, y + (rowH-barH)/2, bw, barH, 6), fill:G[it.grad || "blue"]}, col);
+    const lab = it.label.length > maxChars ? it.label.slice(0, maxChars - 1) + "…" : it.label;
+    sv("text", {x:m.l-10, y:y+rowH/2+4, "text-anchor":"end", class:"lbl"}, col).textContent = lab;
+    sv("text", {x:X(it.value)+8, y:y+rowH/2+4, class:"val"}, col).textContent = val;
   });
-  sv("text",{x:f.m.l+f.iw/2,y:f.h-6,"text-anchor":"middle"},f.s).textContent = xl;
-  return f.s;
+  if (o.xl) sv("text", {x:m.l+iw/2, y:Hh-10, "text-anchor":"middle", class:"axtitle"}, svg).textContent = o.xl;
+  return svg;
 }
-function barsV(items, xl, yl){
-  const f = frame(560, 262, {l:48,r:12,t:24,b:56});
-  const max = Math.max(...items.map(i=>i.value), 1);
-  const bw = f.iw/items.length;
-  const Y = v => f.m.t + f.ih - v/max*f.ih;
-  for (const t of ticks(0, max, 5)) {
-    sv("line",{x1:f.m.l,x2:f.m.l+f.iw,y1:Y(t),y2:Y(t),class:"gridline"},f.s);
-    sv("text",{x:f.m.l-6,y:Y(t)+4,"text-anchor":"end"},f.s).textContent = t;
+function barsV(items, o){
+  const W = o.w, Hh = o.h || 330, slot = (W - 84) / items.length;
+  const rot = items.some(it => textW(it.label) > slot - 8);
+  const m = {l:58, r:18, t:34, b:(rot ? 62 : 36) + (o.xl ? 22 : 0)};
+  const svg = frame(W, Hh, m).s, G = gradients(svg, "V");
+  const iw = W - m.l - m.r, ih = Hh - m.t - m.b, max = niceMax(Math.max(...items.map(i=>i.value), 0.0001)), Y = v => m.t + ih - v / max * ih;
+  for (const t of ticks(0, max, 4)) {
+    sv("line", {x1:m.l, x2:m.l+iw, y1:Y(t), y2:Y(t), class:"gridline"}, svg);
+    sv("text", {x:m.l-8, y:Y(t)+4, "text-anchor":"end"}, svg).textContent = t;
   }
-  items.forEach((it,i)=>{
-    const x = f.m.l + i*bw;
-    const rv = sv("rect",{x:x+4,y:Y(it.value),width:bw-8,height:f.m.t+f.ih-Y(it.value),rx:3,fill:it.color||"var(--accent)"},f.s);
-    sv("title",{},rv).textContent = `${it.label}: ${it.value}`;
-    sv("text",{x:x+bw/2,y:Y(it.value)-4,"text-anchor":"middle",class:"lbl"},f.s).textContent = it.value;
-    sv("text",{x:x+bw/2,y:f.m.t+f.ih+15,"text-anchor":"middle"},f.s).textContent = it.label;
+  sv("line", {x1:m.l, x2:m.l+iw, y1:m.t+ih, y2:m.t+ih, class:"axisline"}, svg);
+  const g = sv("g", {class:"bars"}, svg), bw = Math.min(slot * 0.62, 76);
+  items.forEach((it, i) => {
+    const cx = m.l + slot * (i + .5), hgt = Math.max(it.value / max * ih, it.value > 0 ? 2 : 0), val = `${fmt(it.value, o.dec ?? 0)}${o.unit || ""}`;
+    const col = sv("g", Object.assign({class:"col"}, tipAttrs(it.label, o.metric, val)), g);
+    sv("rect", {class:"hit", x:cx-slot/2, y:m.t-24, width:slot, height:ih+24+(rot?50:26)}, col);
+    if (hgt > 0) sv("path", {class:"bar-el v", d:barTop(cx-bw/2, m.t+ih-hgt, bw, hgt, 8), fill:G[it.grad || "blue"]}, col);
+    sv("text", {x:cx, y:m.t+ih-hgt-8, "text-anchor":"middle", class:"val"}, col).textContent = fmt(it.value, o.dec ?? 0);
+    const lab = sv("text", {x:cx, y:m.t+ih+19, "text-anchor":rot?"end":"middle", class:"lbl"}, col);
+    if (rot) lab.setAttribute("transform", `rotate(-35 ${cx} ${m.t+ih+19})`);
+    lab.textContent = it.label;
   });
-  sv("text",{x:f.m.l+f.iw/2,y:f.h-4,"text-anchor":"middle"},f.s).textContent = xl;
-  const t = sv("text",{transform:`translate(14 ${f.m.t+f.ih/2}) rotate(-90)`,"text-anchor":"middle"},f.s); t.textContent = yl;
-  return f.s;
+  if (o.xl) sv("text", {x:m.l+iw/2, y:Hh-8, "text-anchor":"middle", class:"axtitle"}, svg).textContent = o.xl;
+  if (o.yl) sv("text", {transform:`translate(14 ${m.t+ih/2}) rotate(-90)`, "text-anchor":"middle", class:"axtitle"}, svg).textContent = o.yl;
+  return svg;
 }
 const legend = items => h("div",{class:"legend"}, items.map(([c,t])=>h("span",{},h("i",{style:`background:${c}`}),t)));
+
+// tooltip shared by every chart: hover, keyboard focus and touch all use the same element
+const tip = h("div",{class:"tip",role:"tooltip",hidden:""});
+document.body.append(tip);
+function showTip(el, x, y){
+  tip.replaceChildren(h("span",{class:"tc"}, el.dataset.cat), el.dataset.metric ? h("span",{class:"tm"}, el.dataset.metric) : null, h("span",{class:"tv"}, el.dataset.val));
+  tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  tip.style.left = Math.max(8, Math.min(x + 14, innerWidth - r.width - 8)) + "px";
+  tip.style.top = Math.max(8, Math.min(y - r.height - 10 < 8 ? y + 18 : y - r.height - 10, innerHeight - r.height - 8)) + "px";
+}
+const hideTip = () => { tip.hidden = true; };
+const tipTarget = e => e.target && e.target.closest ? e.target.closest("[data-cat]") : null;
+document.addEventListener("pointermove", e => { const t = tipTarget(e); t ? showTip(t, e.clientX, e.clientY) : hideTip(); });
+document.addEventListener("pointerdown", e => { const t = tipTarget(e); t ? showTip(t, e.clientX, e.clientY) : hideTip(); });
+document.addEventListener("focusin", e => { const t = tipTarget(e); if (t) { const r = t.getBoundingClientRect(); showTip(t, r.left + r.width/2, r.top + r.height/2); } });
+document.addEventListener("focusout", hideTip);
+window.addEventListener("scroll", hideTip, {passive:true});
+document.addEventListener("keydown", e => { if (e.key === "Escape") hideTip(); });
+
+document.documentElement.addEventListener("mouseleave", hideTip);
 
 // ------------------------------------------------------------------ derived
 const imp = P.map(p=>p.improvement_pct);
@@ -325,9 +472,16 @@ const spell = A.improvement_by_spelling || {};
 function kpi(v, l, badge){
   return h("div",{class:"card kpi"}, h("div",{class:"v"}, v), h("div",{class:"l"}, l), badge||null);
 }
+function chartCard(title, subtitle, explain, body, ...extra){
+  return h("div",{class:"card chartcard"},
+    h("h2",{}, title),
+    subtitle ? h("p",{class:"hint"}, subtitle) : null,
+    explain ? h("p",{class:"explain"}, h("b",{},"What this shows: "), explain) : null,
+    body, ...extra);
+}
+const emptyCard = (title, msg) => h("div",{class:"card chartcard"}, h("h2",{}, title), h("div",{class:"emptystate"}, msg));
 function overview(){
   const root = $("#tab-overview");
-  const met = A.avg_best_cost_improvement_pct >= target;
   root.append(
     h("div",{class:"grid kpis"},
       kpi(fmt(valid)+"%","Validity rate: optimized programs with correct output"),
@@ -339,40 +493,50 @@ function overview(){
       kpi(fmt(A.avg_pareto_front_size)+" / "+fmt(A.avg_distinct_pareto_points,2),"Pareto front: raw size / distinct points"),
       kpi(String(P.filter(p=>p.verdict==="PASS").length)+" / "+P.length,"Programs with PASS verdict")
     ),
-    h("div",{class:"grid two"}, ...overviewCharts())
+    h("div",{class:"charts-col"}, ...overviewCharts())
   );
 }
 function overviewCharts(){
   const cards = [];
-  // histogram
-  const bins = [["0%",x=>x===0],["0-10",x=>x>0&&x<10],["10-20",x=>x>=10&&x<20],["20-30",x=>x>=20&&x<30],["30-50",x=>x>=30&&x<50],["50+",x=>x>=50]];
-  cards.push(h("div",{class:"card"}, h("h2",{},"How much each program improved"),
-    h("p",{class:"hint"},"Number of programs per simulated-improvement band (the average hides this spread)."),
-    barsV(bins.map(([l,f],i)=>({label:l,value:imp.filter(f).length,color:i>=4?"var(--good)":(i===0?"var(--muted)":"var(--accent)")})),"improvement band (%)","programs")));
-  // by kernel
-  const byK = {}; P.forEach(p=>(byK[p.kernel] ||= []).push(p));
-  const kernelItems = Object.entries(byK).map(([k,v])=>({label:k,value:mean(v.map(p=>p.improvement_pct)),color:"var(--accent)"})).sort((a,b)=>b.value-a.value);
-  cards.push(h("div",{class:"card"}, h("h2",{},"Average improvement by kernel"),
-    h("p",{class:"hint"},"Simulated exec_time improvement, averaged over each kernel's instances."),
-    barsH(kernelItems,"improvement (%)",{lm:190})));
-  // spelling
-  const sp = Object.entries(spell).map(([k,v])=>({label:`${k} (${v.programs})`,value:v.avg_improvement_pct,color:k==="naive"?"var(--accent2)":"var(--accent)"}));
-  if (sp.length) cards.push(h("div",{class:"card"}, h("h2",{},"By kernel spelling"),
-    h("p",{class:"hint"},"naive = redundant spelling (recomputes inline); tidy = names the intermediate; plain = single form."), barsH(sp,"improvement (%)",{lm:110})));
-  // sim vs measured
-  if (hasRT){
-    const pts = P.map(p=>({x:p.improvement_pct,y:p.runtime.measured_improvement_pct,tip:`${p.name} (${p.kernel})`}));
-    const c = A.correlation||{};
-    cards.push(h("div",{class:"card"}, h("h2",{},"Simulated vs measured improvement"),
-      h("p",{class:"hint"},`Each dot is a program. Dashed line = perfect agreement. Pearson ${fmt(c.improvement_pearson,2)}, Spearman ${fmt(c.improvement_spearman,2)}.`),
-      scatter(pts,"simulated improvement (%)","measured improvement (%)",{diag:[-10,80],color:"var(--accent)",op:.45,r:3.2}),
-      h("p",{class:"hint"},`Cycles vs measured ns over all ${c.pooled_n} measured programs: Pearson ${fmt(c.pooled_pearson,2)}, Spearman ${fmt(c.pooled_spearman,2)}; ranking variants of one program: mean Spearman ${fmt(c.within_program_mean_spearman,2)}.`)));
+  if (!P.length) return [emptyCard("No results yet", "Run the experiment (python -m eco.main) to fill this page.")];
+  // 1. how many programs fall in each improvement band
+  const bins = [["0%",x=>x===0,"muted"],["0-10%",x=>x>0&&x<10,"blue"],["10-20%",x=>x>=10&&x<20,"blue"],["20-30%",x=>x>=20&&x<30,"violet"],["30-50%",x=>x>=30&&x<50,"good"],["50%+",x=>x>=50,"good"]];
+  const binItems = bins.map(([l,f,g]) => ({label:l, value:imp.filter(f).length, grad:g}));
+  cards.push(chartCard("How much each program improved", `${P.length} programs grouped by simulated exec_time improvement`,
+    "Each bar counts the programs whose improvement falls in that band. The average hides this spread: many kernels are already tight (0%) while others improve a lot.",
+    chartHost(w => barsV(binItems, {w, metric:"Programs", unit:" programs", xl:"improvement band", yl:"programs", title:"Programs per improvement band"}), "Programs per improvement band"),
+    legend([["var(--muted)","no change"],["var(--accent)","under 20%"],["var(--accent2)","20-30%"],["var(--good)","30% or more"]])));
+  // 2. average improvement of every kernel
+  const byK = {}; P.forEach(p => (byK[p.kernel] ||= []).push(p));
+  const kernelItems = Object.entries(byK).map(([k,v]) => ({label:k, value:mean(v.map(p=>p.improvement_pct)), grad:"blue"})).sort((a,b)=>b.value-a.value);
+  kernelItems.forEach(it => { it.grad = it.value >= 30 ? "good" : (it.value > 0 ? "blue" : "muted"); });
+  cards.push(chartCard("Average improvement by kernel", `${kernelItems.length} kernels, averaged over each kernel's instances`,
+    "Simulated exec_time improvement per kernel. Kernels with repeated sub-expressions improve most; dot products and determinants have nothing to remove.",
+    chartHost(w => barsH(kernelItems, {w, metric:"Average improvement", unit:"%", xl:"simulated exec_time improvement (%)"}), "Average improvement by kernel"),
+    legend([["var(--good)","30% or more"],["var(--accent)","under 30%"],["var(--muted)","no change"]])));
+  // 3. by spelling
+  const sp = Object.entries(spell).map(([k,v]) => ({label:`${k} (${v.programs} programs)`, value:v.avg_improvement_pct, grad:k==="naive"?"violet":(k==="plain"?"blue":"good")}));
+  cards.push(sp.length ? chartCard("Improvement by kernel spelling", "How the source is written changes how much the optimizer can remove",
+    "naive = the source recomputes a value inline; tidy = it names the intermediate result; plain = written only one way.",
+    chartHost(w => barsH(sp, {w, metric:"Average improvement", unit:"%", xl:"simulated exec_time improvement (%)", rowH:32}), "Improvement by kernel spelling"))
+    : emptyCard("Improvement by kernel spelling", "No spelling labels are available for this run."));
+  // 4. simulated vs measured
+  if (hasRT) {
+    const pts = P.map(p => ({x:p.improvement_pct, y:p.runtime.measured_improvement_pct, tip:`${p.name} (${p.kernel})`}));
+    const c = A.correlation || {};
+    cards.push(chartCard("Simulated vs measured improvement", `One dot per program. Pearson ${fmt(c.improvement_pearson,2)}, Spearman ${fmt(c.improvement_spearman,2)}`,
+      "Each dot compares the cycle-model improvement used by the search with the improvement measured on real code. Points near the dashed line mean the model predicts real speed well.",
+      chartHost(w => scatter(pts, {w, diag:[-10,80], color:"var(--accent)", op:.5, r:4, xl:"simulated improvement (%)", yl:"measured improvement (%)"}), "Simulated versus measured improvement"),
+      h("p",{class:"hint",style:"margin-top:8px"}, `Cycles vs measured ns over all ${c.pooled_n} measured programs: Pearson ${fmt(c.pooled_pearson,2)}, Spearman ${fmt(c.pooled_spearman,2)}; ranking variants of one program: mean Spearman ${fmt(c.within_program_mean_spearman,2)}.`)));
+  } else {
+    cards.push(emptyCard("Simulated vs measured improvement", "Measured runtime is not available for this run, so there is nothing to compare."));
   }
-  // generations to convergence histogram
-  const maxG = Math.max(...P.map(p=>p.generations_to_convergence));
-  const gb = [[1,2],[3,5],[6,10],[11,20],[21,50]].map(([a,b])=>({label:`${a}-${b}`,value:P.filter(p=>p.generations_to_convergence>=a&&p.generations_to_convergence<=b).length,color:"var(--accent2)"}));
-  cards.push(h("div",{class:"card"}, h("h2",{},"Generations to convergence"),
-    h("p",{class:"hint"},"Generation of the last improvement in best cost, per program (max "+maxG+")."), barsV(gb,"generations","programs")));
+  // 5. generations to convergence
+  const maxG = Math.max(...P.map(p => p.generations_to_convergence));
+  const gb = [[1,2],[3,5],[6,10],[11,20],[21,50]].map(([a,b]) => ({label:`${a}-${b}`, value:P.filter(p=>p.generations_to_convergence>=a&&p.generations_to_convergence<=b).length, grad:"violet"}));
+  cards.push(chartCard("Generations to convergence", `Generation of the last improvement in best cost (the slowest program needed ${maxG})`,
+    "Each bar counts the programs that stopped improving within that range of generations. Most converge early, so the search budget is not the limit.",
+    chartHost(w => barsV(gb, {w, metric:"Programs", unit:" programs", xl:"generations until the last improvement", yl:"programs", title:"Programs per convergence range"}), "Programs per generations-to-convergence range")));
   return cards;
 }
 
@@ -432,7 +596,7 @@ function renderDetail(){
   function drawPareto(){
     const xi = OBJ.findIndex(o=>o[0]===px.value), yi = OBJ.findIndex(o=>o[0]===py.value);
     const pts = p.population.filter(r=>r[5]).map(r=>({x:r[xi],y:r[yi],front:!!r[4]}));
-    pbox.replaceChildren(scatter(pts, OBJ[xi][1], OBJ[yi][1], {xd:xi?0:1,yd:yi?0:1}),
+    pbox.replaceChildren(chartHost(w => scatter(pts, {w, xl:OBJ[xi][1], yl:OBJ[yi][1], xd:xi?0:1, yd:yi?0:1}), "Pareto scatter of the final population"),
       legend([["var(--muted)","dominated (valid)"],["var(--bad)","Pareto front"]]));
   }
 
@@ -447,7 +611,7 @@ function renderDetail(){
         h("table",{class:"t"}, h("thead",{}, h("tr",{}, h("th",{},"objective"), h("th",{},"baseline"), h("th",{},"best"), h("th",{},"change"))), h("tbody",{}, rows))),
       h("div",{class:"card"}, h("h2",{},"Convergence curve"),
         h("p",{class:"hint"},"Weighted cost per generation (lower is better; original = 1.0)."),
-        lineChart([{values:p.hist_avg,color:"var(--muted)"},{values:p.hist_best,color:"var(--good)"}],"generation","weighted cost"),
+        chartHost(w => lineChart([{name:"Average cost",values:p.hist_avg,color:"var(--muted)"},{name:"Best cost",values:p.hist_best,color:"var(--good)"}], {w, xl:"generation", yl:"weighted cost"}), "Convergence curve"),
         legend([["var(--good)","best cost"],["var(--muted)","average cost"]]))),
     h("div",{class:"card",style:"margin-bottom:12px"}, h("h2",{},"Original source (Python) and its three-address code"),
       h("div",{class:"cols"},
@@ -466,7 +630,6 @@ function renderDetail(){
   drawPareto();
 }
 
-// ------------------------------------------------------------------ brief checklist
 // ------------------------------------------------------------------ Python engine (Pyodide) for the Code Optimization tab
 const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
 let enginePromise = null;
@@ -489,48 +652,135 @@ function loadEngine(setStatus){
   return enginePromise;
 }
 // ------------------------------------------------------------------ code optimization workbench
+const STAGES = [
+  {key:"source", label:"Source Code", lang:"py", desc:"The program as you wrote it."},
+  {key:"intermediate", label:"Intermediate Code", lang:"tac", desc:"The compiler front end's intermediate code: one operation per line, literals kept in _k temporaries."},
+  {key:"three", label:"3-Address Code", lang:"tac", desc:"Textbook three-address statements: at most one operator per statement, literals written inline."},
+  {key:"opt", label:"Code Optimization", lang:"log", desc:"Every change the optimizer made, in order, with the reason for it.", main:true},
+  {key:"optimized", label:"Optimized 3-Address Code", lang:"tac", desc:"The three-address code after all optimizations."},
+  {key:"four", label:"4-Address Code", lang:"quad", desc:"Quadruples (operation, arg1, arg2, result) generated from the optimized code."},
+];
+function stageContent(res, key){
+  if (key === "source") return res.source.replace(/\n+$/, "").split("\n");
+  if (key === "intermediate") return res.intermediate;
+  if (key === "three") return res.original.map(r => r.stmt);
+  if (key === "optimized") return res.optimized.map(r => r.stmt);
+  if (key === "four") return res.quadruples.map(q => `${q.sno}: (${q.op}, ${q.arg1}, ${q.arg2}, ${q.result})`);
+  return res.no_optimization ? ["# No optimizations detected: the code is unchanged."] : res.log.map(e => ({log:e}));
+}
+const TOKEN_RE = /(#.*$)|([A-Za-z_]\w*)|(\d+)|(\s+)|(.)/g;
+function highlight(line, lang){
+  const out = [], kw = lang === "py" ? ["def","return"] : ["input","print"];
+  let prev = "", m;
+  TOKEN_RE.lastIndex = 0;
+  while ((m = TOKEN_RE.exec(line))) {
+    const [t, cmt, word, num, ws] = m;
+    let cls = null;
+    if (cmt) cls = "tok-cmt";
+    else if (word) cls = kw.includes(word) ? "tok-kw" : (lang !== "py" && /^(t\d+|_e\d+|_k\d+)$/.test(word) ? "tok-tmp" : (lang === "py" && prev === "def" ? "tok-fn" : null));
+    else if (num) cls = "tok-num";
+    else if (!ws) cls = "tok-op";
+    if (!ws) prev = word || "";
+    out.push(cls ? h("span",{class:cls}, t) : document.createTextNode(t));
+  }
+  return out;
+}
+function codeView(lines, lang){
+  const code = h("code");
+  lines.forEach((ln, i) => {
+    const row = h("span",{class:"cl"}, h("span",{class:"ln","aria-hidden":"true"}, String(i + 1)));
+    if (ln && ln.log) {
+      const e = ln.log;
+      row.append(h("span",{class:"tok-tag"}, e.technique), "  ", ...highlight(e.original, "tac"), h("span",{class:"tok-arrow"}, "  →  "),
+        e.optimized === "(removed)" ? h("span",{class:"tok-rm"}, "(removed)") : h("span",{}, ...highlight(e.optimized, "tac")), h("span",{class:"tok-cmt"}, "    # " + e.reason));
+    } else row.append(...highlight(ln, lang));
+    code.append(row);
+  });
+  return h("pre",{class:"codeview", tabindex:"0", "aria-label":"Generated code"}, code);
+}
 function codeOpt(){
   const root = $("#tab-optimize");
   const base = DATA.code_optimization;                 // computed when the dashboard was built
-  const ta = h("textarea",{spellcheck:"false"}); ta.value = base.source;
-  const status = h("span",{class:"status"}, "");
+  let current = base, stage = "opt", dirty = false;
+  const ta = h("textarea",{spellcheck:"false", "aria-label":"Source code"}); ta.value = base.source;
+  const status = h("span",{class:"status", role:"status"}, "");
   const btn = h("button",{class:"btn"}, "Optimize");
   const out = h("div",{style:"margin-top:12px"});
-  const step = (t, main) => h("span",{class:"step"+(main?" main":"")}, t);
-  const arr = () => h("span",{class:"arrow"}, "\u2192");
-  btn.addEventListener("click", async () => {
-    btn.disabled = true;
+  const panel = h("div",{class:"card stagecard", role:"tabpanel", "aria-live":"polite"});
+  const errHolder = h("div",{});
+  const flow = h("div",{class:"flow", role:"tablist", "aria-label":"Compiler stages"});
+  const stageBtns = {};
+
+  function renderStage(animate){
+    const s = STAGES.find(x => x.key === stage);
+    for (const [k, b] of Object.entries(stageBtns)) { const on = k === stage; b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; }
+    panel.setAttribute("aria-labelledby", "stage-" + stage);
+    const head = h("div",{class:"row stagehead"}, h("h2",{style:"margin:0"}, s.label));
+    let body;
+    if (!current) body = h("div",{class:"emptystate"}, "There is no compiled program to show. Fix the problem above and press Optimize.");
+    else {
+      const lines = stageContent(current, stage);
+      head.append(h("span",{class:"chip"}, `${lines.length} line${lines.length === 1 ? "" : "s"}`), h("span",{class:"chip"}, "generated from your source"));
+      if (dirty) head.append(h("span",{class:"badge b-warn"}, "source edited - press Optimize to refresh"));
+      body = lines.length ? codeView(lines, s.lang) : h("div",{class:"emptystate"}, "This stage produced no code.");
+    }
+    panel.replaceChildren(head, h("p",{class:"hint",style:"margin:4px 0 10px"}, s.desc), body);
+    if (animate) { panel.classList.remove("swap"); void panel.offsetWidth; panel.classList.add("swap"); }
+  }
+  function selectStage(key, focus){ stage = key; renderStage(true); if (focus) stageBtns[key].focus(); }
+  STAGES.forEach((s, i) => {
+    if (i) flow.append(h("span",{class:"arrow","aria-hidden":"true"}, "→"));
+    const b = h("button",{class:"stage" + (s.main ? " main-stage" : ""), id:"stage-" + s.key, role:"tab", "aria-selected":"false", "data-stage":s.key, type:"button",
+      onclick:() => selectStage(s.key, false),
+      onkeydown:e => {
+        const idx = STAGES.findIndex(x => x.key === stage), last = STAGES.length - 1;
+        const to = {ArrowRight:Math.min(idx+1,last), ArrowDown:Math.min(idx+1,last), ArrowLeft:Math.max(idx-1,0), ArrowUp:Math.max(idx-1,0), Home:0, End:last}[e.key];
+        if (to !== undefined) { e.preventDefault(); selectStage(STAGES[to].key, true); }
+      }}, s.label);
+    stageBtns[s.key] = b;
+    flow.append(b);
+  });
+  ta.addEventListener("input", () => { const d = !current || ta.value.trim() !== current.source.trim(); if (d !== dirty) { dirty = d; renderStage(false); } });
+
+  async function run(){
+    btn.disabled = true; btn.classList.add("loading"); btn.setAttribute("aria-busy","true");
+    errHolder.replaceChildren();
     try {
       let res;
-      if (ta.value.trim() === base.source.trim()) {
-        res = base; status.textContent = "";
-      } else {
+      if (!ta.value.trim()) res = {ok:false, stage:"Input", error:"The source code is empty. Write a function and press Optimize."};
+      else if (ta.value.trim() === base.source.trim()) { res = base; status.textContent = ""; }
+      else {
         const eng = await loadEngine(t => status.textContent = t);
         status.textContent = "Optimizing...";
         await new Promise(r => setTimeout(r, 30));
         res = JSON.parse(eng.opt(JSON.stringify({source: ta.value})));
         status.textContent = "";
       }
-      out.replaceChildren(res.ok ? renderOpt(res) : h("div",{class:"errbox"}, h("b",{}, (res.stage||"Error")+": "), res.error));
+      if (res.ok) { current = res; dirty = false; out.replaceChildren(renderOpt(res)); }
+      else { current = null; dirty = false; out.replaceChildren(); errHolder.replaceChildren(h("div",{class:"errbox", role:"alert"}, h("b",{}, (res.stage || "Error") + ": "), res.error)); }
     } catch (e) {
-      status.textContent = "";
-      out.replaceChildren(h("div",{class:"errbox"}, String(e.message || e)));
+      current = null; status.textContent = "";
+      out.replaceChildren();
+      errHolder.replaceChildren(h("div",{class:"errbox", role:"alert"}, String(e.message || e)));
     }
-    btn.disabled = false;
-  });
+    renderStage(true);
+    btn.disabled = false; btn.classList.remove("loading"); btn.removeAttribute("aria-busy");
+  }
+  btn.addEventListener("click", run);
   root.append(
     h("div",{class:"card hero"},
       h("h2",{style:"font-size:18px"},"Code Optimization"),
-      h("p",{class:"hint",style:"margin:0 0 4px"},"The compiler stage that removes unnecessary work from the generated code without changing what the program computes."),
-      h("div",{class:"flow"},
-        step("Source Code"), arr(), step("Intermediate Code"), arr(), step("3-Address Code"), arr(),
-        step("CODE OPTIMIZATION", true), arr(), step("Optimized 3-Address Code"), arr(), step("4-Address Code"))),
+      h("p",{class:"hint",style:"margin:0 0 4px"},"The compiler stage that removes unnecessary work from the generated code without changing what the program computes. Click a stage to see its code."),
+      flow),
+    panel,
     h("div",{class:"card",style:"margin-top:12px"},
       h("h2",{},"Source code"),
       ta,
       h("div",{class:"row",style:"margin-top:10px"}, btn, status),
+      errHolder,
       h("p",{class:"hint"},"Write a straight-line Python function (integers, + - * //, assignments, return) and press Optimize. Optimizing your own code downloads a Python engine (about 10 MB) the first time.")),
     out);
+  renderStage(false);
   out.replaceChildren(renderOpt(base));
 }
 function optCard(title, hint, ...kids){
@@ -543,17 +793,16 @@ function optTable(headers, rows){
 function renderOpt(r){
   const s = r.summary;
   const codeRows = list => list.map(x => h("tr",{}, h("td",{},x.sno), h("td",{class:"mono"},x.op), h("td",{class:"mono"},x.arg1), h("td",{class:"mono"},x.arg2)));
-  const maxN = Math.max(s.original_instructions, 1);
-  const bar = (label, n, color) => h("div",{class:"barrow",title:`${label}: ${n}`}, h("span",{},label), h("div",{},h("div",{class:"bar",style:`width:${(100*n/maxN).toFixed(1)}%;background:${color}`})), h("b",{},n));
   const box = (v, l) => h("div",{class:"box"}, h("div",{class:"v"},v), h("div",{class:"l"},l));
+  const cmp = [{label:"Original code", value:s.original_instructions, grad:"muted"}, {label:"Optimized code", value:s.optimized_instructions, grad:"good"}];
 
   const summary = optCard("Optimization Summary", null,
     h("div",{class:"sumgrid"},
       box(s.original_instructions,"Original instructions"), box(s.optimized_instructions,"Optimized instructions"), box(s.removed,"Instructions removed"),
       box(s.optimizations,"Optimizations applied"), box(s.reduction_pct.toFixed(2)+"%","Optimization reduction")),
     h("div",{style:"margin:6px 0"}, "Optimization techniques used: ", s.techniques.length ? s.techniques.map(t=>h("span",{class:"chip"},t)) : h("span",{class:"muted"},"none")),
-    h("h3",{style:"margin:10px 0 4px;font-size:13px"},"Instruction count: original vs optimized"),
-    bar("Original code", s.original_instructions, "var(--muted)"), bar("Optimized code", s.optimized_instructions, "var(--good)"));
+    h("h3",{style:"margin:12px 0 2px;font-size:13px"},"Instruction count: original vs optimized"),
+    chartHost(w => barsH(cmp, {w, metric:"Instructions", unit:"", dec:0, rowH:34, xl:"instructions"}), "Instruction count, original versus optimized"));
 
   const original = optCard("Original 3-Address Code", null, optTable(["S.No","Operation","Arg1","Arg2"], codeRows(r.original)));
 
@@ -574,10 +823,22 @@ function renderOpt(r){
 
 // ------------------------------------------------------------------ boot
 codeOpt(); overview(); explorer();
-document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>{
-  document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));
-  document.querySelectorAll("section.tab").forEach(s=>s.classList.toggle("active",s.id==="tab-"+b.dataset.tab));
-}));
+(function tabs(){
+  const btns = [...document.querySelectorAll("#nav button")];
+  const select = (b, focus) => {
+    btns.forEach(x => { const on = x === b; x.classList.toggle("active", on); x.setAttribute("aria-selected", String(on)); x.tabIndex = on ? 0 : -1; });
+    document.querySelectorAll("section.tab").forEach(sec => sec.classList.toggle("active", sec.id === "tab-" + b.dataset.tab));
+    hideTip();
+    if (focus) b.focus();
+  };
+  btns.forEach((b, i) => {
+    b.addEventListener("click", () => select(b, false));
+    b.addEventListener("keydown", e => {
+      const to = {ArrowRight:(i+1)%btns.length, ArrowLeft:(i-1+btns.length)%btns.length, Home:0, End:btns.length-1}[e.key];
+      if (to !== undefined) { e.preventDefault(); select(btns[to], true); }
+    });
+  });
+})();
 (function theme(){
   const root = document.documentElement, pill = $("#themeBtn");
   let saved = null;

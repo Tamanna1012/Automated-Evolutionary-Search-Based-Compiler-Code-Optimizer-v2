@@ -42,7 +42,7 @@ from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 from .frontend import UnsupportedSyntax, compile_function, run_source
 from .interpreter import _safe_div, run
-from .tac import dest_of
+from .tac import dest_of, tac_to_text
 
 Operand = Union[str, int, None]
 COMMUTATIVE = {"+", "*"}
@@ -352,6 +352,8 @@ def _error(stage: str, message: str) -> dict:
 
 def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_tests: int = 5) -> dict:
     """Run the whole workflow on a user's function and return everything the tab shows."""
+    if not source or not source.strip():
+        return _error("Input", "The source code is empty. Write a function and press Optimize.")
     try:
         ast.parse(source)
     except SyntaxError as exc:
@@ -392,6 +394,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         "function": compiled.name,
         "args": compiled.arg_names,
         "source": source,
+        "intermediate": tac_to_text(compiled.tac).splitlines(),   # raw front-end TAC (the "Intermediate Code" stage)
         "original": three_address_rows(original),
         "optimized": three_address_rows(optimized),
         "quadruples": quadruple_rows(optimized),

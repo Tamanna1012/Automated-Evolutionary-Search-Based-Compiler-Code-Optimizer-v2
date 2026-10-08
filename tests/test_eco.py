@@ -866,3 +866,47 @@ def test_optimizer_json_entry_point_and_dashboard_embedding(tmp_path):
     for section in ("Original 3-Address Code", "Optimization Analysis", "Optimized 3-Address Code", "No optimizations detected"):
         assert section in html
     assert "Behaviour check" not in html and "Front-end analysis" not in html        # only the requested sections
+
+
+# ---------------------------------------------------------------------------
+# Interactive compiler stages and the redesigned charts
+# ---------------------------------------------------------------------------
+def test_every_compiler_stage_has_real_generated_code():
+    r = optimize_program("def f(a, b):\n    t = a + b\n    u = a + b\n    return t, u\n")
+    assert r["ok"]
+    # Intermediate Code is the front end's raw TAC (distinct from the textbook 3-address code)
+    comp = compile_function("def f(a, b):\n    t = a + b\n    u = a + b\n    return t, u\n")
+    from eco.tac import tac_to_text
+    assert r["intermediate"] == tac_to_text(comp.tac).splitlines()
+    assert [x["stmt"] for x in r["original"]] == [s.text() for s in from_tac(comp.tac)]
+    assert r["source"].startswith("def f(a, b):")
+    # optimized and 4-address code come from the optimizer's output, one row per statement
+    assert len(r["quadruples"]) == len(r["optimized"]) < len(r["original"])
+    assert r["log"] and all({"technique", "original", "optimized", "reason"} <= set(e) for e in r["log"])
+
+
+def test_stage_code_changes_when_the_source_changes():
+    a = optimize_program("def f(a):\n    return a + 0\n")
+    b = optimize_program("def f(a, b):\n    x = a * b\n    y = a * b\n    return x + y\n")
+    for key in ("intermediate", "original", "optimized", "quadruples", "log"):
+        assert a[key] != b[key]
+    assert a["source"] != b["source"]
+
+
+def test_empty_or_blank_source_is_reported_not_crashed():
+    for blank in ("", "   \n\t\n"):
+        r = optimize_program(blank)
+        assert r["ok"] is False and r["stage"] == "Input" and "empty" in r["error"]
+
+
+def test_dashboard_has_clickable_stages_responsive_charts_and_accessible_tabs(tmp_path):
+    progs, results, runtimes, agg = _small_run(2)
+    data = build_dashboard_data(progs, results, runtimes, agg, {"dataset": "t", "population_size": 8, "generations": 4, "seed": 1})
+    html = open(write_dashboard(data, str(tmp_path / "d.html")), encoding="utf-8").read()
+    for stage in ("Source Code", "Intermediate Code", "3-Address Code", "Code Optimization", "Optimized 3-Address Code", "4-Address Code"):
+        assert f'label:"{stage}"' in html
+    for needle in ('role="tablist"', 'role="tab"', 'role="tabpanel"', 'aria-selected', "function chartHost", "ResizeObserver",
+                   'class:"tip"', "charts-col", "linearGradient", "overflow-x:auto"):
+        assert needle in html, needle
+    assert html.count("grid-template-columns:1fr;gap:18px") >= 1                      # one chart per row on the Overview tab
+    assert "stage-" in html and "ArrowRight" in html                                   # keyboard navigation between stages

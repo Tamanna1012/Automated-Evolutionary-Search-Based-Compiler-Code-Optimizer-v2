@@ -210,7 +210,12 @@ are embedded as JSON and drawn with inline SVG; light/dark follows the system).
   Six techniques run repeatedly until nothing changes: constant propagation,
   constant folding, algebraic simplification (`a+0`, `a-0`, `a*1`, `a/1`,
   `a*0`), copy propagation, common subexpression elimination and dead code
-  elimination. The tab shows the optimization summary (original and optimized
+  elimination. **Every stage in the flowchart is a button**: click Source Code,
+  Intermediate Code, 3-Address Code, Code Optimization, Optimized 3-Address Code
+  or 4-Address Code (arrow keys work too) and a panel shows that stage's code,
+  generated from your current source, with syntax highlighting and line numbers.
+  Edit the source and press Optimize and every stage refreshes (an empty or
+  invalid program shows a clear message instead). Below it, the tab shows the optimization summary (original and optimized
   instruction counts, instructions removed, optimizations applied, techniques
   used, reduction percentage, and a bar comparison of the instruction counts),
   the original 3-address code, the optimization analysis (every change with the
@@ -224,7 +229,10 @@ are embedded as JSON and drawn with inline SVG; light/dark follows the system).
   operands are unchanged; inputs and outputs are never removed (the tests check
   that the optimized code gives the same output as the original on every
   kernel).
-* **Overview**: KPI tiles (validity, simulated and measured improvement,
+* **Overview**: one full-width chart per row, each in its own card with a title, a
+  subtitle and a "what this shows" line; bars have gradients, rounded tops, value
+  labels and tooltips (hover, keyboard focus or touch); charts redraw at the
+  width of their card. KPI tiles (validity, simulated and measured improvement,
   programs >= 30%, best program, convergence, Pareto size), improvement
   distribution, improvement per kernel and per spelling label,
   simulated-vs-measured scatter with the correlations, generations-to-convergence.
