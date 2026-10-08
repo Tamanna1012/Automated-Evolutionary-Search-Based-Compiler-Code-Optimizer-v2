@@ -1,13 +1,17 @@
-"""Classic code optimization workbench for the dashboard's "Code Optimization" tab.
+"""Classic code optimization for the dashboard's "Code Optimization" tab.
 
 Where the rest of the project *searches* for good optimization sequences with a
-genetic algorithm, this module shows the standard compiler techniques
-themselves, step by step and with a reason for every change. It works on the
-intermediate code the existing front end already generates (``frontend.py``):
+genetic algorithm (``optimizations.py``), this module applies the standard
+compiler techniques themselves, one after another, and records what changed and
+why. It is deliberately separate from ``optimizations.py``: those passes work on
+the front end's variable-only TAC and only need to return a new program, while
+these work on textbook 3-address statements (literals inline, temporaries named
+``t1``, ``t2``) and must log every change with a reason for the user to read.
 
-    Python source -> tokens / syntax tree / symbol checks -> TAC (front end)
-        -> textbook 3-address code -> CODE OPTIMIZATION -> optimized 3-address
-        code -> 4-address code (quadruples)
+It works on the intermediate code the front end (``frontend.py``) generates:
+
+    Python source -> TAC (front end) -> 3-address code -> CODE OPTIMIZATION
+        -> optimized 3-address code -> 4-address code (quadruples)
 
 Techniques (applied repeatedly until nothing changes):
 
@@ -22,7 +26,8 @@ Safety rules: only the generated code is changed (never the user's source);
 division is folded only when exact and the divisor is not zero; expressions
 are reused only while their operands are unchanged; the program's inputs and
 outputs are never removed; and the optimized code is executed against the
-original on random inputs to prove it behaves identically.
+original on random inputs (``checks`` / ``behaviour_preserved``, used by the
+tests) to prove it behaves identically.
 
 Everything here uses only the standard library so the dashboard can run it in
 the browser (Pyodide) on a visitor's own program.
@@ -30,10 +35,8 @@ the browser (Pyodide) on a visitor's own program.
 from __future__ import annotations
 
 import ast
-import io
 import json
 import random
-import tokenize
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
@@ -342,29 +345,6 @@ def quadruple_rows(stmts: Sequence[Stmt]) -> List[dict]:
     return rows
 
 
-# ------------------------------------------------------------------ front-end analysis
-def front_end_summary(source: str) -> dict:
-    """Small report of the analysis stages that precede code generation."""
-    kinds: Dict[str, int] = {}
-    total = 0
-    for tok in tokenize.generate_tokens(io.StringIO(source).readline):
-        name = tokenize.tok_name[tok.type]
-        if name in ("NEWLINE", "NL", "INDENT", "DEDENT", "ENDMARKER", "COMMENT"):
-            continue
-        total += 1
-        label = {"NAME": "identifiers / keywords", "NUMBER": "numbers", "OP": "operators"}.get(name, name.lower())
-        kinds[label] = kinds.get(label, 0) + 1
-    tree = ast.parse(source)
-    fn = [n for n in tree.body if isinstance(n, ast.FunctionDef)][0]
-    symbols = [{"name": a.arg, "kind": "parameter", "line": a.lineno} for a in fn.args.args]
-    seen = {s["name"] for s in symbols}
-    for node in ast.walk(fn):
-        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store) and node.id not in seen:
-            seen.add(node.id)
-            symbols.append({"name": node.id, "kind": "variable", "line": node.lineno})
-    return {"tokens": total, "token_kinds": kinds, "statements": len(fn.body), "symbols": symbols}
-
-
 # ------------------------------------------------------------------ entry points
 def _error(stage: str, message: str) -> dict:
     return {"ok": False, "stage": stage, "error": message}
@@ -376,10 +356,6 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         ast.parse(source)
     except SyntaxError as exc:
         return _error("Syntax analysis", f"Syntax error: {exc.msg} (line {exc.lineno})")
-    try:
-        summary = front_end_summary(source)
-    except (IndexError, tokenize.TokenError) as exc:
-        return _error("Lexical analysis", f"Could not read the program: {exc}")
     try:
         compiled = compile_function(source)
     except UnsupportedSyntax as exc:
@@ -416,7 +392,6 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         "function": compiled.name,
         "args": compiled.arg_names,
         "source": source,
-        "front_end": summary,
         "original": three_address_rows(original),
         "optimized": three_address_rows(optimized),
         "quadruples": quadruple_rows(optimized),
@@ -478,9 +453,3 @@ SAMPLES = {
 """),
 }
 DEFAULT_SOURCE = next(iter(SAMPLES.values()))[2]
-
-
-def sample_results() -> dict:
-    """Run every built-in example now, so the dashboard can show them without an engine."""
-    return {name: {"lo": lo, "hi": hi, "src": src, "result": optimize_program(src, lo, hi)}
-            for name, (lo, hi, src) in SAMPLES.items()}

@@ -19,14 +19,13 @@ HERE = os.path.dirname(__file__)
 TEMPLATE_PATH = os.path.join(HERE, "dashboard_template.html")
 PLACEHOLDER = "/*__DASHBOARD_DATA__*/null"
 LIVE_PLACEHOLDER = "/*__LIVE_SOURCES__*/null"
-# The modules the "Live optimizer" tab runs in the browser (via Pyodide). They
-# have no third-party dependencies; the real experiment code is what runs.
-LIVE_FILES = ["__init__", "tac", "interpreter", "metrics", "individual", "optimizations",
-              "pareto", "ga", "frontend", "live", "code_optimizer"]
+# The modules the Code Optimization tab runs in the browser (via Pyodide) on a visitor's
+# own program. They have no third-party dependencies.
+LIVE_FILES = ["__init__", "tac", "interpreter", "frontend", "code_optimizer"]
 
 
 def live_sources() -> dict:
-    """Source text of the eco modules shipped inside the page for live optimization."""
+    """Source text of the eco modules shipped inside the page for the Code Optimization tab."""
     out = {}
     for name in LIVE_FILES:
         with open(os.path.join(HERE, name + ".py"), encoding="utf-8") as f:

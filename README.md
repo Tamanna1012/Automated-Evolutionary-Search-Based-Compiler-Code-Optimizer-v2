@@ -204,9 +204,8 @@ are embedded as JSON and drawn with inline SVG; light/dark follows the system).
 * **Code Optimization** (the first and default tab): the classic compiler
   optimizations on the generated intermediate code.
 
-      Source Code -> Lexical / Syntax / Semantic Analysis -> Intermediate Code
-        -> 3-Address Code -> CODE OPTIMIZATION -> Optimized 3-Address Code
-        -> 4-Address Code
+      Source Code -> Intermediate Code -> 3-Address Code -> CODE OPTIMIZATION
+        -> Optimized 3-Address Code -> 4-Address Code
 
   Six techniques run repeatedly until nothing changes: constant propagation,
   constant folding, algebraic simplification (`a+0`, `a-0`, `a*1`, `a/1`,
@@ -219,7 +218,7 @@ are embedded as JSON and drawn with inline SVG; light/dark follows the system).
   optimized 3-address code and the 4-address code. Everything is computed from
   the source you type (`eco/code_optimizer.py`); a built-in example is
   precomputed so the tab opens with a result, and your own code is optimized in
-  your browser through the same Python engine as the Live optimizer. Only the
+  your browser through a Python engine (Pyodide). Only the
   generated code is changed, never the source; division is folded only when
   exact and the divisor is not zero; an expression is reused only while its
   operands are unchanged; inputs and outputs are never removed (the tests check
@@ -233,18 +232,9 @@ are embedded as JSON and drawn with inline SVG; light/dark follows the system).
   the original Python source, the TAC before and after, the best genome,
   baseline-vs-best table (including measured ns), its convergence curve and a
   Pareto scatter of its final population with selectable axes and the front table.
-* **Live optimizer**: type (or pick) your own straight-line Python function, set
-  the input range, generations, population and seed, and press *Optimize live*.
-  The real project code (`ast` front end, genetic algorithm, Pareto analysis,
-  verification) runs **inside your browser** through Pyodide (Python compiled to
-  WebAssembly), so nothing is uploaded; it shows baseline-vs-best metrics, the
-  winning genome, the convergence curve, an output check against your original
-  function, the TAC before/after and the Pareto front. The Python engine
-  (about 10 MB) is downloaded once from the jsDelivr CDN, so this tab needs
-  internet on first use; the rest of the page is fully offline.
-* **Features**: what the system implements, with this run's values (the limitations are documented in this README and the project explanation, not on the dashboard).
+The page has a big centred title, a light/dark capsule switch (remembered between visits) and hover effects on the tabs, cards and charts.
 
-`eco/dashboard.py` builds the data, `eco/dashboard_template.html` is the page, `eco/live.py` and `eco/code_optimizer.py` are the entry points the Live optimizer and the Code Optimization tab call (the dashboard embeds the dependency-free `eco` modules it needs). A copy is written to `docs/index.html` for GitHub Pages (Settings > Pages > branch `main`, folder `/docs`).
+`eco/dashboard.py` builds the data, `eco/dashboard_template.html` is the page, `eco/code_optimizer.py` is the entry point the Code Optimization tab calls (the dashboard embeds the dependency-free `eco` modules it needs). A copy is written to `docs/index.html` for GitHub Pages (Settings > Pages > branch `main`, folder `/docs`).
 
 ## Plots (`eco/outputs/plots/`)
 
@@ -313,7 +303,6 @@ eco/
   visualize.py                the six required plots
   dashboard.py            builds eco/outputs/dashboard.html (data + template)
   dashboard_template.html the interactive results page
-  live.py                  live optimization of a user function (runs in the browser)
   code_optimizer.py        classic optimization techniques with a log, 3-/4-address code tables
   main.py                      end-to-end experiment driver
   outputs/

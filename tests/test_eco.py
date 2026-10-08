@@ -662,73 +662,26 @@ def test_dashboard_template_has_the_data_placeholder():
 
 
 # ---------------------------------------------------------------------------
-# Live optimizer (dashboard tab): same pipeline, user-supplied function
+# Modules shipped to the browser for the Code Optimization tab
 # ---------------------------------------------------------------------------
 from eco.dashboard import LIVE_FILES, live_sources
-from eco.live import optimize_json, optimize_source
-
-LIVE_VARIANCE = (
-    "def variance3(a, b, c):\n"
-    "    mean = (a + b + c) // 3\n"
-    "    var = ((a - (a + b + c) // 3) * (a - (a + b + c) // 3) + (b - (a + b + c) // 3) * (b - (a + b + c) // 3)"
-    " + (c - (a + b + c) // 3) * (c - (a + b + c) // 3)) // 3\n"
-    "    return mean, var\n"
-)
 
 
-def test_live_optimizer_end_to_end_on_a_user_function():
-    r = optimize_source(LIVE_VARIANCE, 1, 20, 20, 12, 7)
-    assert r["ok"] and r["verdict"] == "PASS"
-    assert r["improvement_pct"] > 20
-    assert r["best"]["instr_count"] < r["baseline"]["instr_count"]
-    assert len(r["hist_best"]) == len(r["hist_avg"]) == 12
-    assert len(r["checks"]) == 5 and all(c["match"] for c in r["checks"])
-    assert len(r["population"]) == 20
-    assert r["tac_after"] and len(r["tac_after"]) < len(r["tac_before"])
 
 
-def test_live_optimizer_is_deterministic_and_matches_the_experiment_engine():
-    a = optimize_source(LIVE_VARIANCE, 1, 20, 30, 15, 3)
-    b = optimize_source(LIVE_VARIANCE, 1, 20, 30, 15, 3)
-    assert a == b
-    from eco.frontend import compile_function, run_source
-    comp = compile_function(LIVE_VARIANCE)
-    rng = random.Random(3)
-    tests = [{n: rng.randint(1, 20) for n in comp.arg_names} for _ in range(5)]
-    want = [run_source(LIVE_VARIANCE, "variance3", t) for t in tests]
-    direct = run_ga(comp.tac, tests, want, GAConfig(pop_size=30, num_generations=15, seed=3))
-    assert a["genome"] == direct.best_individual.genome
-    assert a["best"] == direct.best_individual.fitness.as_dict()
 
 
-def test_live_optimizer_reports_clear_errors_instead_of_crashing():
-    assert "Unsupported" in optimize_source("def f(x):\n    return x / 2\n")["error"]
-    assert "Unsupported" in optimize_source("def f(x):\n    for i in x:\n        pass\n    return x\n")["error"]
-    assert "Syntax" in optimize_source("def f(x:\n    return x\n")["error"]
-    assert "at least one parameter" in optimize_source("def f():\n    return 1\n")["error"]
-    assert "failed" in optimize_source("def f(x):\n    return x // 0\n")["error"]
-    neg = optimize_source("def f(x):\n    return x // 2\n", -15, 15)
-    assert not neg["ok"] and "negative" in neg["error"]
 
 
-def test_live_optimizer_limits_population_and_generations():
-    r = optimize_source("def f(a, b):\n    return a * b + a * b\n", 1, 9, 500, 500, 1)
-    assert r["ok"] and r["settings"]["pop"] == 50 and r["settings"]["gens"] == 50
-    r2 = optimize_source("def f(a, b):\n    return a * b + a * b\n", 9, 1, 1, 1, 1)  # swapped range, tiny settings
-    assert r2["ok"] and r2["settings"]["lo"] == 1 and r2["settings"]["hi"] == 9
-    assert r2["settings"]["pop"] == 10 and r2["settings"]["gens"] == 2
 
 
-def test_live_json_entry_point_round_trips():
-    out = _json.loads(optimize_json(_json.dumps({"source": LIVE_VARIANCE, "lo": 1, "hi": 20, "pop": 12, "gens": 4, "seed": 1})))
-    assert out["ok"] and out["verdict"] == "PASS"
-    assert _json.loads(optimize_json(_json.dumps({"source": "x = ("})))["ok"] is False
+
 
 
 def test_live_modules_are_self_contained_for_the_browser():
     """Everything shipped to Pyodide may import only the standard library and each other."""
     import ast as _ast
-    allowed_std = {"__future__", "json", "random", "math", "dataclasses", "typing", "ast", "io", "tokenize"}
+    allowed_std = {"__future__", "json", "random", "math", "dataclasses", "typing", "ast"}
     shipped = set(LIVE_FILES)
     src = live_sources()
     assert set(src) == {n + ".py" for n in LIVE_FILES}
@@ -742,12 +695,6 @@ def test_live_modules_are_self_contained_for_the_browser():
                 assert node.module.split(".")[0] in allowed_std, (name, node.module)
 
 
-def test_dashboard_page_embeds_the_live_engine(tmp_path):
-    progs, results, runtimes, agg = _small_run(2)
-    data = build_dashboard_data(progs, results, runtimes, agg, {"dataset": "t", "population_size": 8, "generations": 4, "seed": 1})
-    html = open(write_dashboard(data, str(tmp_path / "d.html")), encoding="utf-8").read()
-    assert "Live optimizer" in html and "def optimize_source" in html and "LIVE_SRC" in html
-    assert "/*__LIVE_SOURCES__*/" not in html
 
 
 # ---------------------------------------------------------------------------
@@ -756,7 +703,7 @@ def test_dashboard_page_embeds_the_live_engine(tmp_path):
 from eco.code_optimizer import (
     SAMPLES, TECHNIQUES, Stmt, algebraic_simplification, common_subexpression_elimination,
     constant_folding, constant_propagation, copy_propagation, dead_code_elimination, from_tac,
-    optimize_program, optimize_program_json, optimize_stmts, quadruple_rows, run_stmts, sample_results,
+    optimize_program, optimize_program_json, optimize_stmts, quadruple_rows, run_stmts,
 )
 
 
@@ -909,8 +856,7 @@ def test_optimizer_reports_errors_by_stage():
 def test_optimizer_json_entry_point_and_dashboard_embedding(tmp_path):
     out = _json.loads(optimize_program_json(_json.dumps({"source": "def f(a):\n    return a + 0\n", "lo": 1, "hi": 9})))
     assert out["ok"] and out["summary"]["optimizations"] >= 1
-    samples = sample_results()
-    assert set(samples) == set(SAMPLES) and all(v["result"]["ok"] for v in samples.values())
+    assert all(optimize_program(src, lo, hi)["ok"] for lo, hi, src in SAMPLES.values())
     progs, results, runtimes, agg = _small_run(2)
     data = build_dashboard_data(progs, results, runtimes, agg, {"dataset": "t", "population_size": 8, "generations": 4, "seed": 1})
     html = open(write_dashboard(data, str(tmp_path / "d.html")), encoding="utf-8").read()

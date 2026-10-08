@@ -107,29 +107,86 @@ textarea{width:100%;min-height:210px;background:var(--code);border:1px solid var
 .errbox{background:var(--bad-bg);border:1px solid var(--bad);color:var(--bad);border-radius:8px;padding:8px 12px;margin-top:10px}
 td.ok{color:var(--good);font-weight:700}
 footer{max-width:1280px;margin:0 auto;padding:0 24px 24px;color:var(--muted);font-size:12px}
+
+/* ============ look and feel: centred title, capsule theme switch, hover effects ============ */
+body{background:radial-gradient(1100px 420px at 50% -140px,color-mix(in srgb,var(--accent) 18%,transparent),transparent 72%),var(--bg);min-height:100vh}
+header{position:relative;display:block;text-align:center;padding:38px 24px 4px;max-width:1280px;margin:0 auto}
+h1{font-size:clamp(28px,4.8vw,48px);line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:0 0 10px;
+   background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:14px;color:var(--muted)}
+.theme-pill{position:absolute;top:20px;right:24px;width:70px;height:36px;border-radius:999px;border:1px solid var(--line);background:var(--panel);
+   cursor:pointer;padding:0;display:flex;align-items:center;justify-content:space-between;box-shadow:inset 0 1px 4px rgba(0,0,0,.18);
+   transition:border-color .25s,box-shadow .25s,background .25s}
+.theme-pill:hover{border-color:var(--accent);box-shadow:inset 0 1px 4px rgba(0,0,0,.18),0 0 0 4px color-mix(in srgb,var(--accent) 24%,transparent)}
+.theme-pill:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.theme-pill .ic{position:relative;z-index:1;width:35px;text-align:center;font-size:16px;line-height:34px;color:var(--muted);user-select:none;transition:color .25s}
+.theme-pill .knob{position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+   box-shadow:0 2px 8px rgba(0,0,0,.35);transition:transform .3s cubic-bezier(.4,.2,.2,1)}
+:root[data-theme="light"] .theme-pill .sun,:root[data-theme="dark"] .theme-pill .moon{color:#fff}
+:root[data-theme="dark"] .theme-pill .knob{transform:translateX(34px)}
+@media (max-width:760px){.theme-pill{position:static;margin:0 auto 12px}header{padding-top:18px}}
+
+nav{justify-content:center;gap:10px;margin:16px auto 6px}
+nav button{padding:9px 22px;font-weight:600;font-size:14px;background:var(--panel);color:var(--muted);
+   transition:transform .18s,box-shadow .18s,border-color .18s,color .18s,background .18s}
+nav button:hover{transform:translateY(-2px);border-color:var(--accent);color:var(--text);box-shadow:0 8px 18px rgba(0,0,0,.18)}
+nav button.active{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 38%,transparent)}
+nav button.active:hover{color:#fff}
+
+.card{border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:box-shadow .2s,border-color .2s,transform .2s}
+.card:hover{box-shadow:0 12px 30px rgba(0,0,0,.16);border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.kpi{border-top:3px solid var(--accent)}
+.kpi:nth-child(3n+2){border-top-color:var(--accent2)}
+.kpi:nth-child(3n){border-top-color:var(--good)}
+.kpi:hover{transform:translateY(-4px)}
+.hero{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,var(--panel)),var(--panel))}
+.card>h2{display:flex;align-items:center;gap:9px}
+.card>h2::before{content:"";width:4px;height:17px;border-radius:2px;background:linear-gradient(var(--accent),var(--accent2))}
+.card svg,.card .scroll{max-width:100%}
+svg{width:100%;height:auto;display:block;max-width:100%}
+
+table.t tbody tr,.checks tbody tr{transition:background .15s}
+table.t tbody tr:hover td,.checks tbody tr:hover td{background:color-mix(in srgb,var(--accent) 13%,transparent)}
+table.t th,.checks th{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+
+svg circle{transition:transform .15s ease,filter .15s ease;transform-box:fill-box;transform-origin:center;cursor:pointer}
+svg circle:hover{transform:scale(1.9);filter:drop-shadow(0 0 5px var(--accent))}
+svg rect{transition:filter .15s ease;cursor:pointer}
+svg rect:hover{filter:brightness(1.28) saturate(1.15)}
+svg polyline{transition:stroke-width .15s ease}
+svg polyline:hover{stroke-width:3.6}
+.barrow{border-radius:6px;transition:background .15s}
+.barrow:hover{background:var(--code)}
+.barrow .bar{transition:filter .15s}
+.barrow:hover .bar{filter:brightness(1.25)}
+.sumgrid .box{transition:transform .18s,box-shadow .18s;border:1px solid transparent}
+.sumgrid .box:hover{transform:translateY(-3px);box-shadow:0 10px 20px rgba(0,0,0,.18);border-color:var(--accent)}
+.chip{transition:transform .15s,border-color .15s}
+.chip:hover{transform:translateY(-1px);border-color:var(--accent)}
+.btn{transition:transform .15s,box-shadow .15s,filter .15s;padding:9px 22px}
+.btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.1);box-shadow:0 8px 18px color-mix(in srgb,var(--accent) 40%,transparent)}
+textarea:focus,select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.flow .step{transition:transform .15s,border-color .15s}
+.flow .step:hover{transform:translateY(-2px);border-color:var(--accent)}
 </style>
 </head>
 <body>
 <header>
-  <div>
-    <h1>Automated Evolutionary Search-Based Compiler Code Optimizer</h1>
-    <div class="sub" id="subtitle"></div>
-  </div>
-  <button class="theme" id="themeBtn" title="Toggle light / dark">Theme</button>
+  <button class="theme-pill" id="themeBtn" role="switch" aria-checked="false" aria-label="Switch between light and dark theme" title="Light / dark theme">
+    <span class="ic sun" aria-hidden="true">&#9728;</span><span class="ic moon" aria-hidden="true">&#9790;</span><span class="knob"></span>
+  </button>
+  <h1>Automated Evolutionary Search-Based<br>Compiler Code Optimizer</h1>
+  <div class="sub" id="subtitle"></div>
 </header>
 <nav id="nav">
   <button data-tab="optimize" class="active">Code Optimization</button>
   <button data-tab="overview">Overview</button>
   <button data-tab="explorer">Program explorer</button>
-  <button data-tab="live">Live optimizer</button>
-  <button data-tab="brief">Features</button>
 </nav>
 <main>
   <section class="tab active" id="tab-optimize"></section>
   <section class="tab" id="tab-overview"></section>
   <section class="tab" id="tab-explorer"></section>
-  <section class="tab" id="tab-live"></section>
-  <section class="tab" id="tab-brief"></section>
 </main>
 
 <script>
@@ -200,7 +257,7 @@ function lineChart(series, xl, yl){
   const {X,Y} = axes(f, [1,n], yr, xl, yl, 8, 5, v=>Math.round(v), v=>fmt(v,2));
   for (const s of series){
     sv("polyline", {points:s.values.map((v,i)=>`${X(i+1)},${Y(v)}`).join(" "), fill:"none", stroke:s.color, "stroke-width":2}, f.s);
-    s.values.forEach((v,i)=>{ if (n<=60) sv("circle",{cx:X(i+1),cy:Y(v),r:2.2,fill:s.color},f.s); });
+    s.values.forEach((v,i)=>{ if (n<=60) { const c = sv("circle",{cx:X(i+1),cy:Y(v),r:2.6,fill:s.color},f.s); sv("title",{},c).textContent = `generation ${i+1}: ${fmt(v,3)}`; } });
   }
   return f.s;
 }
@@ -210,7 +267,7 @@ function scatter(points, xl, yl, opts={}){
   const f = frame(opts.w||560, opts.h||280, {l:52,r:14,t:10,b:36});
   const {X,Y} = axes(f, xr, yr, xl, yl, 6, 5, v=>fmt(v, opts.xd ?? 0), v=>fmt(v, opts.yd ?? 0));
   if (opts.diag) sv("line",{x1:X(opts.diag[0]),y1:Y(opts.diag[0]),x2:X(opts.diag[1]),y2:Y(opts.diag[1]),stroke:"var(--muted)","stroke-dasharray":"4 4"},f.s);
-  const draw = (pts, fill, r, op) => pts.forEach(p=>{ const c = sv("circle",{cx:X(p.x),cy:Y(p.y),r,fill,"fill-opacity":op,stroke:"var(--panel)","stroke-width":.8},f.s); if (p.tip) sv("title",{},c).textContent=p.tip; });
+  const draw = (pts, fill, r, op) => pts.forEach(p=>{ const c = sv("circle",{cx:X(p.x),cy:Y(p.y),r,fill,"fill-opacity":op,stroke:"var(--panel)","stroke-width":.8},f.s); sv("title",{},c).textContent = p.tip || `${xl}: ${fmt(p.x,2)}, ${yl}: ${fmt(p.y,2)}`; });
   draw(points.filter(p=>!p.front), opts.color || "var(--muted)", opts.r || 4, opts.op ?? .55);
   draw(points.filter(p=>p.front), "var(--bad)", 6, 1);
   return f.s;
@@ -225,7 +282,8 @@ function barsH(items, xl, opts={}){
   }
   items.forEach((it,i)=>{
     const y = f.m.t + i*rowH;
-    sv("rect",{x:f.m.l,y:y+2,width:Math.max(X(it.value)-f.m.l,0),height:rowH-5,rx:3,fill:it.color||"var(--accent)"},f.s);
+    const rb = sv("rect",{x:f.m.l,y:y+2,width:Math.max(X(it.value)-f.m.l,0),height:rowH-5,rx:3,fill:it.color||"var(--accent)"},f.s);
+    sv("title",{},rb).textContent = `${it.label}: ${fmt(it.value,1)}`;
     sv("text",{x:f.m.l-6,y:y+rowH-5,"text-anchor":"end",class:"lbl"},f.s).textContent = it.label;
     sv("text",{x:X(it.value)+5,y:y+rowH-5},f.s).textContent = fmt(it.value,1);
   });
@@ -233,7 +291,7 @@ function barsH(items, xl, opts={}){
   return f.s;
 }
 function barsV(items, xl, yl){
-  const f = frame(560, 250, {l:48,r:12,t:10,b:56});
+  const f = frame(560, 262, {l:48,r:12,t:24,b:56});
   const max = Math.max(...items.map(i=>i.value), 1);
   const bw = f.iw/items.length;
   const Y = v => f.m.t + f.ih - v/max*f.ih;
@@ -243,7 +301,8 @@ function barsV(items, xl, yl){
   }
   items.forEach((it,i)=>{
     const x = f.m.l + i*bw;
-    sv("rect",{x:x+4,y:Y(it.value),width:bw-8,height:f.m.t+f.ih-Y(it.value),rx:3,fill:it.color||"var(--accent)"},f.s);
+    const rv = sv("rect",{x:x+4,y:Y(it.value),width:bw-8,height:f.m.t+f.ih-Y(it.value),rx:3,fill:it.color||"var(--accent)"},f.s);
+    sv("title",{},rv).textContent = `${it.label}: ${it.value}`;
     sv("text",{x:x+bw/2,y:Y(it.value)-4,"text-anchor":"middle",class:"lbl"},f.s).textContent = it.value;
     sv("text",{x:x+bw/2,y:f.m.t+f.ih+15,"text-anchor":"middle"},f.s).textContent = it.label;
   });
@@ -406,59 +465,8 @@ function renderDetail(){
 }
 
 // ------------------------------------------------------------------ brief checklist
-function brief(){
-  const rows = [
-    ["Population of candidate programs", "P = "+M.population_size],
-    ["Generations", M.generations],
-    ["Benchmark programs (source, TAC, test inputs, expected outputs, baseline metrics)", P.length+" programs from "+M.dataset],
-    ["Correctness of evolved programs", fmt(valid)+"% valid; "+P.filter(p=>p.verdict==="PASS").length+" / "+P.length+" PASS"+(hasRT?"; "+fmt(A.measured_outputs_correct_pct)+"% also correct when really run":"")],
-    ["Best cost improvement", "average "+fmt(A.avg_best_cost_improvement_pct)+"% simulated"+(hasRT?", "+fmt(A.avg_measured_improvement_pct)+"% measured":"")+"; "+ge30+" of "+P.length+" programs reach 30% or more; best "+fmt(Math.max(...imp))+"%"],
-    ["Pareto front analysis with trade-off labels", "avg "+fmt(A.avg_pareto_front_size)+" non-dominated solutions per program, "+fmt(A.avg_distinct_pareto_points,2)+" distinct objective points"],
-    ["Convergence", "avg "+fmt(A.avg_generations_to_convergence)+" generations; best cost never increases (elitism)"],
-    ["Objectives", "exec_time, instr_count, code_size, arith_ops"],
-    ["Optimizations (genome genes)", "8: constant folding / propagation, copy propagation, CSE, dead-code elimination, algebraic simplification, strength reduction, multiply fusion"],
-    ["Genetic operators", "tournament selection (3), 10% elitism, mutation (insert 70% / remove 30%), one-point crossover"],
-    ["Real runtime measurement", hasRT ? "original vs best timed on real generated code; avg speedup "+fmt(A.avg_measured_speedup_x,2)+"x" : "not available in this run"],
-    ["Reports and plots", "per-program report for all "+P.length+" programs, summary CSV, 8 plots"],
-    ["Code optimization", "6 classic techniques (constant propagation and folding, algebraic simplification, copy propagation, common subexpression elimination, dead code elimination) with the original and optimized 3-address code, the optimization analysis, the 4-address code and a summary"],
-  ];
-  $("#tab-brief").append(h("div",{class:"card"}, h("h2",{},"Features and results of this run"),
-    h("table",{class:"checks"}, h("thead",{}, h("tr",{}, h("th",{},"Feature"), h("th",{},"This run"))),
-      h("tbody",{}, rows.map(([r,v])=>h("tr",{}, h("td",{},r), h("td",{},String(v))))))));
-}
-
-// ------------------------------------------------------------------ live optimizer (Pyodide)
+// ------------------------------------------------------------------ Python engine (Pyodide) for the Code Optimization tab
 const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
-const SAMPLES = {
-  "Variance (mean written inline)": {lo:1, hi:20, src:
-`def variance3(a, b, c):
-    mean = (a + b + c) // 3
-    var = ((a - (a + b + c) // 3) * (a - (a + b + c) // 3) + (b - (a + b + c) // 3) * (b - (a + b + c) // 3) + (c - (a + b + c) // 3) * (c - (a + b + c) // 3)) // 3
-    return mean, var`},
-  "Quadratic discriminant": {lo:-15, hi:15, src:
-`def discriminant(a, b, c):
-    d = b * b - 4 * a * c
-    two_a = 2 * a
-    root_hi = -b + d
-    root_lo = -b - d
-    return d, root_hi, root_lo, two_a`},
-  "Compound interest (3 years)": {lo:1, hi:20, src:
-`def compound(principal):
-    p1 = principal * (100 + 5) // 100
-    p2 = p1 * (100 + 5) // 100
-    p3 = p2 * (100 + 5) // 100
-    gain = p3 - principal
-    return p3, gain`},
-  "Polynomial with repeated powers": {lo:-9, hi:9, src:
-`def poly(x):
-    r = 3 + 5 * x + 2 * (x * x) + 4 * (x * x * x) + 7 * (x * x * x * x)
-    return r`},
-  "Distance squared (inline)": {lo:-15, hi:15, src:
-`def dist2(x1, y1, x2, y2):
-    d2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
-    scaled = d2 * 3
-    return d2, scaled`},
-};
 let enginePromise = null;
 function loadEngine(setStatus){
   if (enginePromise) return enginePromise;
@@ -473,92 +481,11 @@ function loadEngine(setStatus){
     const py = await loadPyodide({indexURL: PYODIDE_URL});
     py.FS.mkdirTree("/home/pyodide/eco");
     for (const [name, src] of Object.entries(LIVE_SRC)) py.FS.writeFile("/home/pyodide/eco/" + name, src);
-    py.runPython("import sys\nif '/home/pyodide' not in sys.path: sys.path.insert(0, '/home/pyodide')\nfrom eco.live import optimize_json\nfrom eco.code_optimizer import optimize_program_json");
-    return {live: py.globals.get("optimize_json"), opt: py.globals.get("optimize_program_json")};
+    py.runPython("import sys\nif '/home/pyodide' not in sys.path: sys.path.insert(0, '/home/pyodide')\nfrom eco.code_optimizer import optimize_program_json");
+    return {opt: py.globals.get("optimize_program_json")};
   })().catch(e => { enginePromise = null; throw e; });
   return enginePromise;
 }
-function live(){
-  const root = $("#tab-live");
-  const first = Object.keys(SAMPLES)[0];
-  const ta = h("textarea",{spellcheck:"false"}); ta.value = SAMPLES[first].src;
-  const num = (v, w) => h("input",{type:"number",value:v,style:"width:"+(w||80)+"px"});
-  const lo = num(SAMPLES[first].lo), hi = num(SAMPLES[first].hi), gens = num(30,70), pop = num(30,70), seed = num(42,70);
-  const sample = h("select",{onchange:e=>{const s=SAMPLES[e.target.value]; ta.value=s.src; lo.value=s.lo; hi.value=s.hi;}}, Object.keys(SAMPLES).map(k=>h("option",{value:k},k)));
-  const status = h("span",{class:"status"}, "");
-  const btn = h("button",{class:"btn"}, "Optimize live");
-  const out = h("div",{style:"margin-top:12px"});
-  const field = (l, el) => h("label",{class:"field"}, l, el);
-  btn.addEventListener("click", async () => {
-    btn.disabled = true; out.replaceChildren();
-    try {
-      const fn = (await loadEngine(t => status.textContent = t)).live;
-      status.textContent = "Running the genetic algorithm...";
-      await new Promise(r => setTimeout(r, 40));
-      const t0 = performance.now();
-      const res = JSON.parse(fn(JSON.stringify({source: ta.value, lo:+lo.value, hi:+hi.value, gens:+gens.value, pop:+pop.value, seed:+seed.value})));
-      status.textContent = res.ok ? "Done in " + ((performance.now()-t0)/1000).toFixed(1) + " s (computed in your browser)." : "";
-      out.replaceChildren(res.ok ? renderLive(res) : h("div",{class:"errbox"}, res.error));
-    } catch (e) {
-      status.textContent = "";
-      out.replaceChildren(h("div",{class:"errbox"}, String(e.message || e)));
-    }
-    btn.disabled = false;
-  });
-  root.append(h("div",{class:"card"},
-    h("h2",{},"Optimize your own function, live"),
-    h("div",{class:"row"}, h("span",{class:"muted"},"Example:"), sample),
-    ta,
-    h("div",{class:"row",style:"margin-top:10px;align-items:flex-end"},
-      field("input min", lo), field("input max", hi), field("generations", gens), field("population", pop), field("seed", seed), btn, status),
-    h("p",{class:"hint"},"Use a positive input range if your function uses // (Python floors, the optimizer truncates toward zero). The Python engine is downloaded once from a public CDN."),
-    out));
-}
-function renderLive(r){
-  const b = r.baseline, a = r.best;
-  const tile = (v,l) => h("div",{class:"card kpi"}, h("div",{class:"v"}, v), h("div",{class:"l"}, l));
-  const px = h("select",{onchange:draw}, OBJ.map(([k,t])=>h("option",{value:k},t)));
-  const py = h("select",{onchange:draw}, OBJ.map(([k,t],i)=>h("option",{value:k,selected:i===1?"selected":null},t)));
-  const pbox = h("div",{});
-  function draw(){
-    const xi = OBJ.findIndex(o=>o[0]===px.value), yi = OBJ.findIndex(o=>o[0]===py.value);
-    const pts = r.population.filter(q=>q[5]).map(q=>({x:q[xi],y:q[yi],front:!!q[4]}));
-    pbox.replaceChildren(scatter(pts, OBJ[xi][1], OBJ[yi][1], {xd:xi?0:1,yd:yi?0:1}), legend([["var(--muted)","dominated (valid)"],["var(--bad)","Pareto front"]]));
-  }
-  const wrap = h("div",{},
-    h("div",{class:"grid kpis"},
-      tile(fmt(r.improvement_pct)+"%","exec_time improvement (simulated)"),
-      tile(b.instr_count+" → "+a.instr_count,"instructions"),
-      tile(fmt(b.exec_time,1)+" → "+fmt(a.exec_time,1),"cycles per run"),
-      tile(b.arith_ops+" → "+a.arith_ops,"arithmetic ops"),
-      tile(b.code_size+" → "+a.code_size,"code size"),
-      tile(r.verdict,"output check vs your function")),
-    h("div",{class:"card",style:"margin-bottom:12px"},
-      h("div",{}, "Best genome: ", r.genome.length ? r.genome.map(g=>h("span",{class:"chip"},g)) : h("span",{class:"chip"},"(unchanged original)")),
-      h("div",{class:"muted",style:"margin-top:4px"}, `weighted cost ${fmt(r.best_cost,3)} (original = 1.000) | converged at generation ${r.generations_to_convergence} of ${r.settings.gens} | ${r.front_size} non-dominated, ${r.distinct_points} distinct Pareto point(s)`)),
-    h("div",{class:"grid two",style:"margin-bottom:12px"},
-      h("div",{class:"card"}, h("h2",{},"Convergence curve"), h("p",{class:"hint"},"Weighted cost per generation (lower is better)."),
-        lineChart([{values:r.hist_avg,color:"var(--muted)"},{values:r.hist_best,color:"var(--good)"}],"generation","weighted cost"),
-        legend([["var(--good)","best cost"],["var(--muted)","average cost"]])),
-      h("div",{class:"card"}, h("h2",{},"Correctness check"), h("p",{class:"hint"},"The optimized code is run on the same inputs as your original function."),
-        h("div",{class:"scroll"}, h("table",{class:"t",style:"min-width:420px"},
-          h("thead",{}, h("tr",{}, h("th",{},"inputs"), h("th",{},"your function"), h("th",{},"optimized"), h("th",{},"match"))),
-          h("tbody",{}, r.checks.map(c=>h("tr",{}, h("td",{style:"text-align:left"}, r.args.map(x=>x+"="+c.inputs[x]).join(", ")),
-            h("td",{}, "["+c.expected.join(", ")+"]"), h("td",{}, "["+c.optimized.join(", ")+"]"), h("td",{class:c.match?"ok":"fail"}, c.match?"yes":"NO"))))))) ),
-    h("div",{class:"card",style:"margin-bottom:12px"}, h("h2",{},"Three-address code"),
-      h("div",{class:"cols"},
-        h("div",{}, h("p",{class:"hint"},`before (${r.tac_before.length} instructions)`), h("pre",{}, r.tac_before.join("\n"))),
-        h("div",{}, h("p",{class:"hint"},`after (${r.tac_after.length} instructions)`), h("pre",{}, r.tac_after.join("\n"))))),
-    h("div",{class:"card"}, h("h2",{},"Pareto analysis of the final population"),
-      h("div",{class:"row"}, px, h("span",{class:"muted"},"vs"), py), pbox,
-      h("div",{class:"scroll"}, h("table",{class:"t",style:"margin-top:8px;min-width:560px"},
-        h("thead",{}, h("tr",{}, h("th",{},"best at"), h("th",{},"genome"), h("th",{},"time"), h("th",{},"instr"), h("th",{},"size"), h("th",{},"ops"), h("th",{},"ties"))),
-        h("tbody",{}, r.pareto.map(e=>h("tr",{}, h("td",{style:"text-align:left"},e.label), h("td",{style:"text-align:left"},e.genome.join(" > ")||"(none)"),
-          h("td",{},fmt(e.fitness.exec_time,1)), h("td",{},e.fitness.instr_count), h("td",{},e.fitness.code_size), h("td",{},e.fitness.arith_ops), h("td",{},e.tied))))))));
-  draw();
-  return wrap;
-}
-
 // ------------------------------------------------------------------ code optimization workbench
 function codeOpt(){
   const root = $("#tab-optimize");
@@ -594,7 +521,7 @@ function codeOpt(){
       h("h2",{style:"font-size:18px"},"Code Optimization"),
       h("p",{class:"hint",style:"margin:0 0 4px"},"The compiler stage that removes unnecessary work from the generated code without changing what the program computes."),
       h("div",{class:"flow"},
-        step("Source Code"), arr(), step("Lexical / Syntax / Semantic Analysis"), arr(), step("Intermediate Code"), arr(), step("3-Address Code"), arr(),
+        step("Source Code"), arr(), step("Intermediate Code"), arr(), step("3-Address Code"), arr(),
         step("CODE OPTIMIZATION", true), arr(), step("Optimized 3-Address Code"), arr(), step("4-Address Code"))),
     h("div",{class:"card",style:"margin-top:12px"},
       h("h2",{},"Source code"),
@@ -615,7 +542,7 @@ function renderOpt(r){
   const s = r.summary;
   const codeRows = list => list.map(x => h("tr",{}, h("td",{},x.sno), h("td",{class:"mono"},x.op), h("td",{class:"mono"},x.arg1), h("td",{class:"mono"},x.arg2)));
   const maxN = Math.max(s.original_instructions, 1);
-  const bar = (label, n, color) => h("div",{class:"barrow"}, h("span",{},label), h("div",{},h("div",{class:"bar",style:`width:${(100*n/maxN).toFixed(1)}%;background:${color}`})), h("b",{},n));
+  const bar = (label, n, color) => h("div",{class:"barrow",title:`${label}: ${n}`}, h("span",{},label), h("div",{},h("div",{class:"bar",style:`width:${(100*n/maxN).toFixed(1)}%;background:${color}`})), h("b",{},n));
   const box = (v, l) => h("div",{class:"box"}, h("div",{class:"v"},v), h("div",{class:"l"},l));
 
   const summary = optCard("Optimization Summary", null,
@@ -645,15 +572,23 @@ function renderOpt(r){
 
 // ------------------------------------------------------------------ boot
 $("#subtitle").textContent = `${M.dataset} | ${P.length} programs | population ${M.population_size} | ${M.generations} generations | seed ${M.seed}`;
-codeOpt(); overview(); explorer(); live(); brief();
+codeOpt(); overview(); explorer();
 document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));
   document.querySelectorAll("section.tab").forEach(s=>s.classList.toggle("active",s.id==="tab-"+b.dataset.tab));
 }));
-$("#themeBtn").addEventListener("click",()=>{
-  const root = document.documentElement, dark = getComputedStyle(root).getPropertyValue("--bg").trim()==="#10161d";
-  root.setAttribute("data-theme", dark?"light":"dark");
-});
+(function theme(){
+  const root = document.documentElement, pill = $("#themeBtn");
+  let saved = null;
+  try { saved = localStorage.getItem("eco-theme"); } catch (e) {}
+  const apply = t => { root.setAttribute("data-theme", t); pill.setAttribute("aria-checked", String(t === "dark")); };
+  apply(saved || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  pill.addEventListener("click", () => {
+    const t = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    apply(t);
+    try { localStorage.setItem("eco-theme", t); } catch (e) {}
+  });
+})();
 })();
 </script>
 </body>
