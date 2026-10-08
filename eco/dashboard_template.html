@@ -110,8 +110,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 24px 24px;color:var(--muted);fon
 
 /* ============ look and feel: centred title, capsule theme switch, hover effects ============ */
 body{background:radial-gradient(1100px 420px at 50% -140px,color-mix(in srgb,var(--accent) 18%,transparent),transparent 72%),var(--bg);min-height:100vh}
-header{position:relative;display:block;text-align:center;padding:38px 24px 4px;max-width:1280px;margin:0 auto}
-h1{font-size:clamp(28px,4.8vw,48px);line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:0 0 10px;
+header{position:relative;display:block;text-align:center;padding:46px 24px 6px;max-width:1280px;margin:0 auto}
+h1{font-size:clamp(30px,4.5vw,64px);line-height:1.12;text-wrap:balance;font-weight:800;letter-spacing:-.025em;margin:6px auto 14px;text-align:center;
    background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{font-size:14px;color:var(--muted)}
 .theme-pill{position:absolute;top:20px;right:24px;width:70px;height:36px;border-radius:999px;border:1px solid var(--line);background:var(--panel);
@@ -242,7 +242,7 @@ function axes(f, xr, yr, xl, yl, xt=6, yt=5, xfmt=v=>v, yfmt=v=>v){
   sv("line", {x1:f.m.l, x2:f.m.l+f.iw, y1:f.m.t+f.ih, y2:f.m.t+f.ih, class:"axisline"}, f.s);
   sv("line", {x1:f.m.l, x2:f.m.l, y1:f.m.t, y2:f.m.t+f.ih, class:"axisline"}, f.s);
   sv("text", {x:f.m.l+f.iw/2, y:f.h-4, "text-anchor":"middle"}, f.s).textContent = xl;
-  const yt2 = sv("text", {transform:`translate(12 ${f.m.t+f.ih/2}) rotate(-90)`, "text-anchor":"middle"}, f.s);
+  const yt2 = sv("text", {transform:`translate(14 ${f.m.t+f.ih/2}) rotate(-90)`, "text-anchor":"middle"}, f.s);
   yt2.textContent = yl;
   return {X, Y};
 }
@@ -265,14 +265,17 @@ function scatter(points, xl, yl, opts={}){
   const xr = opts.xr || pad(Math.min(...xs), Math.max(...xs), .1), yr = opts.yr || pad(Math.min(...ys), Math.max(...ys), .1);
   const f = frame(opts.w||560, opts.h||280, {l:52,r:14,t:10,b:36});
   const {X,Y} = axes(f, xr, yr, xl, yl, 6, 5, v=>fmt(v, opts.xd ?? 0), v=>fmt(v, opts.yd ?? 0));
-  if (opts.diag) sv("line",{x1:X(opts.diag[0]),y1:Y(opts.diag[0]),x2:X(opts.diag[1]),y2:Y(opts.diag[1]),stroke:"var(--muted)","stroke-dasharray":"4 4"},f.s);
+  if (opts.diag) {   // the y = x line, kept inside the plot area
+    const d0 = Math.max(xr[0], yr[0]), d1 = Math.min(xr[1], yr[1]);
+    if (d1 > d0) sv("line",{x1:X(d0),y1:Y(d0),x2:X(d1),y2:Y(d1),stroke:"var(--muted)","stroke-dasharray":"4 4"},f.s);
+  }
   const draw = (pts, fill, r, op) => pts.forEach(p=>{ const c = sv("circle",{cx:X(p.x),cy:Y(p.y),r,fill,"fill-opacity":op,stroke:"var(--panel)","stroke-width":.8},f.s); sv("title",{},c).textContent = p.tip || `${xl}: ${fmt(p.x,2)}, ${yl}: ${fmt(p.y,2)}`; });
   draw(points.filter(p=>!p.front), opts.color || "var(--muted)", opts.r || 4, opts.op ?? .55);
   draw(points.filter(p=>p.front), "var(--bad)", 6, 1);
   return f.s;
 }
 function barsH(items, xl, opts={}){
-  const rowH = 17, f = frame(560, items.length*rowH+34, {l:opts.lm||170,r:44,t:6,b:26});
+  const rowH = 17, f = frame(560, items.length*rowH+40, {l:opts.lm||170,r:44,t:6,b:32});
   const max = Math.max(...items.map(i=>i.value), 1);
   const X = v => f.m.l + v/max*f.iw;
   for (const t of ticks(0, max, 5)) {
@@ -286,7 +289,7 @@ function barsH(items, xl, opts={}){
     sv("text",{x:f.m.l-6,y:y+rowH-5,"text-anchor":"end",class:"lbl"},f.s).textContent = it.label;
     sv("text",{x:X(it.value)+5,y:y+rowH-5},f.s).textContent = fmt(it.value,1);
   });
-  sv("text",{x:f.m.l+f.iw/2,y:f.h-2,"text-anchor":"middle"},f.s).textContent = xl;
+  sv("text",{x:f.m.l+f.iw/2,y:f.h-6,"text-anchor":"middle"},f.s).textContent = xl;
   return f.s;
 }
 function barsV(items, xl, yl){
@@ -306,7 +309,7 @@ function barsV(items, xl, yl){
     sv("text",{x:x+bw/2,y:f.m.t+f.ih+15,"text-anchor":"middle"},f.s).textContent = it.label;
   });
   sv("text",{x:f.m.l+f.iw/2,y:f.h-4,"text-anchor":"middle"},f.s).textContent = xl;
-  const t = sv("text",{transform:`translate(12 ${f.m.t+f.ih/2}) rotate(-90)`,"text-anchor":"middle"},f.s); t.textContent = yl;
+  const t = sv("text",{transform:`translate(14 ${f.m.t+f.ih/2}) rotate(-90)`,"text-anchor":"middle"},f.s); t.textContent = yl;
   return f.s;
 }
 const legend = items => h("div",{class:"legend"}, items.map(([c,t])=>h("span",{},h("i",{style:`background:${c}`}),t)));
