@@ -38,6 +38,26 @@ nav{max-width:1280px;margin:8px auto 0;padding:0 24px;display:flex;gap:6px;flex-
 nav button{background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--muted)}
 nav button.active{background:var(--accent);border-color:var(--accent);color:#fff}
 main{max-width:1280px;margin:0 auto;padding:12px 24px 40px}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 2px}
+.flow .step{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px}
+.flow .step.main{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.flow .arrow{color:var(--muted)}
+.mono{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12.5px}
+table.t.left th,table.t.left td{text-align:left}
+table.t.left td:first-child,table.t.left th:first-child{width:52px}
+tr.rm td{background:var(--bad-bg)}
+tr.rm td.mono{text-decoration:line-through;opacity:.8}
+tr.chg td{background:var(--warn-bg)}
+.hero{border-left:5px solid var(--accent)}
+.sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:8px 0 12px}
+.sumgrid .box{background:var(--code);border-radius:10px;padding:10px 12px}
+.sumgrid .box .v{font-size:24px;font-weight:700;line-height:1.1}
+.sumgrid .box .l{font-size:12px;color:var(--muted)}
+.bar{height:18px;border-radius:5px;background:var(--accent);min-width:3px}
+.barrow{display:grid;grid-template-columns:150px 1fr 42px;gap:8px;align-items:center;margin:4px 0;font-size:13px}
+.empty{background:var(--good-bg);border:1px solid var(--good);color:var(--text);border-radius:8px;padding:10px 14px}
+.legendrow{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:2px 0 6px;flex-wrap:wrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}
 section.tab{display:none}
 section.tab.active{display:block}
 .grid{display:grid;gap:12px}
@@ -101,13 +121,15 @@ footer{max-width:1280px;margin:0 auto;padding:0 24px 24px;color:var(--muted);fon
   <button class="theme" id="themeBtn" title="Toggle light / dark">Theme</button>
 </header>
 <nav id="nav">
-  <button data-tab="overview" class="active">Overview</button>
+  <button data-tab="optimize" class="active">Code Optimization</button>
+  <button data-tab="overview">Overview</button>
   <button data-tab="explorer">Program explorer</button>
   <button data-tab="live">Live optimizer</button>
   <button data-tab="brief">Features</button>
 </nav>
 <main>
-  <section class="tab active" id="tab-overview"></section>
+  <section class="tab active" id="tab-optimize"></section>
+  <section class="tab" id="tab-overview"></section>
   <section class="tab" id="tab-explorer"></section>
   <section class="tab" id="tab-live"></section>
   <section class="tab" id="tab-brief"></section>
@@ -401,6 +423,7 @@ function brief(){
     ["Genetic operators", "tournament selection (3), 10% elitism, mutation (insert 70% / remove 30%), one-point crossover"],
     ["Real runtime measurement", hasRT ? "original vs best timed on real generated code; avg speedup "+fmt(A.avg_measured_speedup_x,2)+"x" : "not available in this run"],
     ["Reports and plots", "per-program report for all "+P.length+" programs, summary CSV, 8 plots"],
+    ["Code optimization workbench", "6 classic techniques (constant propagation and folding, algebraic simplification, copy propagation, common subexpression elimination, dead code elimination) with a reason for every change, original and optimized 3-address code, 4-address code, and a behaviour check"],
   ];
   $("#tab-brief").append(h("div",{class:"card"}, h("h2",{},"Features and results of this run"),
     h("table",{class:"checks"}, h("thead",{}, h("tr",{}, h("th",{},"Feature"), h("th",{},"This run"))),
@@ -453,8 +476,8 @@ function loadEngine(setStatus){
     const py = await loadPyodide({indexURL: PYODIDE_URL});
     py.FS.mkdirTree("/home/pyodide/eco");
     for (const [name, src] of Object.entries(LIVE_SRC)) py.FS.writeFile("/home/pyodide/eco/" + name, src);
-    py.runPython("import sys\nif '/home/pyodide' not in sys.path: sys.path.insert(0, '/home/pyodide')\nfrom eco.live import optimize_json");
-    return py.globals.get("optimize_json");
+    py.runPython("import sys\nif '/home/pyodide' not in sys.path: sys.path.insert(0, '/home/pyodide')\nfrom eco.live import optimize_json\nfrom eco.code_optimizer import optimize_program_json");
+    return {live: py.globals.get("optimize_json"), opt: py.globals.get("optimize_program_json")};
   })().catch(e => { enginePromise = null; throw e; });
   return enginePromise;
 }
@@ -472,7 +495,7 @@ function live(){
   btn.addEventListener("click", async () => {
     btn.disabled = true; out.replaceChildren();
     try {
-      const fn = await loadEngine(t => status.textContent = t);
+      const fn = (await loadEngine(t => status.textContent = t)).live;
       status.textContent = "Running the genetic algorithm...";
       await new Promise(r => setTimeout(r, 40));
       const t0 = performance.now();
@@ -539,9 +562,132 @@ function renderLive(r){
   return wrap;
 }
 
+// ------------------------------------------------------------------ code optimization workbench
+const OPT_SAMPLES = DATA.code_optimization_samples;   // {name: {lo, hi, src, result}} computed when the dashboard was built
+function codeOpt(){
+  const root = $("#tab-optimize");
+  const first = Object.keys(OPT_SAMPLES)[0];
+  const ta = h("textarea",{spellcheck:"false"}); ta.value = OPT_SAMPLES[first].src;
+  const lo = h("input",{type:"number",value:OPT_SAMPLES[first].lo,style:"width:80px"});
+  const hi = h("input",{type:"number",value:OPT_SAMPLES[first].hi,style:"width:80px"});
+  const sample = h("select",{onchange:e=>{const s=OPT_SAMPLES[e.target.value]; ta.value=s.src; lo.value=s.lo; hi.value=s.hi; run();}}, Object.keys(OPT_SAMPLES).map(k=>h("option",{value:k},k)));
+  const status = h("span",{class:"status"}, "Showing a built-in example.");
+  const btn = h("button",{class:"btn"}, "Optimize");
+  const out = h("div",{style:"margin-top:12px"});
+  const step = (t, main) => h("span",{class:"step"+(main?" main":"")}, t);
+  const arr = () => h("span",{class:"arrow"}, "\u2192");
+  async function run(){
+    btn.disabled = true;
+    try {
+      let res;
+      const builtin = Object.values(OPT_SAMPLES).find(s => s.src.trim() === ta.value.trim() && +lo.value === s.lo && +hi.value === s.hi);
+      if (builtin) {
+        res = builtin.result; status.textContent = "Showing a built-in example.";
+      } else {
+        const eng = await loadEngine(t => status.textContent = t);
+        status.textContent = "Optimizing...";
+        await new Promise(r => setTimeout(r, 30));
+        res = JSON.parse(eng.opt(JSON.stringify({source: ta.value, lo:+lo.value, hi:+hi.value})));
+        status.textContent = res.ok ? "Done (computed in your browser)." : "";
+      }
+      out.replaceChildren(res.ok ? renderOpt(res) : h("div",{class:"errbox"}, h("b",{}, (res.stage||"Error")+": "), res.error));
+    } catch (e) {
+      status.textContent = "";
+      out.replaceChildren(h("div",{class:"errbox"}, String(e.message || e)));
+    }
+    btn.disabled = false;
+  }
+  btn.addEventListener("click", () => run());
+  root.append(
+    h("div",{class:"card hero"},
+      h("h2",{style:"font-size:18px"},"Code Optimization"),
+      h("p",{class:"hint",style:"margin:0 0 4px"},"The compiler stage that removes unnecessary work from the generated code without changing what the program computes."),
+      h("div",{class:"flow"},
+        step("Source Code"), arr(), step("Lexical / Syntax / Semantic Analysis"), arr(), step("Intermediate Code"), arr(), step("3-Address Code"), arr(),
+        step("CODE OPTIMIZATION", true), arr(), step("Optimized 3-Address Code"), arr(), step("4-Address Code"))),
+    h("div",{class:"card",style:"margin-top:12px"},
+      h("div",{class:"row"}, h("span",{class:"muted"},"Example:"), sample),
+      ta,
+      h("div",{class:"row",style:"margin-top:10px;align-items:flex-end"},
+        h("label",{class:"field"},"input min", lo), h("label",{class:"field"},"input max", hi), btn, status),
+      h("p",{class:"hint"},"Write a straight-line Python function (integers, + - * //, assignments, return). It is compiled to three-address code, optimized, and the optimized code is run against the original on random inputs in your range to prove the behaviour is unchanged. Optimizing your own code downloads a Python engine (about 10 MB) the first time.")),
+    out);
+  out.replaceChildren(renderOpt(OPT_SAMPLES[first].result));
+}
+function optCard(title, hint, ...kids){
+  return h("div",{class:"card",style:"margin-bottom:12px"}, h("h2",{},title), hint ? h("p",{class:"hint"},hint) : null, ...kids);
+}
+function optTable(headers, rows){
+  return h("div",{class:"scroll"}, h("table",{class:"t left"},
+    h("thead",{}, h("tr",{}, headers.map(x=>h("th",{},x)))), h("tbody",{}, rows)));
+}
+function renderOpt(r){
+  const s = r.summary, optMap = {};
+  r.optimized.forEach(x => optMap[x.origin] = x);
+  const rowOrig = r.original.map(x => {
+    const o = optMap[x.origin];
+    const cls = !o ? "rm" : (o.stmt !== x.stmt ? "chg" : "");
+    return h("tr",{class:cls}, h("td",{},x.sno), h("td",{class:"mono"},x.stmt), h("td",{class:"mono"},x.op), h("td",{class:"mono"},x.arg1), h("td",{class:"mono"},x.arg2));
+  });
+  const origStmt = {}; r.original.forEach(x => origStmt[x.origin] = x.stmt);
+  const rowOpt = r.optimized.map(x => h("tr",{class: origStmt[x.origin] !== x.stmt ? "chg" : ""},
+    h("td",{},x.sno), h("td",{class:"mono"},x.stmt), h("td",{class:"mono"},x.op), h("td",{class:"mono"},x.arg1), h("td",{class:"mono"},x.arg2), h("td",{},"#"+x.origin)));
+  const maxN = Math.max(s.original_instructions, 1);
+  const bar = (label, n, color) => h("div",{class:"barrow"}, h("span",{},label), h("div",{},h("div",{class:"bar",style:`width:${(100*n/maxN).toFixed(1)}%;background:${color}`})), h("b",{},n));
+  const maxT = Math.max(...s.by_technique.map(t=>t.count), 1);
+  const techBars = s.by_technique.map(t => h("div",{class:"barrow"}, h("span",{},t.technique.replace("Common Subexpression Elimination","Common Subexpr. Elim.")),
+    h("div",{},h("div",{class:"bar",style:`width:${(100*t.count/maxT).toFixed(1)}%;background:var(--accent2)`})), h("b",{},t.count)));
+  const box = (v, l) => h("div",{class:"box"}, h("div",{class:"v"},v), h("div",{class:"l"},l));
+
+  const summary = optCard("Optimization Summary", "All values are calculated from this program's own optimization run.",
+    h("div",{class:"sumgrid"},
+      box(s.original_instructions,"Original instructions"), box(s.optimized_instructions,"Optimized instructions"), box(s.removed,"Instructions removed"),
+      box(s.optimizations,"Optimizations applied"), box(s.reduction_pct.toFixed(2)+"%","Optimization reduction"), box(s.techniques.length,"Techniques used")),
+    h("div",{class:"grid two"},
+      h("div",{}, h("h3",{style:"margin:4px 0;font-size:13px"},"Instruction count: original vs optimized"),
+        bar("Original code", s.original_instructions, "var(--muted)"), bar("Optimized code", s.optimized_instructions, "var(--good)")),
+      h("div",{}, h("h3",{style:"margin:4px 0;font-size:13px"},"Optimizations applied per technique"),
+        s.by_technique.length ? techBars : h("div",{class:"muted"},"No optimizations detected"))),
+    h("div",{style:"margin-top:8px"}, "Techniques used: ", s.techniques.length ? s.techniques.map(t=>h("span",{class:"chip"},t)) : h("span",{class:"muted"},"none")),
+    h("div",{style:"margin-top:8px"}, h("span",{class:"badge "+(r.behaviour_preserved?"b-good":"b-bad")}, r.behaviour_preserved ? "Behaviour preserved" : "Behaviour CHANGED"),
+      h("span",{class:"muted",style:"margin-left:8px"}, `optimized code gives identical output on ${r.checks.length} random inputs; ${s.rounds} optimization round(s)`)));
+
+  const fe = r.front_end;
+  const kinds = Object.entries(fe.token_kinds).map(([k,v])=>`${v} ${k}`).join(", ");
+  const frontEnd = optCard("Front-end analysis", "What the compiler front end found before generating intermediate code.",
+    h("div",{}, h("b",{},"Lexical analysis: "), `${fe.tokens} tokens (${kinds}). `, h("b",{},"Syntax analysis: "), `${fe.statements} statements parsed. `,
+      h("b",{},"Semantic analysis: "), `${fe.symbols.length} symbols, every variable defined before use.`),
+    h("div",{style:"margin-top:6px"}, fe.symbols.map(x=>h("span",{class:"chip"}, `${x.name} (${x.kind})`))));
+
+  const original = optCard("Original 3-Address Code", "Generated from the program by the compiler's intermediate code generator. Rows that the optimizer removed are red, rows it rewrote are amber.",
+    optTable(["S.No","Statement","Operation","Arg1","Arg2"], rowOrig));
+
+  const analysis = optCard("Optimization Analysis", "Every change the optimizer made, in order, with the reason. Only optimizations that were actually applied are listed.",
+    r.no_optimization
+      ? h("div",{class:"empty"}, h("b",{},"No optimizations detected"), " - the generated code has no constant expressions, identities, repeated expressions, copies or unused statements, so it was left unchanged.")
+      : optTable(["S.No","Optimization","Original","Optimized","Reason","Round"],
+          r.log.map(e => h("tr",{}, h("td",{},e.sno), h("td",{},e.technique), h("td",{class:"mono"},e.original), h("td",{class:"mono"},e.optimized), h("td",{},e.reason), h("td",{},e.round)))));
+
+  const optimized = optCard("Optimized 3-Address Code", "Produced by the optimizer's output. 'From' is the statement's number in the original code; amber rows were rewritten.",
+    optTable(["S.No","Statement","Operation","Arg1","Arg2","From"], rowOpt));
+
+  const quads = optCard("4-Address Code", "Quadruples (operation, arg1, arg2, result) generated from the optimized code.",
+    optTable(["S.No","Operation","Arg1","Arg2","Result"], r.quadruples.map(x => h("tr",{},
+      h("td",{},x.sno), h("td",{class:"mono"},x.op), h("td",{class:"mono"},x.arg1), h("td",{class:"mono"},x.arg2), h("td",{class:"mono"},x.result)))));
+
+  const check = optCard("Behaviour check", "The original and the optimized 3-address code are both executed; the program's meaning must not change.",
+    h("div",{class:"scroll"}, h("table",{class:"t left",style:"min-width:480px"},
+      h("thead",{}, h("tr",{}, ["Inputs","Original output","Optimized output","Python output","Match"].map(x=>h("th",{},x)))),
+      h("tbody",{}, r.checks.map(c => h("tr",{}, h("td",{class:"mono"}, Object.entries(c.inputs).map(([k,v])=>k+"="+v).join(", ")),
+        h("td",{class:"mono"},"["+c.original.join(", ")+"]"), h("td",{class:"mono"},"["+c.optimized.join(", ")+"]"), h("td",{class:"mono"},"["+c.python.join(", ")+"]"),
+        h("td",{class:c.match?"ok":"fail"}, c.match?"yes":"NO")))))));
+
+  return h("div",{}, summary, frontEnd, original, analysis, optimized, quads, check);
+}
+
 // ------------------------------------------------------------------ boot
 $("#subtitle").textContent = `${M.dataset} | ${P.length} programs | population ${M.population_size} | ${M.generations} generations | seed ${M.seed}`;
-overview(); explorer(); live(); brief();
+codeOpt(); overview(); explorer(); live(); brief();
 document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));
   document.querySelectorAll("section.tab").forEach(s=>s.classList.toggle("active",s.id==="tab-"+b.dataset.tab));

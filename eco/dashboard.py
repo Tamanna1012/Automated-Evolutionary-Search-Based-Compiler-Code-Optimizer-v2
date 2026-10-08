@@ -11,6 +11,7 @@ import json
 import os
 from typing import Dict, List
 
+from .code_optimizer import sample_results
 from .report import program_report
 from .tac import tac_to_text
 
@@ -21,7 +22,7 @@ LIVE_PLACEHOLDER = "/*__LIVE_SOURCES__*/null"
 # The modules the "Live optimizer" tab runs in the browser (via Pyodide). They
 # have no third-party dependencies; the real experiment code is what runs.
 LIVE_FILES = ["__init__", "tac", "interpreter", "metrics", "individual", "optimizations",
-              "pareto", "ga", "frontend", "live"]
+              "pareto", "ga", "frontend", "live", "code_optimizer"]
 
 
 def live_sources() -> dict:
@@ -76,6 +77,11 @@ def write_dashboard(data: dict, out_path: str) -> str:
         template = f.read()
     if PLACEHOLDER not in template:
         raise ValueError("dashboard template is missing its data placeholder")
+    # the Code Optimization tab opens with precomputed examples so it works before any engine is loaded
+    data = dict(data)
+    samples = sample_results()
+    data.setdefault("code_optimization_samples", samples)
+    data.setdefault("code_optimization", next(iter(samples.values()))["result"])
     if LIVE_PLACEHOLDER not in template:
         raise ValueError("dashboard template is missing its live-sources placeholder")
     safe = lambda obj: json.dumps(obj, separators=(",", ":")).replace("</", "<\\/")  # never close the script tag early

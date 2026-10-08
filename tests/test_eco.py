@@ -728,7 +728,7 @@ def test_live_json_entry_point_round_trips():
 def test_live_modules_are_self_contained_for_the_browser():
     """Everything shipped to Pyodide may import only the standard library and each other."""
     import ast as _ast
-    allowed_std = {"__future__", "json", "random", "math", "dataclasses", "typing", "ast"}
+    allowed_std = {"__future__", "json", "random", "math", "dataclasses", "typing", "ast", "io", "tokenize"}
     shipped = set(LIVE_FILES)
     src = live_sources()
     assert set(src) == {n + ".py" for n in LIVE_FILES}
@@ -748,3 +748,172 @@ def test_dashboard_page_embeds_the_live_engine(tmp_path):
     html = open(write_dashboard(data, str(tmp_path / "d.html")), encoding="utf-8").read()
     assert "Live optimizer" in html and "def optimize_source" in html and "LIVE_SRC" in html
     assert "/*__LIVE_SOURCES__*/" not in html
+
+
+# ---------------------------------------------------------------------------
+# Code Optimization workbench (classic techniques with a log of every change)
+# ---------------------------------------------------------------------------
+from eco.code_optimizer import (
+    SAMPLES, TECHNIQUES, Stmt, algebraic_simplification, common_subexpression_elimination,
+    constant_folding, constant_propagation, copy_propagation, dead_code_elimination, from_tac,
+    optimize_program, optimize_program_json, optimize_stmts, quadruple_rows, run_stmts, sample_results,
+)
+
+
+def _texts(stmts):
+    return [s.text() for s in stmts]
+
+
+def test_constant_folding_evaluates_constant_expressions():
+    out, ev = constant_folding([Stmt("t1", "*", 10, 5), Stmt("t2", "+", 2, 3), Stmt("t3", "-", 2, 9)])
+    assert _texts(out) == ["t1 = 50", "t2 = 5", "t3 = -7"]
+    assert [e["technique"] for e in ev] == ["Constant Folding"] * 3
+
+
+def test_constant_folding_never_changes_behaviour_for_division():
+    out, _ = constant_folding([Stmt("a", "/", 10, 5), Stmt("b", "/", 7, 2), Stmt("c", "/", 4, 0)])
+    assert _texts(out) == ["a = 2", "b = 7 / 2", "c = 4 / 0"]   # inexact and divide-by-zero are left alone
+
+
+def test_constant_propagation_replaces_known_constants_only():
+    out, ev = constant_propagation([Stmt("a", "=", 10), Stmt("b", "+", "a", 5), Stmt("c", "+", "x", 1)])
+    assert _texts(out) == ["a = 10", "b = 10 + 5", "c = x + 1"]
+    assert len(ev) == 1 and "a = 10" in ev[0]["reason"]
+
+
+def test_constant_propagation_forgets_a_variable_that_is_reassigned():
+    out, _ = constant_propagation([Stmt("a", "=", 10), Stmt("a", "+", "q", 1), Stmt("b", "+", "a", 5)])
+    assert out[2].text() == "b = a + 5"
+
+
+def test_algebraic_simplification_identities():
+    stmts = [Stmt("r1", "+", "a", 0), Stmt("r2", "+", 0, "a"), Stmt("r3", "-", "a", 0), Stmt("r4", "*", "a", 1),
+             Stmt("r5", "*", 1, "a"), Stmt("r6", "/", "a", 1), Stmt("r7", "*", "a", 0), Stmt("r8", "*", 0, "a")]
+    out, ev = algebraic_simplification(stmts)
+    assert _texts(out) == ["r1 = a", "r2 = a", "r3 = a", "r4 = a", "r5 = a", "r6 = a", "r7 = 0", "r8 = 0"]
+    assert len(ev) == 8
+
+
+def test_algebraic_simplification_does_not_touch_non_identities():
+    stmts = [Stmt("r", "-", 0, "a"), Stmt("s", "/", 1, "a"), Stmt("t", "+", "a", "b"), Stmt("u", "*", "a", 2)]
+    out, ev = algebraic_simplification(stmts)
+    assert _texts(out) == _texts(stmts) and ev == []
+
+
+def test_cse_reuses_available_expressions_including_commutative_ones():
+    out, ev = common_subexpression_elimination([Stmt("t1", "+", "a", "b"), Stmt("t2", "+", "a", "b"), Stmt("t3", "+", "b", "a")])
+    assert _texts(out) == ["t1 = a + b", "t2 = t1", "t3 = t1"]
+    assert len(ev) == 2
+
+
+def test_cse_respects_order_for_non_commutative_ops_and_redefinitions():
+    out, _ = common_subexpression_elimination([Stmt("t1", "-", "a", "b"), Stmt("t2", "-", "b", "a")])
+    assert _texts(out) == ["t1 = a - b", "t2 = b - a"]
+    out, _ = common_subexpression_elimination([Stmt("t1", "+", "a", "b"), Stmt("a", "=", 7), Stmt("t2", "+", "a", "b")])
+    assert out[2].text() == "t2 = a + b"          # a changed in between, so the old result cannot be reused
+
+
+def test_copy_propagation_and_its_invalidation():
+    out, _ = copy_propagation([Stmt("a", "=", "b"), Stmt("c", "+", "a", 5)])
+    assert _texts(out) == ["a = b", "c = b + 5"]
+    out, _ = copy_propagation([Stmt("a", "=", "b"), Stmt("b", "=", 9), Stmt("c", "+", "a", 5)])
+    assert out[2].text() == "c = a + 5"           # b changed after the copy, so a is no longer b
+
+
+def test_dead_code_elimination_keeps_outputs_inputs_and_live_values():
+    stmts = [Stmt("a", "input", "a"), Stmt("c", "+", "a", 1), Stmt("d", "=", 100), Stmt(None, "print", "c")]
+    out, ev = dead_code_elimination(stmts)
+    assert _texts(out) == ["a = input(a)", "c = a + 1", "print c"]
+    assert len(ev) == 1 and ev[0]["original"] == "d = 100"
+    out, _ = dead_code_elimination([Stmt("p", "input", "p")])
+    assert _texts(out) == ["p = input(p)"]        # an unused parameter is still a parameter
+
+
+def test_the_assignment_examples_work_end_to_end():
+    r = optimize_program("def f(a):\n    x = 10\n    y = x + 5\n    z = 10 * 5\n    d = 100\n    return y + a\n")
+    assert r["ok"] and r["behaviour_preserved"]
+    names = {e["technique"] for e in r["log"]}
+    assert {"Constant Propagation", "Constant Folding", "Dead Code Elimination"} <= names
+    texts = [row["stmt"] for row in r["optimized"]]
+    assert any("15" in t for t in texts)
+    assert not any(t.startswith("z =") or t.startswith("d =") for t in texts)
+
+
+def test_summary_numbers_are_computed_not_hardcoded():
+    results = {name: optimize_program(src, lo, hi) for name, (lo, hi, src) in SAMPLES.items()}
+    seen = set()
+    for r in results.values():
+        s = r["summary"]
+        assert s["original_instructions"] == len(r["original"]) and s["optimized_instructions"] == len(r["optimized"])
+        assert s["removed"] == s["original_instructions"] - s["optimized_instructions"]
+        assert s["optimizations"] == len(r["log"])
+        assert s["reduction_pct"] == round(100.0 * s["removed"] / s["original_instructions"], 2)
+        assert set(s["techniques"]) <= set(TECHNIQUES)
+        assert sum(t["count"] for t in s["by_technique"]) == s["optimizations"]
+        seen.add((s["original_instructions"], s["optimized_instructions"], s["optimizations"]))
+    assert len(seen) == len(results)               # different programs give different numbers
+
+
+def test_no_optimization_is_reported_and_code_is_left_unchanged():
+    r = optimize_program("def plain(a, b):\n    s = a + b\n    return s\n")
+    assert r["ok"] and r["no_optimization"] and r["log"] == []
+    assert [x["stmt"] for x in r["original"]] == [x["stmt"] for x in r["optimized"]]
+    assert r["summary"]["removed"] == 0 and r["summary"]["reduction_pct"] == 0.0 and r["summary"]["techniques"] == []
+    assert r["behaviour_preserved"]
+
+
+def test_optimizer_preserves_behaviour_on_every_kernel_template():
+    for pid in range(len(TEMPLATE_NAMES)):
+        prog = generate_kernel_program(pid, random.Random(pid + 77))
+        lo, hi = (1, 20) if "//" in prog.source_code else (-15, 15)
+        r = optimize_program(prog.source_code, lo, hi)
+        assert r["ok"], (prog.kernel, r.get("error"))
+        assert r["behaviour_preserved"], prog.kernel
+        assert r["summary"]["optimized_instructions"] <= r["summary"]["original_instructions"]
+        assert all(c["original"] == c["optimized"] == c["python"] for c in r["checks"])
+
+
+def test_optimizer_output_matches_the_original_on_many_random_inputs():
+    prog = generate_kernel_program(TEMPLATE_NAMES.index("variance_of_values"), random.Random(5))
+    comp = compile_function(prog.source_code)
+    original = from_tac(comp.tac)
+    optimized, _ = optimize_stmts(original)
+    rng = random.Random(1)
+    for _ in range(200):
+        inputs = {a: rng.randint(1, 50) for a in comp.arg_names}
+        assert run_stmts(original, inputs) == run_stmts(optimized, inputs) == run(comp.tac, inputs).outputs
+
+
+def test_textbook_conversion_inlines_literals_and_keeps_user_names():
+    comp = compile_function("def f(a):\n    k = 10\n    t1 = a * 5\n    return t1 + k\n")
+    texts = _texts(from_tac(comp.tac))
+    assert "k = 10" in texts and "t1 = a * 5" in texts   # user variables kept, literal 5 inlined
+    assert not any("_k" in t or "_e" in t for t in texts)
+
+
+def test_four_address_code_comes_from_the_optimized_code():
+    r = optimize_program("def f(a):\n    x = 3 * 4\n    return x + a\n")
+    assert r["ok"] and all(set(q) == {"sno", "op", "arg1", "arg2", "result"} for q in r["quadruples"])
+    assert len(r["quadruples"]) == len(r["optimized"])
+    assert any(q["op"] == "+" and q["arg1"] == "12" for q in r["quadruples"])
+
+
+def test_optimizer_reports_errors_by_stage():
+    assert optimize_program("def f(x:\n    return x\n")["stage"] == "Syntax analysis"
+    assert optimize_program("def f(x):\n    return y\n")["stage"] == "Semantic analysis"
+    assert optimize_program("def f(x):\n    return x / 2\n")["ok"] is False
+    assert optimize_program("def f(x):\n    return x // 0\n")["stage"] == "Execution"
+    assert optimize_program("def f(x):\n    return x // 2\n", -15, 15)["ok"] is False   # floor vs truncation
+
+
+def test_optimizer_json_entry_point_and_dashboard_embedding(tmp_path):
+    out = _json.loads(optimize_program_json(_json.dumps({"source": "def f(a):\n    return a + 0\n", "lo": 1, "hi": 9})))
+    assert out["ok"] and out["summary"]["optimizations"] >= 1
+    samples = sample_results()
+    assert set(samples) == set(SAMPLES) and all(v["result"]["ok"] for v in samples.values())
+    progs, results, runtimes, agg = _small_run(2)
+    data = build_dashboard_data(progs, results, runtimes, agg, {"dataset": "t", "population_size": 8, "generations": 4, "seed": 1})
+    html = open(write_dashboard(data, str(tmp_path / "d.html")), encoding="utf-8").read()
+    assert 'data-tab="optimize" class="active"' in html and "Optimization Summary" in html and "4-Address Code" in html
+    assert html.index('data-tab="optimize"') < html.index('data-tab="overview"')      # primary tab comes first
+    assert "Already optimal (nothing to change)" in html

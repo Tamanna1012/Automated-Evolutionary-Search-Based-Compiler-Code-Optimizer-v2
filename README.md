@@ -201,6 +201,30 @@ Every `python -m eco.main` run also writes a single self-contained HTML page.
 Open it by double-clicking (no server, no internet, no libraries - the results
 are embedded as JSON and drawn with inline SVG; light/dark follows the system).
 
+* **Code Optimization** (the first and default tab): the classic compiler
+  optimizations shown step by step on the generated intermediate code.
+
+      Source Code -> Lexical / Syntax / Semantic Analysis -> Intermediate Code
+        -> 3-Address Code -> CODE OPTIMIZATION -> Optimized 3-Address Code
+        -> 4-Address Code (quadruples)
+
+  Six techniques run repeatedly until nothing changes: constant propagation,
+  constant folding, algebraic simplification (`a+0`, `a-0`, `a*1`, `a/1`,
+  `a*0`), copy propagation, common subexpression elimination and dead code
+  elimination. The tab shows an optimization summary (original and optimized
+  instruction counts, instructions removed, optimizations applied, techniques
+  used, reduction percentage, with a visual comparison), the front-end analysis,
+  the original 3-address code (removed rows red, rewritten rows amber), the
+  optimization analysis (every change with the reason; "No optimizations
+  detected" when there is nothing to do), the optimized 3-address code, the
+  4-address code and a behaviour check that runs the original and the optimized
+  code on random inputs and against the Python source. Everything is computed
+  from the program you give it (`eco/code_optimizer.py`); four built-in examples
+  are precomputed so they open instantly, and your own code is optimized in
+  your browser through the same Python engine as the Live optimizer.
+  Only the generated code is changed (never the source); division is folded only
+  when exact and the divisor is not zero; an expression is reused only while its
+  operands are unchanged; inputs and outputs are never removed.
 * **Overview**: KPI tiles (validity, simulated and measured improvement,
   programs >= 30%, best program, convergence, Pareto size), improvement
   distribution, improvement per kernel and per spelling label,
@@ -220,7 +244,7 @@ are embedded as JSON and drawn with inline SVG; light/dark follows the system).
   internet on first use; the rest of the page is fully offline.
 * **Features**: what the system implements, with this run's values (the limitations are documented in this README and the project explanation, not on the dashboard).
 
-`eco/dashboard.py` builds the data, `eco/dashboard_template.html` is the page, `eco/live.py` is the entry point the Live optimizer calls (the dashboard embeds the dependency-free `eco` modules it needs). A copy is written to `docs/index.html` for GitHub Pages (Settings > Pages > branch `main`, folder `/docs`).
+`eco/dashboard.py` builds the data, `eco/dashboard_template.html` is the page, `eco/live.py` and `eco/code_optimizer.py` are the entry points the Live optimizer and the Code Optimization tab call (the dashboard embeds the dependency-free `eco` modules it needs). A copy is written to `docs/index.html` for GitHub Pages (Settings > Pages > branch `main`, folder `/docs`).
 
 ## Plots (`eco/outputs/plots/`)
 
@@ -290,6 +314,7 @@ eco/
   dashboard.py            builds eco/outputs/dashboard.html (data + template)
   dashboard_template.html the interactive results page
   live.py                  live optimization of a user function (runs in the browser)
+  code_optimizer.py        classic optimization techniques with a log, 3-/4-address code tables
   main.py                      end-to-end experiment driver
   outputs/
     plots/                  generated PNGs
