@@ -185,15 +185,11 @@ svg text.axtitle{fill:var(--muted);font-size:12px}
 .col{outline:none;cursor:pointer}
 .col .hit{fill:transparent;stroke:transparent}
 .col:focus-visible .hit{stroke:var(--accent);stroke-width:2;rx:8}
-.col .bar-el{transition:filter .15s ease,opacity .15s ease;transform-box:fill-box;animation:growV .55s cubic-bezier(.2,.8,.2,1) both}
-.col .bar-el.h{transform-origin:left center;animation-name:growH}
-.col .bar-el.v{transform-origin:center bottom}
+.col .bar-el{transition:filter .15s ease,opacity .15s ease}
 .col:hover .bar-el,.col:focus-visible .bar-el{filter:brightness(1.22) saturate(1.1)}
 .bars:hover .col:not(:hover) .bar-el{opacity:.5}
 .bars:hover .col:not(:hover) text{opacity:.6}
 svg rect:hover{filter:none}
-@keyframes growV{from{transform:scaleY(.04);opacity:.4}to{transform:none;opacity:1}}
-@keyframes growH{from{transform:scaleX(.04);opacity:.4}to{transform:none;opacity:1}}
 svg circle:focus-visible{outline:none;stroke:var(--accent);stroke-width:3}
 .tip{position:fixed;z-index:60;pointer-events:none;display:grid;gap:2px;max-width:270px;padding:9px 12px;background:var(--panel);color:var(--text);
   border:1px solid color-mix(in srgb,var(--accent) 70%,var(--line));border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.35);font-size:12.5px}
@@ -203,10 +199,10 @@ svg circle:focus-visible{outline:none;stroke:var(--accent);stroke-width:3}
 .tip .tv{font-size:16px;font-weight:800;background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
 
 /* clickable compiler stages */
-.flow{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;overflow-x:auto;padding:10px 4px 14px;margin:0 -4px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.flow{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;overflow-x:auto;padding:10px 4px 14px;margin:0 -4px;-webkit-overflow-scrolling:touch}
 .flow .arrow{flex:0 0 auto;color:var(--muted)}
 .stage{flex:0 0 auto;font:inherit;font-size:13px;font-weight:600;color:var(--text);background:var(--code);border:1px solid var(--line);border-radius:12px;
-  padding:9px 16px;cursor:pointer;scroll-snap-align:center;transition:transform .18s,border-color .18s,box-shadow .2s,background .2s,color .2s}
+  padding:9px 16px;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .2s,background .2s,color .2s}
 .stage:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 8px 18px rgba(0,0,0,.18)}
 .stage:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .stage[aria-selected="true"]{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;
@@ -236,11 +232,6 @@ svg circle:focus-visible{outline:none;stroke:var(--accent);stroke-width:3}
 @keyframes spin{to{transform:rotate(360deg)}}
 .btn:disabled{cursor:not-allowed}
 nav button:focus-visible,.theme-pill:focus-visible,.btn:focus-visible,.plist tr:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.flow,.codeview,.scroll,textarea,.plist{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--accent) 65%,transparent) transparent}
-.flow::-webkit-scrollbar,.codeview::-webkit-scrollbar,.scroll::-webkit-scrollbar,textarea::-webkit-scrollbar,.plist::-webkit-scrollbar{height:9px;width:9px}
-.flow::-webkit-scrollbar-thumb,.codeview::-webkit-scrollbar-thumb,.scroll::-webkit-scrollbar-thumb,textarea::-webkit-scrollbar-thumb,.plist::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--accent) 60%,transparent);border-radius:9px}
-.flow::-webkit-scrollbar-track,.codeview::-webkit-scrollbar-track,.scroll::-webkit-scrollbar-track,textarea::-webkit-scrollbar-track,.plist::-webkit-scrollbar-track{background:transparent}
-.stage.main-stage:not([aria-selected="true"]){border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
 @media (max-width:760px){.stage{padding:8px 13px;font-size:12.5px}.chartcard{padding:14px 12px}.codeview{font-size:12px}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -653,12 +644,12 @@ function loadEngine(setStatus){
 }
 // ------------------------------------------------------------------ code optimization workbench
 const STAGES = [
-  {key:"source", label:"Source Code", lang:"py", desc:"The program as you wrote it."},
-  {key:"intermediate", label:"Intermediate Code", lang:"tac", desc:"The compiler front end's intermediate code: one operation per line, literals kept in _k temporaries."},
-  {key:"three", label:"3-Address Code", lang:"tac", desc:"Textbook three-address statements: at most one operator per statement, literals written inline."},
-  {key:"opt", label:"Code Optimization", lang:"log", desc:"Every change the optimizer made, in order, with the reason for it.", main:true},
-  {key:"optimized", label:"Optimized 3-Address Code", lang:"tac", desc:"The three-address code after all optimizations."},
-  {key:"four", label:"4-Address Code", lang:"quad", desc:"Quadruples (operation, arg1, arg2, result) generated from the optimized code."},
+  {key:"source", label:"Source Code", lang:"py"},
+  {key:"intermediate", label:"Intermediate Code", lang:"tac"},
+  {key:"three", label:"3-Address Code", lang:"tac"},
+  {key:"opt", label:"Code Optimization", lang:"log"},
+  {key:"optimized", label:"Optimized 3-Address Code", lang:"tac"},
+  {key:"four", label:"4-Address Code", lang:"quad"},
 ];
 function stageContent(res, key){
   if (key === "source") return res.source.replace(/\n+$/, "").split("\n");
@@ -701,7 +692,7 @@ function codeView(lines, lang){
 function codeOpt(){
   const root = $("#tab-optimize");
   const base = DATA.code_optimization;                 // computed when the dashboard was built
-  let current = base, stage = "opt", dirty = false;
+  let current = base, stage = "opt";
   const ta = h("textarea",{spellcheck:"false", "aria-label":"Source code"}); ta.value = base.source;
   const status = h("span",{class:"status", role:"status"}, "");
   const btn = h("button",{class:"btn"}, "Optimize");
@@ -720,17 +711,15 @@ function codeOpt(){
     if (!current) body = h("div",{class:"emptystate"}, "There is no compiled program to show. Fix the problem above and press Optimize.");
     else {
       const lines = stageContent(current, stage);
-      head.append(h("span",{class:"chip"}, `${lines.length} line${lines.length === 1 ? "" : "s"}`), h("span",{class:"chip"}, "generated from your source"));
-      if (dirty) head.append(h("span",{class:"badge b-warn"}, "source edited - press Optimize to refresh"));
       body = lines.length ? codeView(lines, s.lang) : h("div",{class:"emptystate"}, "This stage produced no code.");
     }
-    panel.replaceChildren(head, h("p",{class:"hint",style:"margin:4px 0 10px"}, s.desc), body);
+    panel.replaceChildren(head, body);
     if (animate) { panel.classList.remove("swap"); void panel.offsetWidth; panel.classList.add("swap"); }
   }
   function selectStage(key, focus){ stage = key; renderStage(true); if (focus) stageBtns[key].focus(); }
   STAGES.forEach((s, i) => {
     if (i) flow.append(h("span",{class:"arrow","aria-hidden":"true"}, "→"));
-    const b = h("button",{class:"stage" + (s.main ? " main-stage" : ""), id:"stage-" + s.key, role:"tab", "aria-selected":"false", "data-stage":s.key, type:"button",
+    const b = h("button",{class:"stage", id:"stage-" + s.key, role:"tab", "aria-selected":"false", "data-stage":s.key, type:"button",
       onclick:() => selectStage(s.key, false),
       onkeydown:e => {
         const idx = STAGES.findIndex(x => x.key === stage), last = STAGES.length - 1;
@@ -740,7 +729,6 @@ function codeOpt(){
     stageBtns[s.key] = b;
     flow.append(b);
   });
-  ta.addEventListener("input", () => { const d = !current || ta.value.trim() !== current.source.trim(); if (d !== dirty) { dirty = d; renderStage(false); } });
 
   async function run(){
     btn.disabled = true; btn.classList.add("loading"); btn.setAttribute("aria-busy","true");
@@ -756,8 +744,8 @@ function codeOpt(){
         res = JSON.parse(eng.opt(JSON.stringify({source: ta.value})));
         status.textContent = "";
       }
-      if (res.ok) { current = res; dirty = false; out.replaceChildren(renderOpt(res)); }
-      else { current = null; dirty = false; out.replaceChildren(); errHolder.replaceChildren(h("div",{class:"errbox", role:"alert"}, h("b",{}, (res.stage || "Error") + ": "), res.error)); }
+      if (res.ok) { current = res; out.replaceChildren(renderOpt(res)); }
+      else { current = null; out.replaceChildren(); errHolder.replaceChildren(h("div",{class:"errbox", role:"alert"}, h("b",{}, (res.stage || "Error") + ": "), res.error)); }
     } catch (e) {
       current = null; status.textContent = "";
       out.replaceChildren();
