@@ -916,4 +916,7 @@ def test_optimizer_json_entry_point_and_dashboard_embedding(tmp_path):
     html = open(write_dashboard(data, str(tmp_path / "d.html")), encoding="utf-8").read()
     assert 'data-tab="optimize" class="active"' in html and "Optimization Summary" in html and "4-Address Code" in html
     assert html.index('data-tab="optimize"') < html.index('data-tab="overview"')      # primary tab comes first
-    assert "Already optimal (nothing to change)" in html
+    assert "def demo(a, b)" in html                                                  # the built-in example is embedded
+    for section in ("Original 3-Address Code", "Optimization Analysis", "Optimized 3-Address Code", "No optimizations detected"):
+        assert section in html
+    assert "Behaviour check" not in html and "Front-end analysis" not in html        # only the requested sections

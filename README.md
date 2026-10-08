@@ -202,29 +202,29 @@ Open it by double-clicking (no server, no internet, no libraries - the results
 are embedded as JSON and drawn with inline SVG; light/dark follows the system).
 
 * **Code Optimization** (the first and default tab): the classic compiler
-  optimizations shown step by step on the generated intermediate code.
+  optimizations on the generated intermediate code.
 
       Source Code -> Lexical / Syntax / Semantic Analysis -> Intermediate Code
         -> 3-Address Code -> CODE OPTIMIZATION -> Optimized 3-Address Code
-        -> 4-Address Code (quadruples)
+        -> 4-Address Code
 
   Six techniques run repeatedly until nothing changes: constant propagation,
   constant folding, algebraic simplification (`a+0`, `a-0`, `a*1`, `a/1`,
   `a*0`), copy propagation, common subexpression elimination and dead code
-  elimination. The tab shows an optimization summary (original and optimized
+  elimination. The tab shows the optimization summary (original and optimized
   instruction counts, instructions removed, optimizations applied, techniques
-  used, reduction percentage, with a visual comparison), the front-end analysis,
-  the original 3-address code (removed rows red, rewritten rows amber), the
-  optimization analysis (every change with the reason; "No optimizations
-  detected" when there is nothing to do), the optimized 3-address code, the
-  4-address code and a behaviour check that runs the original and the optimized
-  code on random inputs and against the Python source. Everything is computed
-  from the program you give it (`eco/code_optimizer.py`); four built-in examples
-  are precomputed so they open instantly, and your own code is optimized in
-  your browser through the same Python engine as the Live optimizer.
-  Only the generated code is changed (never the source); division is folded only
-  when exact and the divisor is not zero; an expression is reused only while its
-  operands are unchanged; inputs and outputs are never removed.
+  used, reduction percentage, and a bar comparison of the instruction counts),
+  the original 3-address code, the optimization analysis (every change with the
+  reason; "No optimizations detected" when there is nothing to do), the
+  optimized 3-address code and the 4-address code. Everything is computed from
+  the source you type (`eco/code_optimizer.py`); a built-in example is
+  precomputed so the tab opens with a result, and your own code is optimized in
+  your browser through the same Python engine as the Live optimizer. Only the
+  generated code is changed, never the source; division is folded only when
+  exact and the divisor is not zero; an expression is reused only while its
+  operands are unchanged; inputs and outputs are never removed (the tests check
+  that the optimized code gives the same output as the original on every
+  kernel).
 * **Overview**: KPI tiles (validity, simulated and measured improvement,
   programs >= 30%, best program, convergence, Pareto size), improvement
   distribution, improvement per kernel and per spelling label,

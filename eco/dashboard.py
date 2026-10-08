@@ -11,7 +11,7 @@ import json
 import os
 from typing import Dict, List
 
-from .code_optimizer import sample_results
+from .code_optimizer import DEFAULT_SOURCE, optimize_program
 from .report import program_report
 from .tac import tac_to_text
 
@@ -77,11 +77,9 @@ def write_dashboard(data: dict, out_path: str) -> str:
         template = f.read()
     if PLACEHOLDER not in template:
         raise ValueError("dashboard template is missing its data placeholder")
-    # the Code Optimization tab opens with precomputed examples so it works before any engine is loaded
+    # the Code Optimization tab opens with a precomputed example so it works before any engine is loaded
     data = dict(data)
-    samples = sample_results()
-    data.setdefault("code_optimization_samples", samples)
-    data.setdefault("code_optimization", next(iter(samples.values()))["result"])
+    data.setdefault("code_optimization", optimize_program(DEFAULT_SOURCE))
     if LIVE_PLACEHOLDER not in template:
         raise ValueError("dashboard template is missing its live-sources placeholder")
     safe = lambda obj: json.dumps(obj, separators=(",", ":")).replace("</", "<\\/")  # never close the script tag early
