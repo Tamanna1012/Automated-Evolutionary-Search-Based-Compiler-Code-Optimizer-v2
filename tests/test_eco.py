@@ -1018,7 +1018,7 @@ def test_manual_rejects_unknown_optimization_names():
 # ---------------------------------------------------------------------------
 import random as _random
 
-from eco.cfg import build_cfg, execute, flow_report, global_optimize, liveness, reaching_definitions, available_expressions
+from eco.cfg import build_cfg, dominators, execute, flow_report, global_optimize, liveness, natural_loops, reaching_definitions, available_expressions
 from eco.frontend import UnsupportedSyntax as _Unsupported, run_source as _run_source
 from eco.interpreter import run as _run_tac
 
@@ -1124,6 +1124,25 @@ def test_infinite_loop_is_reported_not_run_forever():
     tac = compile_function("def f(a):\n    while a < 100:\n        b = a\n    return a\n").tac
     result = _run_tac(tac, {"a": 5})
     assert result.ok is False and "step limit" in result.error
+
+
+def test_dominators_and_natural_loops_of_a_while_loop():
+    blocks = build_cfg(from_tac(compile_function(WHILE_SRC).tac))
+    dom = dominators(blocks)
+    assert all(0 in ds for ds in dom.values())            # the entry dominates every reachable block
+    loops = natural_loops(blocks)
+    assert len(loops) == 1
+    assert loops[0]["header"] in loops[0]["body"] and loops[0]["back_edge"] in loops[0]["body"]
+    assert len(loops[0]["body"]) >= 2
+
+
+def test_if_has_no_loop_and_arms_are_dominated_by_the_test_block():
+    blocks = build_cfg(from_tac(compile_function(IF_SRC).tac))
+    assert natural_loops(blocks) == []
+    dom = dominators(blocks)
+    assert all(0 in dom[b] for b in dom)
+    merge = blocks[3].id
+    assert dom[merge] == [0, merge]                        # neither arm dominates the merge point
 
 
 def test_flow_report_is_empty_for_straight_line_code():
