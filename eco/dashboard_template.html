@@ -890,6 +890,7 @@ function renderOpt(r){
     h("p",{role: vd.level === "fail" ? "alert" : "status", style:`font-weight:700;color:${vcol};margin:0 0 12px`}, vd.text),
     h("h3",{style:"margin:6px 0 2px;font-size:13px"}, "a) Symbolic equivalence (primary, static)"),
     h("p",{class:"hint"}, "Each printed value is written as a polynomial in the inputs. A division is an opaque atom, so two programs are PROVED equal only when every output has the identical form."),
+    eq.bound ? h("p",{class:"hint"}, `Bounded proof: each loop is unrolled ${eq.bound} times. The proof covers every input whose loops finish within ${eq.bound} iterations; longer runs are covered only by the compile-time tests.`) : null,
     eq.same_output_count ? null : h("div",{class:"errbox"}, "The two programs print a different number of values, so no proof is possible."),
     optTable(["Output","Original form","Optimized form","Result"],
       eq.outputs.map(o => h("tr",{}, h("td",{}, o.index), h("td",{class:"mono"}, o.original), h("td",{class:"mono"}, o.optimized), h("td",{}, provedBadge(o.match))))),

@@ -386,9 +386,9 @@ values (each becomes an `output`). The Code Optimization tab also accepts
 `if`/`else` and `while` whose condition is a single comparison
 (`< <= > >= == !=`); see "Code Optimization tab" below. Anything else (true
 division, `**`, `%`, floats, `return` inside a branch or loop, recursion,
-arrays, undefined names) raises `UnsupportedSyntax` with a reason. `and`, `or`,
-`not` and calls to helper functions defined earlier in the same source are
-supported.
+dynamic array indexing, undefined names) raises `UnsupportedSyntax` with a
+reason. `and`, `or`, `not`, calls to helper functions defined earlier in the
+same source, and local arrays indexed by literals are supported.
 `//` maps to the TAC `/`. Code generation is naive on purpose: no expression
 value is ever reused, so source-level redundancy survives for the optimizer;
 like any real compiler it pools literals (one `const` per distinct value) and
@@ -489,10 +489,12 @@ kernels only.
   common subexpression elimination, global dead code elimination, constant
   folding (including branches on constant conditions) and unreachable-block
   removal, all driven by iterative data-flow analysis (`eco/cfg.py`). These
-  `if`/`else` (without loops) can be proved: at each join the arms become an
-  if-then-else term on the branch condition, and the outputs must match in form.
-  Programs with loops are only tested, and a non-terminating loop is reported
-  after a step limit instead of hanging. The
+  `if`/`else` can be proved: each join becomes if-then-else terms over the path
+  conditions, and the outputs must match in form. Loops are proved **up to a
+  bound**: each loop is unrolled 8 times in both programs, so the proof holds
+  for every input whose loops finish within 8 iterations. Longer runs are only
+  tested, and a non-terminating loop is reported after a step limit instead of
+  hanging. The
   written analysis, with the worked tables, is in
   [`docs/FLOW_ANALYSIS.md`](docs/FLOW_ANALYSIS.md) and in the Flow analysis tab.
 * The manual mode runs the chosen techniques once each, in the chosen order, and
@@ -506,7 +508,8 @@ kernels only.
   loop/inlining/vectorization trade-offs exist in the GA part.
 * The Code Optimization tab has no dominator computation: loops are found from
   back edges, which is enough for the data-flow analyses used here. Aliasing,
-  arrays and loops whose trip count a symbolic proof would need
+  dynamic array indexing (only literal indices are supported) and loop proofs
+  beyond the unrolling bound
   are not handled.
 * **GA fitness uses a cycle model.** Real time is measured only afterwards, as
   validation, and only through a Python backend (no C/native code); the model

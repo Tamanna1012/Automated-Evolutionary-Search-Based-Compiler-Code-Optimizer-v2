@@ -503,12 +503,15 @@ def _boundary_inputs(names: Sequence[str], allow_negative: bool) -> List[Dict[st
     return [{a: v for a in names} for v in values]
 
 
-def _verdict(checks: List[dict], proved: bool) -> dict:
+def _verdict(checks: List[dict], proved: bool, bound: Optional[int] = None) -> dict:
     bad = next((c for c in checks if not c["match"]), None)
     passed, total = sum(c["match"] for c in checks), len(checks)
     if bad:
         return {"level": "fail", "text": f"NOT equivalent: first mismatch at {bad['inputs']}: "
                                          f"original {bad['original']}, optimized {bad['optimized']}"}
+    if proved and bound:
+        return {"level": "proved", "text": f"Equivalent: proved for every input whose loops finish within {bound} iterations, "
+                                           f"and passed {passed}/{total} compile-time tests"}
     if proved:
         return {"level": "proved", "text": f"Equivalent: proved symbolically and passed {passed}/{total} compile-time tests"}
     if total:
@@ -632,7 +635,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         "compile_check": {"ms": round(check_ms, 3), "passed": sum(c["match"] for c in checks), "total": len(checks),
                           "saved_cycles_per_call": round(before["exec_time"] - after["exec_time"], 2),
                           "note": "one-time compile-time validation; the optimized program itself is never slowed down by this"},
-        "verdict": _verdict(checks, equivalence["proved"]),
+        "verdict": _verdict(checks, equivalence["proved"], equivalence["bound"]),
         "metrics": metrics,
         "benefit_pct": 0.0 - _change_pct(before["exec_time"], after["exec_time"]),
         "per_technique": per_technique,

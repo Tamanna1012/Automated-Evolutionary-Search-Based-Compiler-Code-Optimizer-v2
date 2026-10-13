@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from .cfg import COMPARE, build_cfg, dominators, reachable
+from .cfg import COMPARE, backward_jumps, build_cfg, reachable, unroll_loops
 from .interpreter import _safe_div, compare
 
 Poly = Dict[Tuple[str, ...], int]
@@ -105,61 +105,86 @@ def _ite(cond: str, a: Poly, b: Poly) -> Poly:
     return {(f"ite[{cond}|{canon(a)}|{canon(b)}]",): 1}
 
 
-def _merge(bid: int, preds: List[Tuple[int, str]], out_env: Dict[int, dict], blocks, dom) -> Optional[dict]:
-    live = [(p, k) for p, k in preds if p in out_env]
-    if not live:
-        return None
-    if len(live) == 1:
-        return dict(out_env[live[0][0]])
-    branches = [d for d in dom.get(bid, []) if d != bid and blocks[d].stmts
-                and blocks[d].stmts[-1].op == "branch"]
-    if not branches or len(live) != 2:
-        return None
-    d = max(branches)
-    cond_stmt = blocks[d].stmts[-1]
-    cond = out_env[d][cond_stmt.a] if isinstance(cond_stmt.a, str) else _const(cond_stmt.a)
-    t_side, f_side = blocks[d].succ[0][0], blocks[d].succ[1][0]
-    sides: Dict[str, dict] = {}
-    for p, k in live:
-        if p == d:
-            side = k
-        elif t_side in dom.get(p, []):
-            side = "true"
-        elif f_side in dom.get(p, []):
-            side = "false"
-        else:
-            return None
-        sides[side] = out_env[p]
-    if set(sides) != {"true", "false"}:
-        return None
-    tv, fv = sides["true"], sides["false"]
-    if _is_const(cond):
-        return dict(tv if _const_value(cond) else fv)
-    text = canon(cond)
-    return {var: _ite(text, tv[var], fv[var]) for var in tv.keys() & fv.keys()}
+def _and(a: str, b: str) -> str:
+    if a == "1":
+        return b
+    if b == "1":
+        return a
+    if a == "0" or b == "0":
+        return "0"
+    return f"({a} & {b})"
+
+
+def _or(a: str, b: str) -> str:
+    if a == "0":
+        return b
+    if b == "0":
+        return a
+    if a == "1" or b == "1":
+        return "1"
+    return f"({a} | {b})"
+
+
+def _edge_condition(out_env: dict, src, kind: str) -> str:
+    """The condition under which control leaves ``src`` along the edge of this kind."""
+    if kind == "":
+        return "1"
+    cond = src.stmts[-1].a
+    value = out_env[cond] if isinstance(cond, str) else _const(cond)
+    if _is_const(value):
+        taken = _const_value(value) != 0
+        return "1" if taken == (kind == "true") else "0"
+    text = canon(value)
+    return text if kind == "true" else f"!({text})"
 
 
 def symbolic_program(stmts: Sequence) -> Optional[List[str]]:
     """Canonical forms of the printed values, or None when the program has a loop
-    or prints somewhere other than its last block."""
+    or prints somewhere other than its last block.
+
+    Every block gets a path condition (the input conditions under which it runs).
+    A join becomes a chain of if-then-else terms over the incoming path conditions;
+    for each input exactly one incoming path is taken, so the last one is the default.
+    """
     blocks = build_cfg(stmts)
     if any(t <= b.id for b in blocks for t, _ in b.succ):
         return None
     reach = reachable(blocks)
-    dom = dominators(blocks)
     preds: Dict[int, List[Tuple[int, str]]] = {b.id: [] for b in blocks}
     for b in blocks:
         for t, k in b.succ:
             preds[t].append((b.id, k))
     last = blocks[-1].id
     out_env: Dict[int, dict] = {}
+    out_pc: Dict[int, str] = {}
     outputs: List[str] = []
     for b in blocks:
         if b.id not in reach:
             continue
-        env = {} if b.id == 0 else _merge(b.id, preds[b.id], out_env, blocks, dom)
-        if env is None:
-            return None
+        if b.id == 0:
+            env, pc = {}, "1"
+        else:
+            incoming = []
+            for p, k in preds[b.id]:
+                if p not in out_env:
+                    continue
+                ec = _and(out_pc[p], _edge_condition(out_env[p], blocks[p], k))
+                if ec != "0":
+                    incoming.append((ec, out_env[p]))
+            if not incoming:
+                return None
+            pc = "0"
+            for ec, _ in incoming:
+                pc = _or(pc, ec)
+            if len(incoming) == 1:
+                env = dict(incoming[0][1])
+            else:
+                env = {}
+                for var in set.intersection(*[set(e) for _, e in incoming]):
+                    v = incoming[-1][1][var]
+                    for ec, e in reversed(incoming[:-1]):
+                        v = _ite(ec, e[var], v)
+                    env[var] = v
 
         def val(x, env=env):
             return _const(x) if isinstance(x, int) else env[x]
@@ -183,18 +208,27 @@ def symbolic_program(stmts: Sequence) -> Optional[List[str]]:
         except KeyError:
             return None
         out_env[b.id] = env
+        out_pc[b.id] = pc
     return outputs
 
 
-def prove_equivalent(original: Sequence, optimized: Sequence) -> dict:
-    a = symbolic_program(original)
-    b = symbolic_program(optimized)
+LOOP_BOUND = 8
+
+
+def prove_equivalent(original: Sequence, optimized: Sequence, bound: int = LOOP_BOUND) -> dict:
     control = any(s.op in ("label", "goto", "branch") for s in list(original) + list(optimized))
+    loops = bool(backward_jumps(list(original)) or backward_jumps(list(optimized)))
+    if loops:
+        original = unroll_loops(original, bound)
+        optimized = unroll_loops(optimized, bound) if original is not None else None
+    a = symbolic_program(original) if original is not None else None
+    b = symbolic_program(optimized) if optimized is not None else None
     if a is None or b is None:
-        return {"proved": False, "same_output_count": False, "outputs": [], "control_flow": control,
-                "reason": "no symbolic proof: the program has a loop, or prints inside a branch"}
+        return {"proved": False, "same_output_count": False, "outputs": [], "control_flow": control, "bound": None,
+                "reason": "no symbolic proof: the unrolled program is too large, or a print sits inside a branch"}
     rows = [{"index": i + 1, "original": x, "optimized": y, "match": x == y}
             for i, (x, y) in enumerate(zip(a, b))]
     same_count = len(a) == len(b) and len(a) > 0
     proved = same_count and all(r["match"] for r in rows)
-    return {"proved": proved, "same_output_count": len(a) == len(b), "outputs": rows, "control_flow": control}
+    return {"proved": proved, "same_output_count": len(a) == len(b), "outputs": rows, "control_flow": control,
+            "bound": bound if loops else None}
