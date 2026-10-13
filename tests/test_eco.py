@@ -1118,8 +1118,9 @@ def test_control_flow_programs_pass_the_compile_time_checks():
         assert r["ok"] is True and r["behaviour_preserved"] is True
         assert r["equivalence"]["control_flow"] is True
     assert optimize_program(IF_SRC, 0, 6)["equivalence"]["proved"] is True
-    assert optimize_program(WHILE_SRC, 0, 6)["equivalence"]["proved"] is False
-    assert optimize_program(NESTED_SRC, 0, 6)["equivalence"]["proved"] is False
+    assert optimize_program(WHILE_SRC, 0, 6)["equivalence"]["proved"] is True
+    assert optimize_program(WHILE_SRC, 0, 6)["equivalence"]["bound"] == 8
+    assert optimize_program(NESTED_SRC, 0, 6)["equivalence"]["proved"] is True
 
 
 def test_infinite_loop_is_reported_not_run_forever():
@@ -1169,10 +1170,12 @@ def test_prover_proves_equal_branches_and_catches_swapped_arms():
     assert prove_equivalent(a, swapped)["proved"] is False
 
 
-def test_prover_declines_loops_and_prints_inside_branches():
+def test_loops_are_proved_up_to_the_bound_and_wrong_loop_rewrites_are_caught():
+    from eco.equivalence import LOOP_BOUND
     loop = _stmts("def f(n):\n    s = 0\n    while n > 0:\n        s = s + n\n        n = n - 1\n    return s\n")
-    r = prove_equivalent(loop, loop)
-    assert r["proved"] is False and r["control_flow"] is True and "loop" in r["reason"]
+    wrong = _stmts("def f(n):\n    s = 0\n    while n > 0:\n        s = s - n\n        n = n - 1\n    return s\n")
+    assert prove_equivalent(loop, loop)["proved"] is True and prove_equivalent(loop, loop)["bound"] == LOOP_BOUND
+    assert prove_equivalent(loop, wrong)["proved"] is False
 
 
 BOOL_SRC = ("def f(a, b, c):\n    if a < b and not c == 0 or b > 6:\n        r = a + b\n    else:\n"
@@ -1194,3 +1197,26 @@ def test_boolean_conditions_and_helper_calls_match_python(src, names):
 def test_recursive_helper_is_rejected_with_a_reason():
     with pytest.raises(_Unsupported, match="recursive"):
         compile_function("def f(x):\n    return f(x)\n\ndef g(a):\n    return f(a)\n")
+
+
+ARRAY_SRC = ("def f(a, b):\n    xs = [a, b, a + b]\n    xs[1] = xs[0] * 2\n    s = 0\n    if a < b:\n"
+             "        s = xs[2]\n    else:\n        s = xs[1]\n    return s, xs[0]\n")
+
+
+def test_constant_index_arrays_match_python():
+    compiled = compile_function(ARRAY_SRC)
+    stmts = from_tac(compiled.tac)
+    for inputs in _grid(["a", "b"], 0, 5):
+        assert execute(stmts, inputs) == _run_source(ARRAY_SRC, compiled.name, inputs)
+    assert optimize_program(ARRAY_SRC, 0, 5)["behaviour_preserved"] is True
+
+
+@pytest.mark.parametrize("src", [
+    "def f(a, i):\n    xs = [1, 2]\n    return xs[i]\n",
+    "def f(a):\n    xs = [1, 2]\n    return xs[5]\n",
+    "def f(a):\n    xs = [1, 2]\n    return xs\n",
+    "def f(xs):\n    return xs[0]\n",
+])
+def test_unsupported_array_uses_are_rejected(src):
+    with pytest.raises(_Unsupported):
+        compile_function(src)

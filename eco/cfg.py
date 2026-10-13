@@ -489,3 +489,47 @@ def flow_report(stmts) -> dict:
     for row in rows:
         row["dominators"] = dom.get(row["id"], [])
     return {"blocks": rows, "control_flow": has_control(stmts), "loops": natural_loops(blocks)}
+
+
+def backward_jumps(stmts) -> List[Tuple[int, int]]:
+    """(header index, jump index) for every goto that jumps back to an earlier label, i.e. every loop."""
+    pos = {s.a: i for i, s in enumerate(stmts) if s.op == "label"}
+    return [(pos[s.a], j) for j, s in enumerate(stmts) if s.op == "goto" and s.a in pos and pos[s.a] < j]
+
+
+def unroll_loops(stmts, bound: int, max_size: int = 4000) -> Optional[list]:
+    """Replace every loop by ``bound`` copies of its body.
+
+    Copy i jumps to copy i+1; after the last copy control goes to the loop's exit. The
+    result has no back edges, so it can be analysed symbolically. Both programs are
+    unrolled the same way, so equal results mean equal behaviour whenever every loop
+    finishes within ``bound`` iterations.
+    """
+    stmts = list(stmts)
+    while True:
+        jumps = backward_jumps(stmts)
+        if not jumps:
+            return stmts
+        h, j = min(jumps, key=lambda r: r[1] - r[0])     # innermost loop first
+        body = stmts[h:j + 1]
+        header = stmts[h].a
+        exit_label = next(s.b[1] for s in body if s.op == "branch")
+        labels = {s.a for s in body if s.op == "label"}
+        copies = []
+        for i in range(bound):
+            def name(x, i=i):
+                return x if i == 0 or x not in labels else f"{x}__u{i}"
+            for k, s in enumerate(body):
+                if s.op == "label":
+                    copies.append(s.copy_with(a=name(s.a)))
+                elif s.op == "goto":
+                    last = k == len(body) - 1
+                    target = (f"{header}__u{i + 1}" if i + 1 < bound else exit_label) if last else name(s.a)
+                    copies.append(s.copy_with(a=target))
+                elif s.op == "branch":
+                    copies.append(s.copy_with(b=(name(s.b[0]), name(s.b[1]))))
+                else:
+                    copies.append(s.copy_with())
+        stmts = stmts[:h] + copies + stmts[j + 1:]
+        if len(stmts) > max_size:
+            return None

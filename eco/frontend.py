@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import ast
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from .tac import TAC
 
@@ -57,6 +57,7 @@ class _Compiler:
         self.control = control
         self.helpers = helpers or {}
         self.prefix = ""
+        self.arrays: Dict[str, int] = {}
         self._inline_depth = 0
         self._inline_count = 0
         self.tac: TAC = []
@@ -112,7 +113,13 @@ class _Compiler:
                 raise UnsupportedSyntax(f"only integer literals are supported, got {node.value!r}")
             return self._emit_const(node.value, dest)
 
+        if isinstance(node, ast.Subscript):
+            name, k = self._element(node)
+            return self.expr(ast.Name(id=f"{name}__{k}", ctx=ast.Load()), dest)
+
         if isinstance(node, ast.Name):
+            if node.id in self.arrays:
+                raise UnsupportedSyntax(f"array '{node.id}' must be indexed with an integer literal, e.g. {node.id}[0]")
             if node.id not in self.env:
                 raise UnsupportedSyntax(f"use of undefined variable '{node.id}'")
             src = self.env[node.id]
@@ -234,9 +241,18 @@ class _Compiler:
 
     def statement(self, stmt: ast.stmt, in_block: bool = False):
         if isinstance(stmt, ast.Assign):
-            if len(stmt.targets) != 1 or not isinstance(stmt.targets[0], ast.Name):
+            if len(stmt.targets) != 1:
                 raise UnsupportedSyntax("only simple 'name = expr' assignments are supported")
-            self.assign(stmt.targets[0].id, stmt.value)
+            target = stmt.targets[0]
+            if isinstance(target, ast.Name) and isinstance(stmt.value, ast.List):
+                self._array_literal(target.id, stmt.value)
+            elif isinstance(target, ast.Subscript):
+                name, k = self._element(target)
+                self.assign(f"{name}__{k}", stmt.value)
+            elif isinstance(target, ast.Name):
+                self.assign(target.id, stmt.value)
+            else:
+                raise UnsupportedSyntax("only simple 'name = expr' assignments are supported")
         elif isinstance(stmt, ast.AugAssign):
             if not isinstance(stmt.target, ast.Name):
                 raise UnsupportedSyntax("only simple 'name op= expr' is supported")
@@ -260,6 +276,23 @@ class _Compiler:
             return  # docstring
         else:
             raise UnsupportedSyntax(f"unsupported statement {type(stmt).__name__}")
+
+    def _array_literal(self, name: str, node: ast.List):
+        if name in self.arrays and self.arrays[name] != len(node.elts):
+            raise UnsupportedSyntax(f"array '{name}' changes length; arrays have a fixed size")
+        self.arrays[name] = len(node.elts)
+        for i, e in enumerate(node.elts):
+            self.assign(f"{name}__{i}", e)
+
+    def _element(self, node: ast.Subscript) -> Tuple[str, int]:
+        if not (isinstance(node.value, ast.Name) and node.value.id in self.arrays):
+            raise UnsupportedSyntax("only local arrays created with [..] can be indexed")
+        if not (isinstance(node.slice, ast.Constant) and type(node.slice.value) is int):
+            raise UnsupportedSyntax("array indices must be integer literals; dynamic indexing needs a memory model")
+        k = node.slice.value
+        if not 0 <= k < self.arrays[node.value.id]:
+            raise UnsupportedSyntax(f"index {k} is out of range for array '{node.value.id}'")
+        return node.value.id, k
 
     def _block(self, stmts: List[ast.stmt]):
         for s in stmts:
