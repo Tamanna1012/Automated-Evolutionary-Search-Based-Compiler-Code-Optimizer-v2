@@ -96,6 +96,50 @@ These are the sets at the fixed point, for the **original** program.
 
 For reaching definitions, B3's IN contains **two** definitions of `y`: one from B1 and one from B2. Both reach the merge point, because either arm may have run. This is why a plain straight-line pass cannot know which `y` is live at the merge.
 
+### Gen and kill sets for the example
+
+For the example, each block's sets follow from its statements.
+
+| Block | Reaching definitions: gen | Reaching definitions: kill | Liveness: use (read before written) | Liveness: def | Available expressions: gen | Available expressions: kill |
+|---|---|---|---|---|---|---|
+| B0 | n, k, x, t1 (their assignments) | none (no other assignment to these names) | none | n, k, x, t1 | `2 * 3` in x | none |
+| B1 | y (from B1) | y from B2 | n, x | y | `n + x` in y | none |
+| B2 | y (from B2) | y from B1 | n, x | y | `n + x` in y | none |
+| B3 | z, unused, t2 | none | n, x, y | z, unused, t2 | `n + x` in z, `y + z` in t2 | none |
+
+The meet operators are: union for reaching definitions and liveness, and intersection for available expressions. Available expressions start from the full set of expressions everywhere except the entry block, which starts empty.
+
+### Iterations to the fixed point
+
+The algorithm visits blocks in order for the forward analyses (B0, B1, B2, B3) and in reverse order for liveness (B3, B2, B1, B0). Each row below is one pass over all blocks. For this example the first pass already gives the final sets, and the second pass changes nothing, so the algorithm stops after two passes.
+
+**Reaching definitions (forward, union)**
+
+| Block | Pass 1 IN | Pass 1 OUT | Pass 2 |
+|---|---|---|---|
+| B0 | — | k, n, t1, x | unchanged |
+| B1 | k, n, t1, x | k, n, t1, x, y (B1) | unchanged |
+| B2 | k, n, t1, x | k, n, t1, x, y (B2) | unchanged |
+| B3 | k, n, t1, x, y (B1), y (B2) | k, n, t1, t2, unused, x, y (B1), y (B2), z | unchanged |
+
+**Live variables (backward, union)**
+
+| Block | Pass 1 IN | Pass 1 OUT | Pass 2 |
+|---|---|---|---|
+| B3 | n, x, y | — | unchanged |
+| B2 | n, x | n, x, y | unchanged |
+| B1 | n, x | n, x, y | unchanged |
+| B0 | — | n, x | unchanged |
+
+**Available expressions (forward, intersection)**
+
+| Block | Pass 1 IN | Pass 1 OUT | Pass 2 |
+|---|---|---|---|
+| B0 | — | `2 * 3` in x | unchanged |
+| B1 | `2 * 3` in x | `2 * 3` in x, `n + x` in y | unchanged |
+| B2 | `2 * 3` in x | `2 * 3` in x, `n + x` in y | unchanged |
+| B3 | `2 * 3` in x, `n + x` in y | `2 * 3` in x, `n + x` in y, `n + x` in z, `y + z` in t2 | unchanged |
+
 ## 3. How each analysis enables an optimization
 
 - **Global constant propagation** (reaching definitions). If every definition of `x` that reaches a use assigns the same constant, the use can be replaced by that constant. In the example, `x = 6` is the only definition of `x` reaching B1 and B2, so `y = x + n` becomes `y = 6 + n`.
