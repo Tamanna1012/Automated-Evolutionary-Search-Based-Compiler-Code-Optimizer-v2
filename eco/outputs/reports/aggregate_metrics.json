@@ -1,17 +1,17 @@
 {
-  "avg_measured_improvement_pct": 11.122974283741197,
-  "avg_measured_speedup_x": 1.1817279301989214,
-  "total_time_speedup_x": 1.193579166601009,
+  "avg_measured_improvement_pct": 9.862353081478934,
+  "avg_measured_speedup_x": 1.1788377677506794,
+  "total_time_speedup_x": 1.179328587040077,
   "measured_outputs_correct_pct": 100.0,
-  "programs_measurably_faster_pct": 60.0,
+  "programs_measurably_faster_pct": 59.0,
   "correlation": {
-    "pooled_pearson": 0.649729162115276,
-    "pooled_spearman": 0.6140989223680696,
+    "pooled_pearson": 0.6233392300818456,
+    "pooled_spearman": 0.6213148522924228,
     "pooled_n": 600,
-    "improvement_pearson": 0.7897558645204218,
-    "improvement_spearman": 0.8495148808139844,
+    "improvement_pearson": 0.4559083110645424,
+    "improvement_spearman": 0.8608980322778352,
     "improvement_n": 300,
-    "within_program_mean_spearman": 0.19083840946415187,
+    "within_program_mean_spearman": 0.6049524561662282,
     "within_program_n_programs": 184
   },
   "improvement_by_spelling": {
