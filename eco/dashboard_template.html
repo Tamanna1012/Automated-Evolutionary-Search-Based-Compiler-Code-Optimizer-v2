@@ -161,6 +161,9 @@ svg polyline:hover{stroke-width:3.6}
 .sumgrid .box:hover{transform:translateY(-3px);box-shadow:0 10px 20px rgba(0,0,0,.18);border-color:var(--accent)}
 .chip{transition:transform .15s,border-color .15s}
 .chip:hover{transform:translateY(-1px);border-color:var(--accent)}
+button.chip{cursor:pointer;font:inherit;font-size:12px;color:var(--text)}
+button.chip[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+button.chip:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .btn{transition:transform .15s,box-shadow .15s,filter .15s;padding:9px 22px}
 .btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.1);box-shadow:0 8px 18px color-mix(in srgb,var(--accent) 40%,transparent)}
 textarea:focus,select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
@@ -384,7 +387,7 @@ function barsH(items, o){
   const m = {l:lm, r:Math.min(74, W*.14), t:8, b:o.xl ? 52 : 34};
   const Hh = m.t + items.length * rowH + m.b;
   const svg = frame(W, Hh, m).s, G = gradients(svg, "H");
-  const iw = W - m.l - m.r, max = niceMax(Math.max(...items.map(i=>i.value), 0.0001)), X = v => m.l + v / max * iw;
+  const iw = W - m.l - m.r, max = niceMax(Math.max(...items.map(i=>i.value), o.ref || 0, 0.0001)), X = v => m.l + v / max * iw;
   for (const t of ticks(0, max, 4)) {
     sv("line", {x1:X(t), x2:X(t), y1:m.t, y2:m.t+items.length*rowH, class:"gridline"}, svg);
     sv("text", {x:X(t), y:m.t+items.length*rowH+17, "text-anchor":"middle"}, svg).textContent = t + (o.unit || "");
@@ -400,6 +403,11 @@ function barsH(items, o){
     sv("text", {x:m.l-10, y:y+rowH/2+4, "text-anchor":"end", class:"lbl"}, col).textContent = lab;
     sv("text", {x:X(it.value)+8, y:y+rowH/2+4, class:"val"}, col).textContent = val;
   });
+  if (o.ref) {
+    const rx = X(o.ref);
+    sv("line", {x1:rx, x2:rx, y1:m.t-4, y2:m.t+items.length*rowH, stroke:"var(--bad)", "stroke-dasharray":"5 4", "stroke-width":1.4}, svg);
+    sv("text", {x:rx+5, y:m.t+10, class:"val"}, svg).textContent = `original: ${o.ref}`;
+  }
   if (o.xl) sv("text", {x:m.l+iw/2, y:Hh-10, "text-anchor":"middle", class:"axtitle"}, svg).textContent = o.xl;
   return svg;
 }
@@ -784,13 +792,41 @@ function renderOpt(r){
   const box = (v, l) => h("div",{class:"box"}, h("div",{class:"v"},v), h("div",{class:"l"},l));
   const cmp = [{label:"Original code", value:s.original_instructions, grad:"muted"}, {label:"Optimized code", value:s.optimized_instructions, grad:"good"}];
 
+  let mask = 0, metric = "removed";
+  const overallChart = () => chartHost(w => barsH(cmp, {w, metric:"Instructions", unit:"", dec:0, rowH:34, xl:"instructions"}), "Instruction count, original versus optimized");
+  const chartSlot = h("div"), logSlot = h("div");
+  const tagBtns = s.techniques.map(t => {
+    const bit = 1 << r.technique_order.indexOf(t);
+    return h("button",{class:"chip", type:"button", "aria-pressed":"false", "data-bit":String(bit),
+      onclick:() => { mask ^= bit; syncTags(); paint(); }}, t);
+  });
+  const syncTags = () => tagBtns.forEach(b => b.setAttribute("aria-pressed", String(!!(mask & +b.dataset.bit))));
+  const metricBtns = [["removed","Instructions removed"],["changes","Changes applied"]].map(([k,l]) => h("button",{class:"chip", type:"button", "data-k":k, "aria-pressed":String(k===metric),
+    onclick:() => { metric = k; metricBtns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.k===metric))); paint(); }}, l));
+  const clearBtn = h("button",{class:"chip", type:"button", onclick:() => { mask = 0; syncTags(); paint(); }}, "Clear selection");
+  function paint(){
+    const view = mask ? r.selection_views[String(mask)] : null;
+    clearBtn.disabled = !mask;
+    chartSlot.replaceChildren(view
+      ? chartHost(w => barsH([...view.bars.map(b => ({label:b.label, value:b[metric]})), {label:"combined (union)", value:view.combined[metric], grad:"good"}],
+          {w, metric:metric==="removed"?"Instructions removed":"Changes applied", unit:"", dec:0, rowH:34, ref:s.original_instructions,
+           xl:metric==="removed"?"instructions removed (dashed line = original count)":"changes applied (dashed line = original count)"}), "Selected techniques")
+      : overallChart());
+    const keep = view ? new Set(view.sno) : null;
+    const rows = r.log.filter(e => !keep || keep.has(e.sno));
+    logSlot.replaceChildren(r.no_optimization ? h("div",{class:"empty"}, h("b",{},"No optimizations detected"))
+      : rows.length ? optTable(["S.No","Optimization","Original","Optimized","Reason"],
+          rows.map(e => h("tr",{}, h("td",{},e.sno), h("td",{},e.technique), h("td",{class:"mono"},e.original), h("td",{class:"mono"},e.optimized), h("td",{},e.reason))))
+      : h("div",{class:"emptystate"}, "No changes from the selected techniques."));
+  }
   const summary = optCard("Optimization Summary", null,
     h("div",{class:"sumgrid"},
       box(s.original_instructions,"Original instructions"), box(s.optimized_instructions,"Optimized instructions"), box(s.removed,"Instructions removed"),
       box(s.optimizations,"Optimizations applied"), box(s.reduction_pct.toFixed(2)+"%","Optimization reduction")),
-    h("div",{style:"margin:6px 0"}, "Optimization techniques used: ", s.techniques.length ? s.techniques.map(t=>h("span",{class:"chip"},t)) : h("span",{class:"muted"},"none")),
-    h("h3",{style:"margin:12px 0 2px;font-size:13px"},"Instruction count: original vs optimized"),
-    chartHost(w => barsH(cmp, {w, metric:"Instructions", unit:"", dec:0, rowH:34, xl:"instructions"}), "Instruction count, original versus optimized"));
+    h("div",{style:"margin:6px 0"}, "Techniques used (click to select; select several to compare): ", tagBtns.length ? tagBtns : h("span",{class:"muted"},"none")),
+    h("div",{class:"row",style:"margin:6px 0"}, h("span",{class:"muted"},"Measure:"), metricBtns),
+    chartSlot,
+    h("p",{class:"hint",style:"margin-top:8px"}, "Attribution: a removed instruction is credited to the pass that deletes it (dead code elimination). A rewrite is credited to the pass that makes it, even when it only becomes dead later. Passes feed each other across rounds, so the bars show each technique's own contribution rather than adding up to the total."));
 
   const dec = m => m.key === "exec_time" ? 1 : 0;
   const pctColour = c => c < 0 ? "var(--good)" : (c > 0 ? "var(--bad)" : "var(--muted)");
@@ -814,10 +850,8 @@ function renderOpt(r){
   const original = optCard("Original 3-Address Code", null, optTable(["S.No","Operation","Arg1","Arg2"], codeRows(r.original)));
 
   const analysis = optCard("Optimization Analysis", "Each change the optimizer made, in order, and why. Only optimizations that were actually applied are listed.",
-    r.no_optimization
-      ? h("div",{class:"empty"}, h("b",{},"No optimizations detected"))
-      : optTable(["S.No","Optimization","Original","Optimized","Reason"],
-          r.log.map(e => h("tr",{}, h("td",{},e.sno), h("td",{},e.technique), h("td",{class:"mono"},e.original), h("td",{class:"mono"},e.optimized), h("td",{},e.reason)))));
+    h("div",{class:"row"}, h("span",{class:"muted"}, "Filter by the techniques selected above:"), clearBtn),
+    logSlot);
 
   const optimized = optCard("Optimized 3-Address Code", null, optTable(["S.No","Operation","Arg1","Arg2"], codeRows(r.optimized)));
 
@@ -825,6 +859,7 @@ function renderOpt(r){
     optTable(["S.No","Operation","Arg1","Arg2","Result"], r.quadruples.map(x => h("tr",{},
       h("td",{},x.sno), h("td",{class:"mono"},x.op), h("td",{class:"mono"},x.arg1), h("td",{class:"mono"},x.arg2), h("td",{class:"mono"},x.result)))));
 
+  paint(); syncTags();
   return h("div",{}, summary, results, original, analysis, optimized, quads);
 }
 

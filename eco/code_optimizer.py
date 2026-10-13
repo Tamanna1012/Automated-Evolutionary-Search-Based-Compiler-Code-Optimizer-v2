@@ -352,22 +352,51 @@ PIPELINE = [constant_propagation, constant_folding, algebraic_simplification,
             copy_propagation, common_subexpression_elimination, dead_code_elimination]
 
 
-def optimize_stmts(stmts: List[Stmt]) -> Tuple[List[Stmt], List[dict]]:
-    """Run all techniques repeatedly until a full round changes nothing."""
+def optimize_stmts(stmts: List[Stmt]) -> Tuple[List[Stmt], List[dict], List[dict]]:
+    """Run all techniques repeatedly until a full round changes nothing.
+
+    Returns the optimized statements, the change log, and a trace with one entry per
+    pass per round. Only dead code elimination removes statements, so a pass's
+    statement-count drop is credited to that pass.
+    """
     current = [s.copy_with() for s in stmts]
     log: List[dict] = []
+    trace: List[dict] = []
     for rnd in range(1, MAX_ROUNDS + 1):
         changed = False
         for pass_fn in PIPELINE:
+            before = len(current)
             current, events = pass_fn(current)
             for e in events:
                 e["round"] = rnd
+            trace.append({"round": rnd, "technique": TECHNIQUES[PIPELINE.index(pass_fn)],
+                          "statements_before": before, "statements_after": len(current), "events": len(events)})
             if events:
                 changed = True
                 log.extend(events)
         if not changed:
             break
-    return current, log
+    return current, log, trace
+
+
+def selection_views(log: List[dict], trace: List[dict]) -> Dict[str, dict]:
+    """Chart data and log rows for every non-empty combination of techniques.
+
+    Keyed by a bitmask over TECHNIQUES, so the browser only looks up a view and never
+    computes one. A 'combined' bar is the union of the selected techniques.
+    """
+    per = {t: {"removed": sum(x["statements_before"] - x["statements_after"] for x in trace if x["technique"] == t),
+               "changes": sum(1 for e in log if e["technique"] == t)} for t in TECHNIQUES}
+    views = {}
+    for mask in range(1, 1 << len(TECHNIQUES)):
+        sel = [t for i, t in enumerate(TECHNIQUES) if mask >> i & 1]
+        views[str(mask)] = {
+            "techniques": sel,
+            "bars": [dict(label=t, **per[t]) for t in sel],
+            "combined": {"removed": sum(per[t]["removed"] for t in sel), "changes": sum(per[t]["changes"] for t in sel)},
+            "sno": [e["sno"] for e in log if e["technique"] in sel],
+        }
+    return views
 
 
 # ------------------------------------------------------------------ tables
@@ -410,7 +439,8 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         return _error(stage, str(exc))
 
     original = from_tac(compiled.tac)
-    optimized, log = optimize_stmts(original)
+    optimized, log, trace = optimize_stmts(original)
+    log = [dict(e, sno=i) for i, e in enumerate(log, 1)]
 
     lo, hi = (int(lo), int(hi)) if int(lo) <= int(hi) else (int(hi), int(lo))
     rng = random.Random(seed)
@@ -460,7 +490,10 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         "original": three_address_rows(original),
         "optimized": three_address_rows(optimized),
         "quadruples": quadruple_rows(optimized),
-        "log": [dict(e, sno=i) for i, e in enumerate(log, 1)],
+        "log": log,
+        "pass_trace": trace,
+        "technique_order": TECHNIQUES,
+        "selection_views": selection_views(log, trace),
         "summary": {
             "original_instructions": n_orig,
             "optimized_instructions": n_opt,
