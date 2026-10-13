@@ -371,26 +371,33 @@ def dead_code_elimination(stmts: List[Stmt]):
 
 PIPELINE = [constant_propagation, constant_folding, algebraic_simplification,
             copy_propagation, common_subexpression_elimination, dead_code_elimination]
+NAME_OF = dict(zip(PIPELINE, TECHNIQUES))
+BY_NAME = {name: fn for fn, name in NAME_OF.items()}
 
 
-def optimize_stmts(stmts: List[Stmt]) -> Tuple[List[Stmt], List[dict], List[dict]]:
+def optimize_stmts(stmts: List[Stmt], passes: Optional[List[str]] = None) -> Tuple[List[Stmt], List[dict], List[dict]]:
     """Run all techniques repeatedly until a full round changes nothing.
 
     Returns the optimized statements, the change log, and a trace with one entry per
     pass per round. Only dead code elimination removes statements, so a pass's
-    statement-count drop is credited to that pass.
+    statement-count drop is credited to that pass. With ``passes`` given (manual mode),
+    exactly those techniques run once each, in that order.
     """
+    if passes is None:
+        pipeline, rounds = PIPELINE, MAX_ROUNDS
+    else:
+        pipeline, rounds = [BY_NAME[name] for name in passes], 1
     current = [s.copy_with() for s in stmts]
     log: List[dict] = []
     trace: List[dict] = []
-    for rnd in range(1, MAX_ROUNDS + 1):
+    for rnd in range(1, rounds + 1):
         changed = False
-        for pass_fn in PIPELINE:
+        for pass_fn in pipeline:
             before = len(current)
             current, events = pass_fn(current)
             for e in events:
                 e["round"] = rnd
-            trace.append({"round": rnd, "technique": TECHNIQUES[PIPELINE.index(pass_fn)],
+            trace.append({"round": rnd, "technique": NAME_OF[pass_fn],
                           "statements_before": before, "statements_after": len(current), "events": len(events)})
             if events:
                 changed = True
@@ -463,7 +470,8 @@ def _verdict(checks: List[dict], proved: bool) -> dict:
     return {"level": "unverified", "text": "Not verified: no compile-time tests ran"}
 
 
-def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_tests: int = 5) -> dict:
+def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_tests: int = 5,
+                     passes: Optional[List[str]] = None) -> dict:
     """Run the whole workflow on a user's function and return everything the tab shows."""
     if not source or not source.strip():
         return _error("Input", "The source code is empty. Write a function and press Optimize.")
@@ -477,8 +485,10 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         stage = "Semantic analysis" if "undefined" in str(exc) else "Syntax analysis"
         return _error(stage, str(exc))
 
+    if passes is not None and any(name not in BY_NAME for name in passes):
+        return _error("Input", f"Unknown optimization in {passes}")
     original = from_tac(compiled.tac)
-    optimized, log, trace = optimize_stmts(original)
+    optimized, log, trace = optimize_stmts(original, passes)
     log = [dict(e, sno=i) for i, e in enumerate(log, 1)]
 
     lo, hi = (int(lo), int(hi)) if int(lo) <= int(hi) else (int(hi), int(lo))
@@ -527,7 +537,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
                       "instructions_removed": sum(e["instrs_removed"] for e in log if e["technique"] == t),
                       "cycles_saved": sum(e["cycles_saved"] for e in log if e["technique"] == t)}
                      for t in TECHNIQUES]
-    return {
+    result = {
         "ok": True,
         "function": compiled.name,
         "args": compiled.arg_names,
@@ -563,12 +573,22 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         "behaviour_preserved": all(c["match"] for c in checks),
         "settings": {"lo": lo, "hi": hi, "seed": seed, "tests": num_tests},
     }
+    result["mode"] = "manual" if passes is not None else "automatic"
+    result["passes"] = list(passes) if passes is not None else None
+    if passes is not None:
+        auto = optimize_program(source, lo, hi, seed, num_tests)
+        result["comparison"] = {
+            "custom_benefit_pct": result["benefit_pct"], "custom_optimized_instructions": n_opt,
+            "automatic_benefit_pct": auto["benefit_pct"], "automatic_optimized_instructions": auto["summary"]["optimized_instructions"],
+        }
+    return result
 
 
 def optimize_program_json(params_json: str) -> str:
     """JSON in, JSON out: the entry point the browser calls."""
     p = json.loads(params_json)
-    return json.dumps(optimize_program(p["source"], p.get("lo", 1), p.get("hi", 20), p.get("seed", 7)))
+    return json.dumps(optimize_program(p["source"], p.get("lo", 1), p.get("hi", 20), p.get("seed", 7),
+                                       passes=p.get("passes")))
 
 
 SAMPLES = {

@@ -709,6 +709,29 @@ function codeOpt(){
   const errHolder = h("div",{});
   const flow = h("div",{class:"flow", role:"tablist", "aria-label":"Compiler stages"});
   const stageBtns = {};
+  let manual = false;
+  let order = base.technique_order.slice();
+  const on = new Set(base.technique_order);
+  const manualBox = h("div",{class:"manualbox"});
+  manualBox.hidden = true;
+  function renderManual(){
+    manualBox.replaceChildren(
+      h("p",{class:"hint"}, "Tick the techniques to apply and use the arrows to set their order. Each ticked technique runs once, in this order."),
+      h("ol",{style:"margin:0;padding-left:22px"}, order.map((t, i) => h("li",{style:"margin:4px 0"},
+        h("label",{style:"display:inline-flex;gap:8px;align-items:center;cursor:pointer"},
+          h("input",{type:"checkbox", ...(on.has(t) ? {checked:"checked"} : {}),
+            onchange:e => { e.target.checked ? on.add(t) : on.delete(t); }}), t),
+        " ",
+        h("button",{class:"chip", type:"button", "aria-label":`Move ${t} up`, ...(i === 0 ? {disabled:""} : {}),
+          onclick:() => { [order[i-1], order[i]] = [order[i], order[i-1]]; renderManual(); }}, "↑"),
+        " ",
+        h("button",{class:"chip", type:"button", "aria-label":`Move ${t} down`, ...(i === order.length - 1 ? {disabled:""} : {}),
+          onclick:() => { [order[i+1], order[i]] = [order[i], order[i+1]]; renderManual(); }}, "↓")))));
+  }
+  renderManual();
+  const modeBtns = [["auto","Automatic pipeline"],["manual","Manual pipeline"]].map(([k, l]) => h("button",{class:"chip", type:"button", "data-mode":k,
+    "aria-pressed":String(k === "auto"),
+    onclick:() => { manual = k === "manual"; modeBtns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === k))); manualBox.hidden = !manual; }}, l));
 
   function renderStage(animate){
     const s = STAGES.find(x => x.key === stage);
@@ -744,12 +767,13 @@ function codeOpt(){
     try {
       let res;
       if (!ta.value.trim()) res = {ok:false, stage:"Input", error:"The source code is empty. Write a function and press Optimize."};
-      else if (ta.value.trim() === base.source.trim()) { res = base; status.textContent = ""; }
+      else if (!manual && ta.value.trim() === base.source.trim()) { res = base; status.textContent = ""; }
       else {
         const eng = await loadEngine(t => status.textContent = t);
         status.textContent = "Optimizing...";
         await new Promise(r => setTimeout(r, 30));
-        res = JSON.parse(eng.opt(JSON.stringify({source: ta.value})));
+        const passes = manual ? order.filter(t => on.has(t)) : undefined;
+        res = JSON.parse(eng.opt(JSON.stringify({source: ta.value, passes})));
         status.textContent = "";
       }
       if (res.ok) { current = res; out.replaceChildren(renderOpt(res)); }
@@ -771,7 +795,9 @@ function codeOpt(){
     panel,
     h("div",{class:"card",style:"margin-top:12px"},
       h("h2",{},"Source code"),
+      h("div",{class:"row", style:"margin:4px 0 8px"}, h("span",{class:"muted"}, "Pipeline:"), modeBtns),
       ta,
+      manualBox,
       h("div",{class:"row",style:"margin-top:10px"}, btn, status),
       errHolder,
       h("p",{class:"hint"},"Write a straight-line Python function (integers, + - * //, assignments, return) and press Optimize. Optimizing your own code downloads a Python engine (about 10 MB) the first time.")),
@@ -882,7 +908,12 @@ function renderOpt(r){
       h("td",{},x.sno), h("td",{class:"mono"},x.op), h("td",{class:"mono"},x.arg1), h("td",{class:"mono"},x.arg2), h("td",{class:"mono"},x.result)))));
 
   paint(); syncTags();
-  return h("div",{}, summary, results, equivalenceCard, original, analysis, optimized, quads);
+  const compare = r.comparison ? optCard("Manual pipeline vs automatic",
+    "The same program run through your pipeline and through the default automatic one.",
+    optTable(["Pipeline","Optimized instructions","Benefit (%)"], [
+      h("tr",{}, h("td",{}, "Your order (" + r.passes.length + " techniques)"), h("td",{}, r.comparison.custom_optimized_instructions), h("td",{}, fmt(r.comparison.custom_benefit_pct, 2))),
+      h("tr",{}, h("td",{}, "Automatic (all rounds)"), h("td",{}, r.comparison.automatic_optimized_instructions), h("td",{}, fmt(r.comparison.automatic_benefit_pct, 2)))])) : null;
+  return h("div",{}, summary, results, equivalenceCard, compare, original, analysis, optimized, quads);
 }
 
 // ------------------------------------------------------------------ boot
