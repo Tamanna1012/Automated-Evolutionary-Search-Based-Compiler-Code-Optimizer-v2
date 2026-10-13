@@ -37,9 +37,11 @@ from __future__ import annotations
 import ast
 import json
 import random
+import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
+from .equivalence import prove_equivalent
 from .frontend import UnsupportedSyntax, compile_function, run_source
 from .interpreter import CYCLE_COST, _safe_div, run
 from .metrics import evaluate
@@ -198,10 +200,19 @@ def _change_pct(old: float, new: float) -> float:
 
 
 # ------------------------------------------------------------------ passes
-def _event(technique: str, before: Stmt, after: Optional[Stmt], reason: str) -> dict:
+AS_RULES = {
+    "Adding zero does not change the value": ("x + 0 = x", "the other operand is the literal 0"),
+    "Subtracting zero does not change the value": ("x - 0 = x", "the subtrahend is the literal 0"),
+    "Multiplying by zero always gives zero": ("x * 0 = 0", "one operand is the literal 0"),
+    "Multiplying by one does not change the value": ("x * 1 = x", "the other operand is the literal 1"),
+    "Dividing by one does not change the value": ("x / 1 = x", "the divisor is the literal 1"),
+}
+
+
+def _event(technique: str, before: Stmt, after: Optional[Stmt], reason: str, rule: str, precondition: str) -> dict:
     return {"technique": technique, "original": before.text(),
             "optimized": after.text() if after is not None else "(removed)",
-            "reason": reason, "origin": before.origin,
+            "reason": reason, "rule": rule, "precondition": precondition, "origin": before.origin,
             "cycles_saved": _stmt_cycles(before) - (_stmt_cycles(after) if after is not None else 0),
             "instrs_removed": 1 if after is None else 0}
 
@@ -217,7 +228,9 @@ def constant_propagation(stmts: List[Stmt]):
             if (a, b) != (s.a, s.b):
                 new = s.copy_with(a=a, b=b)
                 known = [f"{x} = {env[x]}" for x in (s.a, s.b) if isinstance(x, str) and x in env]
-                events.append(_event("Constant Propagation", s, new, "Known constant value substituted (" + ", ".join(known) + ")"))
+                events.append(_event("Constant Propagation", s, new, "Known constant value substituted (" + ", ".join(known) + ")",
+                                     "if x = c and x is used later, replace x by c",
+                                     "x is assigned only once, to a literal, and that assignment reaches this use"))
         if new.dest is not None:
             if new.op == "=" and isinstance(new.a, int):
                 env[new.dest] = new.a
@@ -243,7 +256,9 @@ def constant_folding(stmts: List[Stmt]):
                 value = s.a // s.b
             if value is not None:
                 new = s.copy_with(op="=", a=value, b=None)
-                events.append(_event("Constant Folding", s, new, f"Evaluated constant expression {s.a} {s.op} {s.b} at compile time"))
+                events.append(_event("Constant Folding", s, new, f"Evaluated constant expression {s.a} {s.op} {s.b} at compile time",
+                                     f"{s.a} {s.op} {s.b} = {value} (evaluated with the same arithmetic the program uses)",
+                                     "both operands are integer literals; a division is folded only when it is exact and the divisor is not zero"))
         out.append(new)
     return out, events
 
@@ -271,7 +286,7 @@ def algebraic_simplification(stmts: List[Stmt]):
             if s.b == 1 and not isinstance(s.b, str):
                 new, why = s.copy_with(op="=", a=s.a, b=None), "Dividing by one does not change the value"
         if why:
-            events.append(_event("Algebraic Simplification", s, new, why))
+            events.append(_event("Algebraic Simplification", s, new, why, *AS_RULES[why]))
         out.append(new)
     return out, events
 
@@ -287,7 +302,9 @@ def copy_propagation(stmts: List[Stmt]):
             if (a, b) != (s.a, s.b):
                 new = s.copy_with(a=a, b=b)
                 used = [f"{x} is a copy of {copies[x]}" for x in (s.a, s.b) if isinstance(x, str) and x in copies]
-                events.append(_event("Copy Propagation", s, new, "Copy replaced by its source (" + ", ".join(used) + ")"))
+                events.append(_event("Copy Propagation", s, new, "Copy replaced by its source (" + ", ".join(used) + ")",
+                                     "if y = x and y is used later, replace y by x",
+                                     "y is a copy of x, and neither y nor x is reassigned before this use"))
         d = new.dest
         if d is not None:
             for k in [k for k, v in copies.items() if k == d or v == d]:
@@ -315,7 +332,9 @@ def common_subexpression_elimination(stmts: List[Stmt]):
             if k in available:
                 new = s.copy_with(op="=", a=available[k], b=None)
                 events.append(_event("Common Subexpression Elimination", s, new,
-                                     f"Expression {s.a} {s.op} {s.b} was already calculated in {available[k]}"))
+                                     f"Expression {s.a} {s.op} {s.b} was already calculated in {available[k]}",
+                                     f"{s.a} {s.op} {s.b} was already computed into {available[k]}, so reuse {available[k]}",
+                                     "same operator and operands (order ignored for + and *), and no operand is reassigned in between"))
         d = new.dest
         if d is not None:
             for k2 in [k2 for k2, v in available.items() if v == d or d in k2[1:]]:
@@ -338,7 +357,9 @@ def dead_code_elimination(stmts: List[Stmt]):
             live.discard(s.dest)
             kept.append(s)  # parameters are never removed
         elif s.dest not in live:
-            events.append(_event("Dead Code Elimination", s, None, f"{s.dest} is never used, so the statement has no effect on the output"))
+            events.append(_event("Dead Code Elimination", s, None, f"{s.dest} is never used, so the statement has no effect on the output",
+                                 "a definition whose value is never read has no effect on the output",
+                                 f"{s.dest} is not read by any later statement and is not printed"))
         else:
             live.discard(s.dest)
             live.update(s.uses())
@@ -424,6 +445,24 @@ def _error(stage: str, message: str) -> dict:
     return {"ok": False, "stage": stage, "error": message}
 
 
+def _boundary_inputs(names: Sequence[str], allow_negative: bool) -> List[Dict[str, int]]:
+    values = [0, 1] + ([-1] if allow_negative else []) + [1_000_000]
+    return [{a: v for a in names} for v in values]
+
+
+def _verdict(checks: List[dict], proved: bool) -> dict:
+    bad = next((c for c in checks if not c["match"]), None)
+    passed, total = sum(c["match"] for c in checks), len(checks)
+    if bad:
+        return {"level": "fail", "text": f"NOT equivalent: first mismatch at {bad['inputs']}: "
+                                         f"original {bad['original']}, optimized {bad['optimized']}"}
+    if proved:
+        return {"level": "proved", "text": f"Equivalent: proved symbolically and passed {passed}/{total} compile-time tests"}
+    if total:
+        return {"level": "tested", "text": f"Equivalent on {passed}/{total} compile-time tests; not proved symbolically"}
+    return {"level": "unverified", "text": "Not verified: no compile-time tests ran"}
+
+
 def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_tests: int = 5) -> dict:
     """Run the whole workflow on a user's function and return everything the tab shows."""
     if not source or not source.strip():
@@ -444,30 +483,36 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
 
     lo, hi = (int(lo), int(hi)) if int(lo) <= int(hi) else (int(hi), int(lo))
     rng = random.Random(seed)
-    tests = [{a: rng.randint(lo, hi) for a in compiled.arg_names} for _ in range(num_tests)]
+    has_division = any(i[0] == "bin" and i[2] == "/" for i in compiled.tac)
+    tests = [("random", {a: rng.randint(lo, hi) for a in compiled.arg_names}) for _ in range(num_tests)]
+    tests += [("boundary", t) for t in _boundary_inputs(compiled.arg_names, allow_negative=not has_division)]
     checks = []
-    for t in tests:
+    started = time.perf_counter()
+    for kind, t in tests:
         try:
             python_out = run_source(source, compiled.name, t)
         except Exception as exc:  # noqa: BLE001
+            if kind == "boundary":
+                continue  # e.g. division by zero at a boundary input: not a valid test point
             return _error("Execution", f"Your function failed on {t}: {type(exc).__name__}: {exc}")
         tac_out = run(compiled.tac, t).outputs
         orig_out = run_stmts(original, t)
         opt_out = run_stmts(optimized, t)
-        checks.append({"inputs": t, "original": orig_out, "optimized": opt_out, "python": python_out,
+        checks.append({"kind": kind, "inputs": t, "original": orig_out, "optimized": opt_out, "python": python_out,
                        "match": orig_out == opt_out == tac_out})
         if tac_out != python_out:
             return _error("Execution", f"The generated code disagrees with Python on {t} (Python: {python_out}, generated: {tac_out}). "
                                        "This usually means // was used on a negative number; use a positive input range.")
+    check_ms = (time.perf_counter() - started) * 1000
     n_orig, n_opt = len(original), len(optimized)
     removed = n_orig - n_opt
     by_tech: Dict[str, int] = {}
     for e in log:
         by_tech[e["technique"]] = by_tech.get(e["technique"], 0) + 1
 
-    before = evaluate(compiled.tac, tests).fitness.as_dict()
+    before = evaluate(compiled.tac, [t for _, t in tests]).fitness.as_dict()
     after_tac = stmts_to_tac(optimized)
-    after = evaluate(after_tac, tests).fitness.as_dict()
+    after = evaluate(after_tac, [t for _, t in tests]).fitness.as_dict()
     temps = lambda tac: len({dest_of(i) for i in tac if dest_of(i) is not None})
     metrics = [{"key": k, "objective": label, "original": before[k], "optimized": after[k],
                 "change_pct": _change_pct(before[k], after[k])}
@@ -476,6 +521,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
     metrics.append({"key": "temporaries", "objective": "temporaries/variables used",
                     "original": temps(compiled.tac), "optimized": temps(after_tac),
                     "change_pct": _change_pct(temps(compiled.tac), temps(after_tac))})
+    equivalence = prove_equivalent(original, optimized)
     per_technique = [{"technique": t,
                       "changes": sum(1 for e in log if e["technique"] == t),
                       "instructions_removed": sum(e["instrs_removed"] for e in log if e["technique"] == t),
@@ -505,6 +551,11 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
             "rounds": max([e["round"] for e in log] + [0]),
         },
         "no_optimization": not log,
+        "equivalence": equivalence,
+        "compile_check": {"ms": round(check_ms, 3), "passed": sum(c["match"] for c in checks), "total": len(checks),
+                          "saved_cycles_per_call": round(before["exec_time"] - after["exec_time"], 2),
+                          "note": "one-time compile-time validation; the optimized program itself is never slowed down by this"},
+        "verdict": _verdict(checks, equivalence["proved"]),
         "metrics": metrics,
         "benefit_pct": -_change_pct(before["exec_time"], after["exec_time"]),
         "per_technique": per_technique,

@@ -35,8 +35,8 @@ def _safe_div(a: int, b: int) -> int:
     """Integer division truncated toward zero (C semantics); div-by-zero -> 0."""
     if b == 0:
         return 0
-    q = a / b
-    return int(q) if q >= 0 else -int(-q)
+    q = abs(a) // abs(b)
+    return q if (a >= 0) == (b >= 0) else -q
 
 
 def run(tac: Sequence[Instr], input_values: Dict[str, int]) -> RunResult:
