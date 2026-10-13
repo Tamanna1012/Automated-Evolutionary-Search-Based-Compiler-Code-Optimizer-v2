@@ -291,6 +291,8 @@ eco/
   kernels.py              42 real kernel templates + dataset-record builder
   tac.py                 TAC instruction representation + pretty-printers
   interpreter.py          TAC interpreter (correctness + simulated cycles)
+  cfg.py                  basic blocks, CFG, data-flow analysis, global optimizations
+  equivalence.py          symbolic (polynomial) equivalence prover
   metrics.py               instr_count / arith_ops / code_size / exec_time
   optimizations.py        the eight optimization passes + genome replay
   individual.py            candidate program representation
