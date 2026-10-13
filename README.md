@@ -487,8 +487,10 @@ kernels only.
   common subexpression elimination, global dead code elimination, constant
   folding (including branches on constant conditions) and unreachable-block
   removal, all driven by iterative data-flow analysis (`eco/cfg.py`). These
-  programs are **not** proved symbolically; they are only tested, and a
-  non-terminating loop is reported after a step limit instead of hanging. The
+  `if`/`else` (without loops) can be proved: at each join the arms become an
+  if-then-else term on the branch condition, and the outputs must match in form.
+  Programs with loops are only tested, and a non-terminating loop is reported
+  after a step limit instead of hanging. The
   written analysis, with the worked tables, is in
   [`docs/FLOW_ANALYSIS.md`](docs/FLOW_ANALYSIS.md) and in the Flow analysis tab.
 * The manual mode runs the chosen techniques once each, in the chosen order, and

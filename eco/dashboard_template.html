@@ -984,7 +984,7 @@ function cfgSvg(blocks){
   const W = 250, GX = 34, PAD = 14, LH = 15, HEAD = 26, GY = 56;
   const boxH = b => HEAD + Math.max(1, b.stmts.length) * LH + PAD;
   const layerW = l => l.length * W + (l.length - 1) * GX;
-  const totalW = Math.max(...layers.map(layerW)) + PAD * 2;
+  const totalW = Math.max(...layers.map(layerW)) + PAD * 2 + 92;
   const pos = {};
   let y = PAD;
   layers.forEach(l => {
@@ -1006,9 +1006,9 @@ function cfgSvg(blocks){
       d = `M${x1},${y1} C${x1},${(y1+y2)/2} ${x2},${(y1+y2)/2} ${x2},${y2}`;
       lx = (x1+x2)/2 + 6; ly = (y1+y2)/2;
     } else {
-      const x1 = p.x + p.w, y1 = p.y + p.h/2, x2 = t.x + t.w, y2 = t.y + t.h/2, bulge = Math.max(x1, x2) + 46;
+      const x1 = p.x, y1 = p.y + p.h/2, x2 = t.x, y2 = t.y + t.h/2, bulge = Math.min(x1, x2) - 46;
       d = `M${x1},${y1} C${bulge},${y1} ${bulge},${y2} ${x2},${y2}`;
-      lx = bulge - 4; ly = (y1+y2)/2;
+      lx = bulge + 4; ly = (y1+y2)/2;
     }
     const back = depth[e.to] <= depth[b.id];
     sv("path", Object.assign({d, fill:"none", stroke:col, "stroke-width":1.6, "marker-end":`url(#cfgArr${id})`}, back ? {"stroke-dasharray":"6 4"} : {}), edges);

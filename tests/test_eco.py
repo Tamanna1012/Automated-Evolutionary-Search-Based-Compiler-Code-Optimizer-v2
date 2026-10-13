@@ -1083,7 +1083,7 @@ def test_global_cse_reuses_a_value_computed_on_every_path():
     r = optimize_program(IF_SRC, 1, 9)
     cse = [e for e in r["log"] if e["technique"] == "Global Common Subexpression Elimination"]
     assert cse and cse[0]["optimized"] == "z = y"
-    assert r["flow"]["control_flow"] is True and r["verdict"]["level"] == "tested"
+    assert r["flow"]["control_flow"] is True and r["verdict"]["level"] == "proved"
 
 
 def test_global_constant_propagation_crosses_the_branch_merge():
@@ -1117,7 +1117,10 @@ def test_control_flow_programs_pass_the_compile_time_checks():
     for src in (IF_SRC, WHILE_SRC, NESTED_SRC):
         r = optimize_program(src, 0, 6)
         assert r["ok"] is True and r["behaviour_preserved"] is True
-        assert r["equivalence"]["control_flow"] is True and r["equivalence"]["proved"] is False
+        assert r["equivalence"]["control_flow"] is True
+    assert optimize_program(IF_SRC, 0, 6)["equivalence"]["proved"] is True
+    assert optimize_program(WHILE_SRC, 0, 6)["equivalence"]["proved"] is False
+    assert optimize_program(NESTED_SRC, 0, 6)["equivalence"]["proved"] is False
 
 
 def test_infinite_loop_is_reported_not_run_forever():
@@ -1157,3 +1160,17 @@ def test_local_optimizer_misses_what_the_global_passes_find():
     local_text = [st.text() for st in local_optimize(original)]
     assert "y = x + n" in local_text          # x is defined in another block, so local passes cannot see its value
     assert r["flow"]["local_count"] > r["summary"]["optimized_instructions"]
+
+
+def test_prover_proves_equal_branches_and_catches_swapped_arms():
+    a = _stmts("def f(a, b):\n    if a < b:\n        y = a + 1\n    else:\n        y = b + 1\n    return y\n")
+    same = _stmts("def g(a, b):\n    if a < b:\n        y = 1 + a\n    else:\n        y = 1 + b\n    return y\n")
+    swapped = _stmts("def h(a, b):\n    if a < b:\n        y = b + 1\n    else:\n        y = a + 1\n    return y\n")
+    assert prove_equivalent(a, same)["proved"] is True
+    assert prove_equivalent(a, swapped)["proved"] is False
+
+
+def test_prover_declines_loops_and_prints_inside_branches():
+    loop = _stmts("def f(n):\n    s = 0\n    while n > 0:\n        s = s + n\n        n = n - 1\n    return s\n")
+    r = prove_equivalent(loop, loop)
+    assert r["proved"] is False and r["control_flow"] is True and "loop" in r["reason"]
