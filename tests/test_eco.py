@@ -982,3 +982,32 @@ def test_verdict_reports_failure_with_first_mismatch():
     v = _verdict(checks, proved=True)
     assert v["level"] == "fail" and "{'a': 3}" in v["text"]
     assert _verdict(checks[:1], proved=False)["level"] == "tested"
+
+
+def test_manual_empty_pipeline_changes_nothing_and_is_marked_manual():
+    r = optimize_program(SAMPLES["Mixed example (all six techniques)"][2], 1, 20, passes=[])
+    assert r["mode"] == "manual" and r["no_optimization"] is True
+    assert r["comparison"]["custom_optimized_instructions"] == r["summary"]["original_instructions"]
+
+
+def test_manual_order_matters_and_every_order_stays_equivalent():
+    src = "def f(a, b):\n    k = 10\n    m = k + 5\n    c = m + 0\n    d = c * 1\n    return d + a\n"
+    forward = optimize_program(src, passes=["Constant Propagation", "Constant Folding", "Algebraic Simplification",
+                                            "Copy Propagation", "Dead Code Elimination"])
+    reverse = optimize_program(src, passes=["Dead Code Elimination", "Copy Propagation", "Algebraic Simplification",
+                                            "Constant Folding", "Constant Propagation"])
+    assert forward["ok"] and reverse["ok"]
+    assert forward["equivalence"]["proved"] and reverse["equivalence"]["proved"]
+    assert forward["summary"]["optimized_instructions"] <= reverse["summary"]["optimized_instructions"]
+
+
+def test_manual_comparison_reports_the_automatic_pipeline():
+    src = SAMPLES["Mixed example (all six techniques)"][2]
+    r = optimize_program(src, 1, 20, passes=["Dead Code Elimination"])
+    auto = optimize_program(src, 1, 20)
+    assert r["comparison"]["automatic_optimized_instructions"] == auto["summary"]["optimized_instructions"]
+    assert r["comparison"]["custom_optimized_instructions"] >= auto["summary"]["optimized_instructions"]
+
+
+def test_manual_rejects_unknown_optimization_names():
+    assert optimize_program("def f(a):\n    return a + 0\n", passes=["Loop Unrolling"])["ok"] is False
