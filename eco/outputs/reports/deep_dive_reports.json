@@ -15,7 +15,7 @@
       {
         "generation": 1,
         "best_cost": 0.38327888496092233,
-        "avg_cost": 0.8885381373754958
+        "avg_cost": 0.8885381373754957
       },
       {
         "generation": 5,
@@ -77,10 +77,10 @@
     },
     "improvement_pct_exec_time": 65.89147286821705,
     "runtime": {
-      "baseline_ns": 3686.6,
-      "best_ns": 869.8,
-      "measured_improvement_pct": 76.40644496283839,
-      "measured_speedup_x": 4.238445619682686,
+      "baseline_ns": 1482.94,
+      "best_ns": 411.957,
+      "measured_improvement_pct": 72.22025166223854,
+      "measured_speedup_x": 3.5997446335418504,
       "baseline_cycles": 129.0,
       "best_cycles": 44.0,
       "outputs_correct": true
@@ -104,27 +104,27 @@
       {
         "generation": 1,
         "best_cost": 0.43864875586874535,
-        "avg_cost": 0.9026077452165169
+        "avg_cost": 0.9026077452165171
       },
       {
         "generation": 5,
         "best_cost": 0.3561051651476254,
-        "avg_cost": 0.5516438779928208
+        "avg_cost": 0.5516438779928211
       },
       {
         "generation": 10,
         "best_cost": 0.3561051651476254,
-        "avg_cost": 0.475883860446153
+        "avg_cost": 0.47588386044615305
       },
       {
         "generation": 20,
         "best_cost": 0.3561051651476254,
-        "avg_cost": 0.45024872714021763
+        "avg_cost": 0.4502487271402177
       },
       {
         "generation": 50,
         "best_cost": 0.3561051651476254,
-        "avg_cost": 0.4365924721210411
+        "avg_cost": 0.43659247212104113
       }
     ],
     "pareto_front": [
@@ -166,10 +166,10 @@
     },
     "improvement_pct_exec_time": 61.855670103092784,
     "runtime": {
-      "baseline_ns": 2830.3,
-      "best_ns": 769.8,
-      "measured_improvement_pct": 72.80146980885418,
-      "measured_speedup_x": 3.6766692647440897,
+      "baseline_ns": 1201.603,
+      "best_ns": 353.774,
+      "measured_improvement_pct": 70.55816272096524,
+      "measured_speedup_x": 3.3965271614081307,
       "baseline_cycles": 97.0,
       "best_cycles": 37.0,
       "outputs_correct": true
@@ -193,7 +193,7 @@
       {
         "generation": 1,
         "best_cost": 1.0,
-        "avg_cost": 1.0130352270078298
+        "avg_cost": 1.013035227007829
       },
       {
         "generation": 5,
@@ -243,8 +243,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 820.3,
-      "best_ns": 820.3,
+      "baseline_ns": 487.137,
+      "best_ns": 487.137,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 73.0,
@@ -270,7 +270,7 @@
       {
         "generation": 1,
         "best_cost": 1.0,
-        "avg_cost": 1.0130352270078298
+        "avg_cost": 1.013035227007829
       },
       {
         "generation": 5,
@@ -320,8 +320,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 754.6,
-      "best_ns": 754.6,
+      "baseline_ns": 563.518,
+      "best_ns": 563.518,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 73.0,
@@ -347,7 +347,7 @@
       {
         "generation": 1,
         "best_cost": 0.6897814444926906,
-        "avg_cost": 0.9350680272108843
+        "avg_cost": 0.935068027210884
       },
       {
         "generation": 5,
@@ -357,17 +357,17 @@
       {
         "generation": 10,
         "best_cost": 0.5658995513098856,
-        "avg_cost": 0.5921734935108794
+        "avg_cost": 0.5921734935108791
       },
       {
         "generation": 20,
         "best_cost": 0.5658995513098856,
-        "avg_cost": 0.6012956530129782
+        "avg_cost": 0.6012956530129779
       },
       {
         "generation": 50,
         "best_cost": 0.5658995513098856,
-        "avg_cost": 0.6134098036377671
+        "avg_cost": 0.613409803637767
       }
     ],
     "pareto_front": [
@@ -409,10 +409,10 @@
     },
     "improvement_pct_exec_time": 48.97959183673469,
     "runtime": {
-      "baseline_ns": 1007.1,
-      "best_ns": 649.7,
-      "measured_improvement_pct": 35.48803495184192,
-      "measured_speedup_x": 1.5501000461751577,
+      "baseline_ns": 631.009,
+      "best_ns": 405.566,
+      "measured_improvement_pct": 35.72738265222842,
+      "measured_speedup_x": 1.555872533693653,
       "baseline_cycles": 98.0,
       "best_cycles": 50.0,
       "outputs_correct": true
@@ -436,22 +436,22 @@
       {
         "generation": 1,
         "best_cost": 0.6095609146295267,
-        "avg_cost": 0.8983684092845171
+        "avg_cost": 0.8983684092845172
       },
       {
         "generation": 5,
         "best_cost": 0.6095609146295267,
-        "avg_cost": 0.6553019768681664
+        "avg_cost": 0.655301976868166
       },
       {
         "generation": 10,
         "best_cost": 0.5822888929131734,
-        "avg_cost": 0.6586045644625701
+        "avg_cost": 0.65860456446257
       },
       {
         "generation": 20,
         "best_cost": 0.5822888929131734,
-        "avg_cost": 0.6383173891591934
+        "avg_cost": 0.6383173891591933
       },
       {
         "generation": 50,
@@ -498,10 +498,10 @@
     },
     "improvement_pct_exec_time": 40.298507462686565,
     "runtime": {
-      "baseline_ns": 1149.9,
-      "best_ns": 649.9,
-      "measured_improvement_pct": 43.48204191668842,
-      "measured_speedup_x": 1.7693491306354825,
+      "baseline_ns": 502.827,
+      "best_ns": 337.121,
+      "measured_improvement_pct": 32.95487314722559,
+      "measured_speedup_x": 1.491532713773393,
       "baseline_cycles": 67.0,
       "best_cycles": 40.0,
       "outputs_correct": true
@@ -525,7 +525,7 @@
       {
         "generation": 1,
         "best_cost": 0.5137281450771902,
-        "avg_cost": 0.9226931980385861
+        "avg_cost": 0.9226931980385863
       },
       {
         "generation": 5,
@@ -535,17 +535,17 @@
       {
         "generation": 10,
         "best_cost": 0.41779309678537635,
-        "avg_cost": 0.527912166392459
+        "avg_cost": 0.5279121663924591
       },
       {
         "generation": 20,
         "best_cost": 0.41779309678537635,
-        "avg_cost": 0.5031267019584776
+        "avg_cost": 0.5031267019584778
       },
       {
         "generation": 50,
         "best_cost": 0.41779309678537635,
-        "avg_cost": 0.4904521846161424
+        "avg_cost": 0.4904521846161425
       }
     ],
     "pareto_front": [
@@ -587,10 +587,10 @@
     },
     "improvement_pct_exec_time": 56.52173913043478,
     "runtime": {
-      "baseline_ns": 2035.8,
-      "best_ns": 696.8,
-      "measured_improvement_pct": 65.77266922094509,
-      "measured_speedup_x": 2.921641791044776,
+      "baseline_ns": 1320.269,
+      "best_ns": 437.94,
+      "measured_improvement_pct": 66.82948702120552,
+      "measured_speedup_x": 3.014725761519843,
       "baseline_cycles": 69.0,
       "best_cycles": 30.0,
       "outputs_correct": true
@@ -614,7 +614,7 @@
       {
         "generation": 1,
         "best_cost": 0.5137281450771902,
-        "avg_cost": 0.9226931980385861
+        "avg_cost": 0.9226931980385863
       },
       {
         "generation": 5,
@@ -624,17 +624,17 @@
       {
         "generation": 10,
         "best_cost": 0.41779309678537635,
-        "avg_cost": 0.527912166392459
+        "avg_cost": 0.5279121663924591
       },
       {
         "generation": 20,
         "best_cost": 0.41779309678537635,
-        "avg_cost": 0.5031267019584776
+        "avg_cost": 0.5031267019584778
       },
       {
         "generation": 50,
         "best_cost": 0.41779309678537635,
-        "avg_cost": 0.4904521846161424
+        "avg_cost": 0.4904521846161425
       }
     ],
     "pareto_front": [
@@ -676,10 +676,10 @@
     },
     "improvement_pct_exec_time": 56.52173913043478,
     "runtime": {
-      "baseline_ns": 2222.0,
-      "best_ns": 742.1,
-      "measured_improvement_pct": 66.6021602160216,
-      "measured_speedup_x": 2.994205632664061,
+      "baseline_ns": 901.945,
+      "best_ns": 307.776,
+      "measured_improvement_pct": 65.87641153285401,
+      "measured_speedup_x": 2.9305241474318984,
       "baseline_cycles": 69.0,
       "best_cycles": 30.0,
       "outputs_correct": true
@@ -703,7 +703,7 @@
       {
         "generation": 1,
         "best_cost": 1.0,
-        "avg_cost": 1.036081154113941
+        "avg_cost": 1.0360811541139407
       },
       {
         "generation": 5,
@@ -770,8 +770,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 700.1,
-      "best_ns": 700.1,
+      "baseline_ns": 499.13,
+      "best_ns": 499.13,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 61.0,
@@ -797,7 +797,7 @@
       {
         "generation": 1,
         "best_cost": 1.0,
-        "avg_cost": 1.036081154113941
+        "avg_cost": 1.0360811541139407
       },
       {
         "generation": 5,
@@ -864,8 +864,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 672.6,
-      "best_ns": 672.6,
+      "baseline_ns": 344.487,
+      "best_ns": 344.487,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 61.0,
@@ -891,7 +891,7 @@
       {
         "generation": 1,
         "best_cost": 1.0,
-        "avg_cost": 1.036081154113941
+        "avg_cost": 1.0360811541139407
       },
       {
         "generation": 5,
@@ -958,8 +958,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 741.0,
-      "best_ns": 741.0,
+      "baseline_ns": 351.065,
+      "best_ns": 351.065,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 61.0,
@@ -990,22 +990,22 @@
       {
         "generation": 5,
         "best_cost": 0.6203676896352056,
-        "avg_cost": 0.6634390079135302
+        "avg_cost": 0.6634390079135304
       },
       {
         "generation": 10,
         "best_cost": 0.5865711252653928,
-        "avg_cost": 0.6673433378369684
+        "avg_cost": 0.6673433378369685
       },
       {
         "generation": 20,
         "best_cost": 0.5865711252653928,
-        "avg_cost": 0.6422968538892105
+        "avg_cost": 0.6422968538892104
       },
       {
         "generation": 50,
         "best_cost": 0.5865711252653928,
-        "avg_cost": 0.6540870488322718
+        "avg_cost": 0.6540870488322715
       }
     ],
     "pareto_front": [
@@ -1047,10 +1047,10 @@
     },
     "improvement_pct_exec_time": 40.0,
     "runtime": {
-      "baseline_ns": 998.4,
-      "best_ns": 546.4,
-      "measured_improvement_pct": 45.2724358974359,
-      "measured_speedup_x": 1.8272327964860908,
+      "baseline_ns": 442.379,
+      "best_ns": 263.561,
+      "measured_improvement_pct": 40.42190067792549,
+      "measured_speedup_x": 1.6784691210004516,
       "baseline_cycles": 55.0,
       "best_cycles": 33.0,
       "outputs_correct": true
@@ -1079,22 +1079,22 @@
       {
         "generation": 5,
         "best_cost": 0.6203676896352056,
-        "avg_cost": 0.6634390079135302
+        "avg_cost": 0.6634390079135304
       },
       {
         "generation": 10,
         "best_cost": 0.5865711252653928,
-        "avg_cost": 0.6673433378369684
+        "avg_cost": 0.6673433378369685
       },
       {
         "generation": 20,
         "best_cost": 0.5865711252653928,
-        "avg_cost": 0.6422968538892105
+        "avg_cost": 0.6422968538892104
       },
       {
         "generation": 50,
         "best_cost": 0.5865711252653928,
-        "avg_cost": 0.6540870488322718
+        "avg_cost": 0.6540870488322715
       }
     ],
     "pareto_front": [
@@ -1136,10 +1136,10 @@
     },
     "improvement_pct_exec_time": 40.0,
     "runtime": {
-      "baseline_ns": 1049.7,
-      "best_ns": 621.0,
-      "measured_improvement_pct": 40.84024006859103,
-      "measured_speedup_x": 1.6903381642512079,
+      "baseline_ns": 431.436,
+      "best_ns": 265.32,
+      "measured_improvement_pct": 38.5030456429227,
+      "measured_speedup_x": 1.626096788783356,
       "baseline_cycles": 55.0,
       "best_cycles": 33.0,
       "outputs_correct": true
@@ -1213,8 +1213,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 560.9,
-      "best_ns": 560.9,
+      "baseline_ns": 277.245,
+      "best_ns": 277.245,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 48.0,
@@ -1290,8 +1290,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 574.1,
-      "best_ns": 574.1,
+      "baseline_ns": 264.899,
+      "best_ns": 264.899,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1367,8 +1367,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 549.0,
-      "best_ns": 549.0,
+      "baseline_ns": 291.858,
+      "best_ns": 291.858,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1444,8 +1444,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 579.9,
-      "best_ns": 579.9,
+      "baseline_ns": 394.936,
+      "best_ns": 394.936,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1521,8 +1521,8 @@
     },
     "improvement_pct_exec_time": 0.0,
     "runtime": {
-      "baseline_ns": 545.8,
-      "best_ns": 545.8,
+      "baseline_ns": 254.315,
+      "best_ns": 254.315,
       "measured_improvement_pct": 0.0,
       "measured_speedup_x": 1.0,
       "baseline_cycles": 56.0,
@@ -1548,7 +1548,7 @@
       {
         "generation": 1,
         "best_cost": 0.8639455782312925,
-        "avg_cost": 0.945578231292517
+        "avg_cost": 0.9455782312925171
       },
       {
         "generation": 5,
@@ -1558,7 +1558,7 @@
       {
         "generation": 10,
         "best_cost": 0.708843537414966,
-        "avg_cost": 0.770249433106576
+        "avg_cost": 0.7702494331065757
       },
       {
         "generation": 20,
@@ -1568,7 +1568,7 @@
       {
         "generation": 50,
         "best_cost": 0.708843537414966,
-        "avg_cost": 0.7495691609977324
+        "avg_cost": 0.7495691609977321
       }
     ],
     "pareto_front": [
@@ -1610,10 +1610,10 @@
     },
     "improvement_pct_exec_time": 19.047619047619047,
     "runtime": {
-      "baseline_ns": 465.0,
-      "best_ns": 343.6,
-      "measured_improvement_pct": 26.107526881720425,
-      "measured_speedup_x": 1.3533178114086146,
+      "baseline_ns": 242.388,
+      "best_ns": 177.606,
+      "measured_improvement_pct": 26.72657062230804,
+      "measured_speedup_x": 1.3647511908381473,
       "baseline_cycles": 42.0,
       "best_cycles": 34.0,
       "outputs_correct": true
@@ -1642,12 +1642,12 @@
       {
         "generation": 5,
         "best_cost": 0.7860119047619047,
-        "avg_cost": 0.8075496031746032
+        "avg_cost": 0.807549603174603
       },
       {
         "generation": 10,
         "best_cost": 0.75,
-        "avg_cost": 0.8110119047619048
+        "avg_cost": 0.8110119047619049
       },
       {
         "generation": 20,
@@ -1657,7 +1657,7 @@
       {
         "generation": 50,
         "best_cost": 0.75,
-        "avg_cost": 0.7905357142857142
+        "avg_cost": 0.7905357142857141
       }
     ],
     "pareto_front": [
@@ -1699,10 +1699,10 @@
     },
     "improvement_pct_exec_time": 25.0,
     "runtime": {
-      "baseline_ns": 566.6,
-      "best_ns": 479.5,
-      "measured_improvement_pct": 15.372396752559128,
-      "measured_speedup_x": 1.1816475495307612,
+      "baseline_ns": 269.235,
+      "best_ns": 215.617,
+      "measured_improvement_pct": 19.914944193734105,
+      "measured_speedup_x": 1.2486724145127706,
       "baseline_cycles": 56.0,
       "best_cycles": 42.0,
       "outputs_correct": true

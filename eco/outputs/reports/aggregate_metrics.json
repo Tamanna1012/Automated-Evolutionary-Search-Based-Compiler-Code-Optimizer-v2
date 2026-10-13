@@ -1,27 +1,27 @@
 {
-  "avg_measured_improvement_pct": 12.355898754914875,
-  "avg_measured_speedup_x": 1.2037449689033715,
-  "total_time_speedup_x": 1.2153569838662637,
+  "avg_measured_improvement_pct": 10.791659262644005,
+  "avg_measured_speedup_x": 1.1771567311060203,
+  "total_time_speedup_x": 1.1749550851712474,
   "measured_outputs_correct_pct": 100.0,
-  "programs_measurably_faster_pct": 61.0,
+  "programs_measurably_faster_pct": 58.666666666666664,
   "correlation": {
-    "pooled_pearson": 0.6464671434094691,
-    "pooled_spearman": 0.6130025089520187,
+    "pooled_pearson": 0.6347957219756812,
+    "pooled_spearman": 0.6211376101346083,
     "pooled_n": 600,
-    "improvement_pearson": 0.897011905534304,
-    "improvement_spearman": 0.9234298869745518,
+    "improvement_pearson": 0.7891989655215929,
+    "improvement_spearman": 0.8087233312297205,
     "improvement_n": 300,
-    "within_program_mean_spearman": 0.5267020714635454,
+    "within_program_mean_spearman": 0.4551191529014854,
     "within_program_n_programs": 184
   },
   "improvement_by_spelling": {
     "naive": {
       "programs": 67,
-      "avg_improvement_pct": 29.476949954093442
+      "avg_improvement_pct": 29.47694995409344
     },
     "plain": {
       "programs": 209,
-      "avg_improvement_pct": 12.520531115191252
+      "avg_improvement_pct": 12.52053111519125
     },
     "tidy": {
       "programs": 24,

@@ -12,12 +12,12 @@
 - tidy: 24 programs, avg 3.3%
 
 ## Real measured runtime (validation; Python backend, min over timed rounds)
-- Avg. measured improvement (original vs best): 12.4%  (simulated: 15.6%)
-- Avg. measured speedup: 1.20x per program; 1.22x on total time
-- Programs measurably faster (> 2%): 61.0%
+- Avg. measured improvement (original vs best): 10.8%  (simulated: 15.6%)
+- Avg. measured speedup: 1.18x per program; 1.17x on total time
+- Programs measurably faster (> 2%): 58.7%
 - Optimized code still gives the expected outputs when really run: 100.0%
 
 ## How well do simulated cycles predict real time?
-- Pooled over 600 measured programs (original + best of each): Pearson r = 0.65, Spearman rho = 0.61 (inflated by program size)
-- Simulated vs measured *improvement %* across 300 programs: Pearson r = 0.90, Spearman rho = 0.92
-- Within one program (ranking its final-population variants), mean Spearman rho = 0.53 over 184 programs
+- Pooled over 600 measured programs (original + best of each): Pearson r = 0.63, Spearman rho = 0.62 (inflated by program size)
+- Simulated vs measured *improvement %* across 300 programs: Pearson r = 0.79, Spearman rho = 0.81
+- Within one program (ranking its final-population variants), mean Spearman rho = 0.46 over 184 programs
