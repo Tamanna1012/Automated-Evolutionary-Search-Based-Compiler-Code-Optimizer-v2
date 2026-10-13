@@ -479,7 +479,7 @@ kernels only.
   (`tests/test_eco.py` checks this on a deliberately wrong rewrite).
 * **Tested (compile-time, secondary)** for every program: the original and the
   optimized code run on five random inputs plus boundary inputs (0, 1, a large
-  value, and -1 where the program has no `//`). The verdict says which of the two
+  value, and -1; for programs with `//`, negative inputs are compared with the original generated code, not Python, which floors). The verdict says which of the two
   it is: `Equivalent: proved symbolically and passed N/N` or
   `Equivalent on N/N compile-time tests; not proved symbolically`.
 * Every change in the log lists its **rule** (for example `x + 0 = x`) and the
