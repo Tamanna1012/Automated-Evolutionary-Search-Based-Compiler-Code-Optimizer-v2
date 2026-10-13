@@ -656,6 +656,7 @@ function loadEngine(setStatus){
 const STAGES = [
   {key:"source", label:"Source Code", lang:"py"},
   {key:"intermediate", label:"Intermediate Code", lang:"tac"},
+  {key:"cfg", label:"Control-Flow Graph", lang:"tac"},
   {key:"three", label:"3-Address Code", lang:"tac"},
   {key:"opt", label:"Code Optimization", lang:"log"},
   {key:"optimized", label:"Optimized 3-Address Code", lang:"tac"},
@@ -742,7 +743,12 @@ function codeOpt(){
     const head = h("div",{class:"row stagehead"}, h("h2",{style:"margin:0"}, s.label));
     let body;
     if (!current) body = h("div",{class:"emptystate"}, "There is no compiled program to show. Fix the problem above and press Optimize.");
-    else {
+    else if (stage === "cfg") {
+      body = current.flow && current.flow.control_flow
+        ? h("div",{}, h("p",{class:"hint"}, "Blocks are boxes, edges are arrows. The dashed line marks a back edge (a loop). Solid boxes are reachable from the entry."),
+            cfgSvg(current.flow.original.blocks))
+        : h("div",{class:"emptystate"}, "This program has no branches or loops, so its control-flow graph is a single block.");
+    } else {
       const lines = stageContent(current, stage);
       body = lines.length ? codeView(lines, s.lang) : h("div",{class:"emptystate"}, "This stage produced no code.");
     }
@@ -1004,7 +1010,8 @@ function cfgSvg(blocks){
       d = `M${x1},${y1} C${bulge},${y1} ${bulge},${y2} ${x2},${y2}`;
       lx = bulge - 4; ly = (y1+y2)/2;
     }
-    sv("path", {d, fill:"none", stroke:col, "stroke-width":1.6, "marker-end":`url(#cfgArr${id})`}, edges);
+    const back = depth[e.to] <= depth[b.id];
+    sv("path", Object.assign({d, fill:"none", stroke:col, "stroke-width":1.6, "marker-end":`url(#cfgArr${id})`}, back ? {"stroke-dasharray":"6 4"} : {}), edges);
     if (e.kind) sv("text", {x:lx, y:ly, fill:col, "font-weight":700}, edges).textContent = e.kind;
   }));
   blocks.forEach(b => {
@@ -1031,6 +1038,15 @@ function flowTable(blocks){
       h("td",{}, `B${b.id}`), cell(b.reaching_in), cell(b.reaching_out), cell(b.live_in), cell(b.live_out), cell(b.avail_in), cell(b.avail_out))))));
 }
 
+function loopsCard(f){
+  const rows = f.original.blocks.map(b => h("tr",{}, h("td",{}, `B${b.id}`), h("td",{class:"mono"}, b.dominators.map(d => `B${d}`).join(", "))));
+  const loops = f.original.loops.length
+    ? f.original.loops.map(l => h("div",{}, `Loop: header B${l.header}, back edge from B${l.back_edge}, body ${l.body.map(x => "B" + x).join(", ")}`))
+    : h("div",{class:"muted"}, "No loops: every back edge is absent.");
+  return optCard("Dominators and loops (original program)",
+    "A block dominates another when every path from the entry to that block passes through it. A back edge goes to a dominator, and that makes a loop.",
+    loops, optTable(["Block","Dominated by"], rows));
+}
 function flowPanel(res, title){
   const f = res.flow;
   if (!f || !f.control_flow) return optCard(title, null, h("div",{class:"emptystate"},
@@ -1048,6 +1064,7 @@ function flowPanel(res, title){
     optCard("Per-block IN and OUT sets (original program)",
       "Values at the fixed point of each analysis. Reaching definitions and liveness are union; available expressions are intersection.",
       flowTable(f.original.blocks)),
+    loopsCard(f),
     optCard("Local versus global", "The same program optimized two ways.", counts));
 }
 function setFlowLive(res){

@@ -414,6 +414,48 @@ def execute(stmts, inputs, max_steps: int = MAX_STEPS) -> List[int]:
     return out
 
 
+def dominators(blocks: List[Block]) -> Dict[int, List[int]]:
+    """Dominator sets of the reachable blocks: b is in dom[n] when every path from the entry to n passes b."""
+    reach = reachable(blocks)
+    preds = _preds(blocks)
+    ids = sorted(reach)
+    dom = {b: set(ids) for b in ids}
+    dom[0] = {0}
+    changed = True
+    while changed:
+        changed = False
+        for b in ids[1:]:
+            ps = [p for p in preds[b] if p in reach]
+            new = (set.intersection(*[dom[p] for p in ps]) if ps else set(ids)) | {b}
+            if new != dom[b]:
+                dom[b] = new
+                changed = True
+    return {b: sorted(dom[b]) for b in ids}
+
+
+def natural_loops(blocks: List[Block]) -> List[dict]:
+    """Each back edge t -> h (h dominates t) gives a loop: h plus every block that reaches t without passing h."""
+    reach = reachable(blocks)
+    preds = _preds(blocks)
+    dom = dominators(blocks)
+    loops = []
+    for t in blocks:
+        if t.id not in reach:
+            continue
+        for h, _ in t.succ:
+            if h not in dom.get(t.id, []):
+                continue
+            body, stack = {h}, [t.id]
+            while stack:
+                n = stack.pop()
+                if n in body:
+                    continue
+                body.add(n)
+                stack.extend(p for p in preds[n] if p in reach)
+            loops.append({"header": h, "back_edge": t.id, "body": sorted(body)})
+    return loops
+
+
 def flow_report(stmts) -> dict:
     """Blocks with their statements, edges, and IN/OUT sets for every analysis."""
     blocks = build_cfg(stmts)
@@ -443,4 +485,7 @@ def flow_report(stmts) -> dict:
             "avail_in": sorted(f"{key_text(k)} in {v}" for k, v in ain[b.id]),
             "avail_out": sorted(f"{key_text(k)} in {v}" for k, v in aout[b.id]),
         })
-    return {"blocks": rows, "control_flow": has_control(stmts)}
+    dom = dominators(blocks)
+    for row in rows:
+        row["dominators"] = dom.get(row["id"], [])
+    return {"blocks": rows, "control_flow": has_control(stmts), "loops": natural_loops(blocks)}
