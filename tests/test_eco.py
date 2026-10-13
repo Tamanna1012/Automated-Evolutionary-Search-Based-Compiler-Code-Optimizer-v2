@@ -1044,7 +1044,6 @@ def test_control_flow_compiles_and_matches_python_on_every_input(src, names):
 @pytest.mark.parametrize("src", [
     "def f(a, b):\n    if a < b and b < 3:\n        return a\n    return b\n",
     "def f(a):\n    while a > 0:\n        return a\n    return a\n",
-    "def f(a):\n    if a:\n        b = 1\n    return a\n",
     "def f(a):\n    if a < 2:\n        return a\n    return 0\n",
     "def f(a):\n    while a < 2:\n        a = a + 1\n    else:\n        a = 0\n    return a\n",
 ])
@@ -1174,3 +1173,24 @@ def test_prover_declines_loops_and_prints_inside_branches():
     loop = _stmts("def f(n):\n    s = 0\n    while n > 0:\n        s = s + n\n        n = n - 1\n    return s\n")
     r = prove_equivalent(loop, loop)
     assert r["proved"] is False and r["control_flow"] is True and "loop" in r["reason"]
+
+
+BOOL_SRC = ("def f(a, b, c):\n    if a < b and not c == 0 or b > 6:\n        r = a + b\n    else:\n"
+            "        r = a - b\n    if c:\n        r = r + 1\n    return r\n")
+CALL_SRC = ("def sq(x):\n    t = x * x\n    return t + 1\n\n"
+            "def g(a, b):\n    u = sq(a) + sq(b)\n    if sq(a) < u:\n        v = sq(u)\n    else:\n        v = 0\n    return v, u\n")
+
+
+@pytest.mark.parametrize("src,names", [(BOOL_SRC, ["a", "b", "c"]), (CALL_SRC, ["a", "b"])])
+def test_boolean_conditions_and_helper_calls_match_python(src, names):
+    compiled = compile_function(src)
+    stmts = from_tac(compiled.tac)
+    for inputs in _grid(names, 0, 5):
+        assert execute(stmts, inputs) == _run_source(src, compiled.name, inputs)
+    r = optimize_program(src, 0, 5)
+    assert r["ok"] is True and r["behaviour_preserved"] is True
+
+
+def test_recursive_helper_is_rejected_with_a_reason():
+    with pytest.raises(_Unsupported, match="recursive"):
+        compile_function("def f(x):\n    return f(x)\n\ndef g(a):\n    return f(a)\n")

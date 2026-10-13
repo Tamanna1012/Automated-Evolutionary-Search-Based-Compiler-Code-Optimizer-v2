@@ -111,7 +111,8 @@ The dashboard shows both counts side by side, so the difference is visible for a
 
 ## 5. Limits and correctness
 
-- **Not handled**: function calls, arrays, pointers and aliasing (two names for one value), `return` inside a loop or branch, loops that a symbolic proof would need to unroll, and `and`/`or` in conditions. Each of these is rejected with a message rather than mis-compiled.
+- **Supported now**: `and`, `or` and `not` in conditions, and calls to helper functions defined earlier in the same source (inlined at each call; recursion is rejected).
+- **Not handled**: arrays, pointers and aliasing (two names for one value), `return` inside a loop or branch, and loops whose symbolic proof is not available. Each of these is rejected with a message or reported as not proved, never mis-compiled.
 - **Symbolic proof**: covers straight-line code and `if`/`else` without loops. At a join point a variable whose two arms differ becomes an if-then-else term on the branch condition, and two programs are proved equal only when their output forms are identical. The method is sound but incomplete: an optimization that changes which branches exist (for example a folded condition) can end in *not proved* even when the program is correct. Programs with a loop, or with a print inside a branch, are reported as *not proved symbolically*. Every program is also checked by running the original and optimized code on test inputs (the compile-time check), so a failure is always reported as NOT equivalent with the first mismatching input.
 - **Loops and termination**: the interpreter stops a run after a fixed number of steps and reports that the program did not finish. A loop whose trip count depends on the input is therefore tested on each input, not proved.
 - **Integer division**: Python's `//` floors and the generated code truncates toward zero, so they disagree for negative operands. Negative boundary inputs are skipped for programs that divide.

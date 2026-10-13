@@ -385,8 +385,10 @@ names, integer literals, `+ - * //`, unary minus, and `return` of one or more
 values (each becomes an `output`). The Code Optimization tab also accepts
 `if`/`else` and `while` whose condition is a single comparison
 (`< <= > >= == !=`); see "Code Optimization tab" below. Anything else (true
-division, `**`, `%`, floats, `and`/`or`, `return` inside a branch or loop,
-undefined names) raises `UnsupportedSyntax` with a reason.
+division, `**`, `%`, floats, `return` inside a branch or loop, recursion,
+arrays, undefined names) raises `UnsupportedSyntax` with a reason. `and`, `or`,
+`not` and calls to helper functions defined earlier in the same source are
+supported.
 `//` maps to the TAC `/`. Code generation is naive on purpose: no expression
 value is ever reused, so source-level redundancy survives for the optimizer;
 like any real compiler it pools literals (one `const` per distinct value) and
@@ -504,7 +506,7 @@ kernels only.
   loop/inlining/vectorization trade-offs exist in the GA part.
 * The Code Optimization tab has no dominator computation: loops are found from
   back edges, which is enough for the data-flow analyses used here. Aliasing,
-  function calls, arrays and loops whose trip count a symbolic proof would need
+  arrays and loops whose trip count a symbolic proof would need
   are not handled.
 * **GA fitness uses a cycle model.** Real time is measured only afterwards, as
   validation, and only through a Python backend (no C/native code); the model
