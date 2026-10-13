@@ -815,8 +815,8 @@ function renderOpt(r){
     const keep = view ? new Set(view.sno) : null;
     const rows = r.log.filter(e => !keep || keep.has(e.sno));
     logSlot.replaceChildren(r.no_optimization ? h("div",{class:"empty"}, h("b",{},"No optimizations detected"))
-      : rows.length ? optTable(["S.No","Optimization","Original","Optimized","Reason"],
-          rows.map(e => h("tr",{}, h("td",{},e.sno), h("td",{},e.technique), h("td",{class:"mono"},e.original), h("td",{class:"mono"},e.optimized), h("td",{},e.reason))))
+      : rows.length ? optTable(["S.No","Optimization","Original","Optimized","Reason","Rule","Precondition checked"],
+          rows.map(e => h("tr",{}, h("td",{},e.sno), h("td",{},e.technique), h("td",{class:"mono"},e.original), h("td",{class:"mono"},e.optimized), h("td",{},e.reason), h("td",{class:"mono"},e.rule), h("td",{},e.precondition))))
       : h("div",{class:"emptystate"}, "No changes from the selected techniques."));
   }
   const summary = optCard("Optimization Summary", null,
@@ -847,6 +847,28 @@ function renderOpt(r){
       h("tbody",{}, r.per_technique.map(t => h("tr",{},
         h("td",{}, t.technique), h("td",{}, t.changes), h("td",{}, t.instructions_removed), h("td",{}, t.cycles_saved)))))));
 
+  const eq = r.equivalence, cc = r.compile_check, vd = r.verdict;
+  const vcol = {proved:"var(--good)", tested:"var(--warn)", fail:"var(--bad)", unverified:"var(--muted)"}[vd.level] || "var(--muted)";
+  const provedBadge = ok => h("span",{class:"badge " + (ok ? "b-good" : "b-bad")}, ok ? "PROVED" : "NOT PROVED");
+  const inputsText = o => Object.entries(o).map(([k,v]) => `${k}=${v}`).join(", ");
+  const equivalenceCard = optCard("Equivalence",
+    "The symbolic proof is the main evidence. The compile-time tests are a secondary check, labelled as such.",
+    h("p",{role: vd.level === "fail" ? "alert" : "status", style:`font-weight:700;color:${vcol};margin:0 0 12px`}, vd.text),
+    h("h3",{style:"margin:6px 0 2px;font-size:13px"}, "a) Symbolic equivalence (primary, static)"),
+    h("p",{class:"hint"}, "Each printed value is written as a polynomial in the inputs. A division is an opaque atom, so two programs are PROVED equal only when every output has the identical form."),
+    eq.same_output_count ? null : h("div",{class:"errbox"}, "The two programs print a different number of values, so no proof is possible."),
+    optTable(["Output","Original form","Optimized form","Result"],
+      eq.outputs.map(o => h("tr",{}, h("td",{}, o.index), h("td",{class:"mono"}, o.original), h("td",{class:"mono"}, o.optimized), h("td",{}, provedBadge(o.match))))),
+    h("h3",{style:"margin:14px 0 2px;font-size:13px"}, "b) Rewrite justification"),
+    h("p",{class:"hint"}, "Every change in the Optimization Analysis below lists the algebraic rule that guarantees it and the precondition that was checked."),
+    h("h3",{style:"margin:14px 0 2px;font-size:13px"}, "c) Compile-time function testing (secondary)"),
+    h("p",{class:"hint"}, `One-time compile-time validation; the optimized program itself is never slowed down by this. The check took ${fmt(cc.ms, 2)} ms once, and the optimization saves ${fmt(cc.saved_cycles_per_call, 1)} simulated cycles on every call.`),
+    h("p",{class:"hint"}, "Boundary inputs are 0, 1, a large value and -1. -1 is skipped for programs that use //, because Python floors while the generated code truncates."),
+    optTable(["Input","Original output","Optimized output","Match"],
+      r.checks.map(c => h("tr",{}, h("td",{class:"mono"}, inputsText(c.inputs) + (c.kind === "boundary" ? "  (boundary)" : "")),
+        h("td",{class:"mono"}, c.original.join(", ")), h("td",{class:"mono"}, c.optimized.join(", ")),
+        h("td",{}, c.match ? h("span",{class:"pass"}, "match") : h("span",{class:"fail"}, "MISMATCH"))))));
+
   const original = optCard("Original 3-Address Code", null, optTable(["S.No","Operation","Arg1","Arg2"], codeRows(r.original)));
 
   const analysis = optCard("Optimization Analysis", "Each change the optimizer made, in order, and why. Only optimizations that were actually applied are listed.",
@@ -860,7 +882,7 @@ function renderOpt(r){
       h("td",{},x.sno), h("td",{class:"mono"},x.op), h("td",{class:"mono"},x.arg1), h("td",{class:"mono"},x.arg2), h("td",{class:"mono"},x.result)))));
 
   paint(); syncTags();
-  return h("div",{}, summary, results, original, analysis, optimized, quads);
+  return h("div",{}, summary, results, equivalenceCard, original, analysis, optimized, quads);
 }
 
 // ------------------------------------------------------------------ boot

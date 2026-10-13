@@ -681,7 +681,7 @@ from eco.dashboard import LIVE_FILES, live_sources
 def test_live_modules_are_self_contained_for_the_browser():
     """Everything shipped to Pyodide may import only the standard library and each other."""
     import ast as _ast
-    allowed_std = {"__future__", "json", "random", "math", "dataclasses", "typing", "ast"}
+    allowed_std = {"__future__", "json", "random", "math", "dataclasses", "typing", "ast", "time"}
     shipped = set(LIVE_FILES)
     src = live_sources()
     assert set(src) == {n + ".py" for n in LIVE_FILES}
@@ -905,3 +905,80 @@ def test_selection_views_cover_all_subsets_and_union_is_additive():
     assert pair["combined"]["removed"] == single["Constant Propagation"]["removed"] + single["Dead Code Elimination"]["removed"]
     assert pair["combined"]["changes"] == single["Constant Propagation"]["changes"] + single["Dead Code Elimination"]["changes"]
     assert len(pair["sno"]) == pair["combined"]["changes"]
+
+
+from eco.equivalence import prove_equivalent
+from eco.frontend import compile_function
+
+
+def _stmts(src):
+    return from_tac(compile_function(src).tac)
+
+
+def test_prover_proves_known_equal_programs():
+    a = _stmts("def f(a, b):\n    x = a + b\n    return x * 2\n")
+    b = _stmts("def g(a, b):\n    return a * 2 + b * 2\n")
+    assert prove_equivalent(a, b)["proved"] is True
+
+
+def test_prover_rejects_known_different_programs():
+    a = _stmts("def f(a, b):\n    return a + b\n")
+    b = _stmts("def g(a, b):\n    return a - b\n")
+    assert prove_equivalent(a, b)["proved"] is False
+
+
+def test_prover_catches_a_deliberately_wrong_rewrite():
+    original = _stmts("def f(a, b):\n    t1 = a * b\n    t2 = a * b\n    return t1 + t2\n")
+    good, _, _ = optimize_stmts(original)
+    assert prove_equivalent(original, good)["proved"] is True
+    wrong = [s.copy_with(op="-") if s.op == "+" else s for s in good]
+    result = prove_equivalent(original, wrong)
+    assert result["proved"] is False
+    assert any(not row["match"] for row in result["outputs"])
+
+
+def test_prover_treats_division_as_opaque_but_folds_exact_constants():
+    assert prove_equivalent(_stmts("def f(a, b):\n    return a // b\n"),
+                            _stmts("def g(a, b):\n    return a // b\n"))["proved"] is True
+    assert prove_equivalent(_stmts("def f(a, b):\n    return a // b\n"),
+                            _stmts("def g(a, b):\n    return b // a\n"))["proved"] is False
+    assert prove_equivalent(_stmts("def f(a):\n    return 10 // 5 + a\n"),
+                            _stmts("def g(a):\n    return 2 + a\n"))["proved"] is True
+    assert prove_equivalent(_stmts("def f(a):\n    return a // 1\n"),
+                            _stmts("def g(a):\n    return a\n"))["proved"] is True
+
+
+def test_optimized_mixed_sample_is_proved_equivalent():
+    r = optimize_program(SAMPLES["Mixed example (all six techniques)"][2], 1, 20)
+    assert r["equivalence"]["proved"] is True
+    assert r["verdict"]["level"] == "proved"
+
+
+def test_every_log_event_has_a_rule_and_a_checked_precondition():
+    r = optimize_program(SAMPLES["Mixed example (all six techniques)"][2], 1, 20)
+    assert r["log"]
+    assert all(e["rule"] and e["precondition"] for e in r["log"])
+
+
+def test_compile_time_check_includes_boundary_inputs_and_timing():
+    r = optimize_program("def f(a, b):\n    return a * b + 0\n")
+    kinds = {c["kind"] for c in r["checks"]}
+    assert {"random", "boundary"} <= kinds
+    assert r["compile_check"]["total"] == len(r["checks"])
+    assert r["compile_check"]["ms"] >= 0
+    assert r["verdict"]["level"] == "proved"
+
+
+def test_division_programs_skip_negative_boundaries_and_stay_ok():
+    r = optimize_program("def f(a, b):\n    return a // b\n")
+    assert r["ok"] is True
+    assert all(min(c["inputs"].values()) >= 0 for c in r["checks"])
+
+
+def test_verdict_reports_failure_with_first_mismatch():
+    from eco.code_optimizer import _verdict
+    checks = [{"inputs": {"a": 1}, "original": [2], "optimized": [2], "match": True},
+              {"inputs": {"a": 3}, "original": [6], "optimized": [5], "match": False}]
+    v = _verdict(checks, proved=True)
+    assert v["level"] == "fail" and "{'a': 3}" in v["text"]
+    assert _verdict(checks[:1], proved=False)["level"] == "tested"
