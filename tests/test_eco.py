@@ -1223,3 +1223,9 @@ def test_constant_index_arrays_match_python():
 def test_unsupported_array_uses_are_rejected(src):
     with pytest.raises(_Unsupported):
         compile_function(src)
+
+
+def test_division_program_with_negative_checks_carries_a_warning():
+    r = optimize_program("def f(x):\n    return x // 2\n", -15, 15)
+    assert r["ok"] is True and r["division_warning"] and "floors" in r["division_warning"]
+    assert optimize_program("def f(x):\n    return x + 2\n", -15, 15)["division_warning"] is None
