@@ -110,6 +110,9 @@ def symbolic_outputs(stmts: Sequence) -> List[str]:
 
 
 def prove_equivalent(original: Sequence, optimized: Sequence) -> dict:
+    if any(s.op in ("label", "goto", "branch") for s in list(original) + list(optimized)):
+        return {"proved": False, "same_output_count": False, "outputs": [], "control_flow": True,
+                "reason": "the symbolic prover covers straight-line code only; programs with branches or loops are checked by the compile-time tests"}
     a = symbolic_outputs(original)
     b = symbolic_outputs(optimized)
     rows = [{"index": i + 1, "original": x, "optimized": y, "match": x == y}

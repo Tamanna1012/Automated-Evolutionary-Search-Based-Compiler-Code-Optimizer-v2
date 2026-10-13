@@ -1011,3 +1011,121 @@ def test_manual_comparison_reports_the_automatic_pipeline():
 
 def test_manual_rejects_unknown_optimization_names():
     assert optimize_program("def f(a):\n    return a + 0\n", passes=["Loop Unrolling"])["ok"] is False
+
+
+# ---------------------------------------------------------------------------
+# Control flow: front end, CFG, data-flow analysis and global optimizations
+# ---------------------------------------------------------------------------
+import random as _random
+
+from eco.cfg import build_cfg, execute, flow_report, global_optimize, liveness, reaching_definitions, available_expressions
+from eco.frontend import UnsupportedSyntax as _Unsupported, run_source as _run_source
+from eco.interpreter import run as _run_tac
+
+IF_SRC = "def f(n, k):\n    x = 2 * 3\n    if n < k:\n        y = x + n\n    else:\n        y = x + n\n    z = x + n\n    unused = 99\n    return y + z\n"
+WHILE_SRC = "def g(n):\n    s = 0\n    while n > 0:\n        s = s + n\n        n = n - 1\n    return s\n"
+NESTED_SRC = ("def h(a, b):\n    acc = 0\n    i = 0\n    while i < a:\n        if i < b:\n            acc = acc + i * 2\n"
+              "        else:\n            acc = acc - 1\n        i = i + 1\n    return acc, i\n")
+
+
+def _grid(names, lo=0, hi=7):
+    return [dict(zip(names, vals)) for vals in __import__("itertools").product(range(lo, hi), repeat=len(names))]
+
+
+@pytest.mark.parametrize("src,names", [(IF_SRC, ["n", "k"]), (WHILE_SRC, ["n"]), (NESTED_SRC, ["a", "b"])])
+def test_control_flow_compiles_and_matches_python_on_every_input(src, names):
+    compiled = compile_function(src)
+    stmts = from_tac(compiled.tac)
+    for inputs in _grid(names):
+        assert execute(stmts, inputs) == _run_source(src, compiled.name, inputs)
+        assert _run_tac(compiled.tac, inputs).outputs == _run_source(src, compiled.name, inputs)
+
+
+@pytest.mark.parametrize("src", [
+    "def f(a, b):\n    if a < b and b < 3:\n        return a\n    return b\n",
+    "def f(a):\n    while a > 0:\n        return a\n    return a\n",
+    "def f(a):\n    if a:\n        b = 1\n    return a\n",
+    "def f(a):\n    if a < 2:\n        return a\n    return 0\n",
+    "def f(a):\n    while a < 2:\n        a = a + 1\n    else:\n        a = 0\n    return a\n",
+])
+def test_unsupported_control_flow_is_rejected_with_a_reason(src):
+    with pytest.raises(_Unsupported):
+        compile_function(src)
+
+
+def test_cfg_shapes_for_straight_if_and_while():
+    straight = from_tac(compile_function("def f(a):\n    b = a + 1\n    return b\n").tac)
+    assert len(build_cfg(straight)) == 1
+    if_blocks = build_cfg(from_tac(compile_function(IF_SRC).tac))
+    branching = [b for b in if_blocks if len(b.succ) == 2]
+    assert len(branching) == 1 and {k for _, k in branching[0].succ} == {"true", "false"}
+    while_blocks = build_cfg(from_tac(compile_function(WHILE_SRC).tac))
+    assert any(t <= b.id for b in while_blocks for t, _ in b.succ), "a loop needs a back edge"
+
+
+def test_reaching_definitions_merge_both_arms_of_the_if():
+    blocks = build_cfg(from_tac(compile_function(IF_SRC).tac))
+    rin, _ = reaching_definitions(blocks)
+    merge = blocks[3].id
+    assert {v for v, _ in rin[merge]} >= {"y", "x", "n"}
+    assert sum(1 for v, _ in rin[merge] if v == "y") == 2   # one y from each arm
+
+
+def test_liveness_and_available_expressions_on_the_if_example():
+    blocks = build_cfg(from_tac(compile_function(IF_SRC).tac))
+    lin, lout = liveness(blocks)
+    assert {"n", "x"} <= lout[0]
+    ain, aout = available_expressions(blocks)
+    assert ain[blocks[3].id] and any(v == "y" for _, v in ain[blocks[3].id])
+
+
+def test_global_cse_reuses_a_value_computed_on_every_path():
+    r = optimize_program(IF_SRC, 1, 9)
+    cse = [e for e in r["log"] if e["technique"] == "Global Common Subexpression Elimination"]
+    assert cse and cse[0]["optimized"] == "z = y"
+    assert r["flow"]["control_flow"] is True and r["verdict"]["level"] == "tested"
+
+
+def test_global_constant_propagation_crosses_the_branch_merge():
+    r = optimize_program(IF_SRC, 1, 9)
+    assert any(e["technique"] == "Global Constant Propagation" and e["optimized"] == "y = 6 + n" for e in r["log"])
+    assert r["summary"]["removed"] >= 2
+
+
+def test_unreachable_arm_of_a_constant_branch_is_removed():
+    src = "def f(a):\n    if 1 < 2:\n        y = a + 1\n    else:\n        y = a + 2\n    return y\n"
+    r = optimize_program(src, 1, 9)
+    assert r["ok"] is True and r["behaviour_preserved"] is True
+    techniques = {e["technique"] for e in r["log"]}
+    assert "Unreachable Block Removal" in techniques and "Constant Folding" in techniques
+    assert not any(row["op"] == "branch" for row in r["optimized"])
+
+
+@pytest.mark.parametrize("src,names", [(IF_SRC, ["n", "k"]), (WHILE_SRC, ["n"]), (NESTED_SRC, ["a", "b"])])
+def test_global_optimizations_preserve_behaviour_on_random_inputs(src, names):
+    compiled = compile_function(src)
+    original = from_tac(compiled.tac)
+    optimized, records, trace = global_optimize(original)
+    rng = _random.Random(3)
+    for _ in range(40):
+        inputs = {n: rng.randint(0, 9) for n in names}
+        assert execute(optimized, inputs) == execute(original, inputs) == _run_source(src, compiled.name, inputs)
+    assert all(t["statements_after"] <= t["statements_before"] for t in trace)
+
+
+def test_control_flow_programs_pass_the_compile_time_checks():
+    for src in (IF_SRC, WHILE_SRC, NESTED_SRC):
+        r = optimize_program(src, 0, 6)
+        assert r["ok"] is True and r["behaviour_preserved"] is True
+        assert r["equivalence"]["control_flow"] is True and r["equivalence"]["proved"] is False
+
+
+def test_infinite_loop_is_reported_not_run_forever():
+    tac = compile_function("def f(a):\n    while a < 100:\n        b = a\n    return a\n").tac
+    result = _run_tac(tac, {"a": 5})
+    assert result.ok is False and "step limit" in result.error
+
+
+def test_flow_report_is_empty_for_straight_line_code():
+    assert optimize_program("def f(a):\n    return a + 1\n")["flow"] == {"control_flow": False}
+    assert flow_report(from_tac(compile_function("def f(a):\n    return a + 1\n").tac))["control_flow"] is False

@@ -40,6 +40,8 @@ def uses_of(instr: Instr) -> Tuple[str, ...]:
         return (instr[3], instr[4])
     if op == "output":
         return (instr[1],)
+    if op == "branch":
+        return (instr[1],)
     return ()
 
 
@@ -86,4 +88,10 @@ def tac_to_text(tac: Sequence[Instr]) -> str:
             out.append(f"{instr[1]} = {instr[3]} {instr[2]} {instr[4]}")
         elif op == "output":
             out.append(f"OUTPUT {instr[1]}")
+        elif op == "label":
+            out.append(f"{instr[1]}:")
+        elif op == "jump":
+            out.append(f"GOTO {instr[1]}")
+        elif op == "branch":
+            out.append(f"IF {instr[1]} GOTO {instr[2]} ELSE {instr[3]}")
     return "\n".join(out)

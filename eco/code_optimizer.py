@@ -41,9 +41,10 @@ import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
+from .cfg import GLOBAL_TECHNIQUES, execute as run_stmts, flow_report, global_optimize, has_control
 from .equivalence import prove_equivalent
 from .frontend import UnsupportedSyntax, compile_function, run_source
-from .interpreter import CYCLE_COST, _safe_div, run
+from .interpreter import CYCLE_COST, run
 from .metrics import evaluate
 from .tac import dest_of, tac_to_text
 
@@ -80,6 +81,12 @@ class Stmt:
             return f"{self.dest} = {self.a}"
         if self.op == "print":
             return f"print {self.a}"
+        if self.op == "label":
+            return f"{self.a}:"
+        if self.op == "goto":
+            return f"goto {self.a}"
+        if self.op == "branch":
+            return f"if {self.a} goto {self.b[0]} else {self.b[1]}"
         return f"{self.dest} = {self.a} {self.op} {self.b}"
 
     def uses(self) -> List[str]:
@@ -131,47 +138,40 @@ def from_tac(tac) -> List[Stmt]:
             out.append(Stmt(rename.get(d, d), o, operand(a), operand(b)))
         elif op == "output":
             out.append(Stmt(None, "print", operand(ins[1])))
+        elif op == "label":
+            out.append(Stmt(None, "label", ins[1]))
+        elif op == "jump":
+            out.append(Stmt(None, "goto", ins[1]))
+        elif op == "branch":
+            out.append(Stmt(None, "branch", rename.get(ins[1], ins[1]), (ins[2], ins[3])))
     for n, s in enumerate(out, 1):
         s.origin = n
     return out
 
 
-def run_stmts(stmts: Sequence[Stmt], inputs: Dict[str, int]) -> List[int]:
-    """Execute 3-address statements (same arithmetic as the interpreter)."""
-    env: Dict[str, int] = {}
-    outputs: List[int] = []
-
-    def val(x):
-        return x if isinstance(x, int) else env[x]
-
-    for s in stmts:
-        if s.op == "input":
-            env[s.dest] = int(inputs[s.a])
-        elif s.op == "=":
-            env[s.dest] = val(s.a)
-        elif s.op == "print":
-            outputs.append(val(s.a))
-        else:
-            x, y = val(s.a), val(s.b)
-            env[s.dest] = x + y if s.op == "+" else x - y if s.op == "-" else x * y if s.op == "*" else _safe_div(x, y)
-    return outputs
-
-
 def stmts_to_tac(stmts: Sequence[Stmt]) -> TAC:
     """Lower 3-address statements back to the TAC the shared metrics code runs.
 
-    Integer literal operands are pooled into one ``const`` each, as the front end does.
+    Integer literal operands are pooled into one ``const`` each, as the front end does
+    for straight-line code. With control flow every use gets its own ``const``, since a
+    constant defined in one block does not exist on the path into another.
     """
+    control = has_control(stmts)
     tac: TAC = []
     pool: Dict[int, str] = {}
+    counter = [0]
 
     def operand(x):
         if isinstance(x, str):
             return x
-        if x not in pool:
-            pool[x] = f"_lit{len(pool) + 1}"
-            tac.append(("const", pool[x], x))
-        return pool[x]
+        if not control and x in pool:
+            return pool[x]
+        counter[0] += 1
+        name = f"_lit{counter[0]}"
+        if not control:
+            pool[x] = name
+        tac.append(("const", name, x))
+        return name
 
     for s in stmts:
         if s.op == "input":
@@ -180,6 +180,12 @@ def stmts_to_tac(stmts: Sequence[Stmt]) -> TAC:
             tac.append(("const", s.dest, s.a) if isinstance(s.a, int) else ("copy", s.dest, s.a))
         elif s.op == "print":
             tac.append(("output", operand(s.a)))
+        elif s.op == "label":
+            tac.append(("label", s.a))
+        elif s.op == "goto":
+            tac.append(("jump", s.a))
+        elif s.op == "branch":
+            tac.append(("branch", operand(s.a), s.b[0], s.b[1]))
         else:
             tac.append(("bin", s.dest, s.op, operand(s.a), operand(s.b)))
     return tac
@@ -192,6 +198,12 @@ def _stmt_cycles(s: Stmt) -> int:
         return CYCLE_COST["copy"] if isinstance(s.a, str) else CYCLE_COST["const"]
     if s.op == "print":
         return CYCLE_COST["output"]
+    if s.op == "label":
+        return CYCLE_COST["label"]
+    if s.op == "goto":
+        return CYCLE_COST["jump"]
+    if s.op == "branch":
+        return CYCLE_COST["branch"]
     return CYCLE_COST["bin" + s.op]
 
 
@@ -407,17 +419,17 @@ def optimize_stmts(stmts: List[Stmt], passes: Optional[List[str]] = None) -> Tup
     return current, log, trace
 
 
-def selection_views(log: List[dict], trace: List[dict]) -> Dict[str, dict]:
+def selection_views(log: List[dict], trace: List[dict], techniques: List[str] = TECHNIQUES) -> Dict[str, dict]:
     """Chart data and log rows for every non-empty combination of techniques.
 
     Keyed by a bitmask over TECHNIQUES, so the browser only looks up a view and never
     computes one. A 'combined' bar is the union of the selected techniques.
     """
     per = {t: {"removed": sum(x["statements_before"] - x["statements_after"] for x in trace if x["technique"] == t),
-               "changes": sum(1 for e in log if e["technique"] == t)} for t in TECHNIQUES}
+               "changes": sum(1 for e in log if e["technique"] == t)} for t in techniques}
     views = {}
-    for mask in range(1, 1 << len(TECHNIQUES)):
-        sel = [t for i, t in enumerate(TECHNIQUES) if mask >> i & 1]
+    for mask in range(1, 1 << len(techniques)):
+        sel = [t for i, t in enumerate(techniques) if mask >> i & 1]
         views[str(mask)] = {
             "techniques": sel,
             "bars": [dict(label=t, **per[t]) for t in sel],
@@ -488,7 +500,16 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
     if passes is not None and any(name not in BY_NAME for name in passes):
         return _error("Input", f"Unknown optimization in {passes}")
     original = from_tac(compiled.tac)
-    optimized, log, trace = optimize_stmts(original, passes)
+    control = has_control(original)
+    if control:
+        if passes is not None:
+            return _error("Input", "The manual pipeline applies to straight-line code only")
+        optimized, records, trace = global_optimize(original)
+        log = [dict(_event(r["technique"], r["before"], r["after"], r["reason"], r["rule"], r["precondition"]),
+                    round=r["round"]) for r in records]
+    else:
+        optimized, log, trace = optimize_stmts(original, passes)
+    techniques = GLOBAL_TECHNIQUES if control else TECHNIQUES
     log = [dict(e, sno=i) for i, e in enumerate(log, 1)]
 
     lo, hi = (int(lo), int(hi)) if int(lo) <= int(hi) else (int(hi), int(lo))
@@ -500,21 +521,30 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
     started = time.perf_counter()
     for kind, t in tests:
         try:
+            orig_out = run_stmts(original, t)
+            opt_out = run_stmts(optimized, t)
+            tac_res = run(compiled.tac, t)
+            if not tac_res.ok:
+                raise RuntimeError(tac_res.error)
+        except RuntimeError as exc:  # the program does not finish on this input
+            if kind == "boundary":
+                continue
+            return _error("Execution", f"Your function did not finish on {t}: {exc}")
+        try:
             python_out = run_source(source, compiled.name, t)
         except Exception as exc:  # noqa: BLE001
             if kind == "boundary":
                 continue  # e.g. division by zero at a boundary input: not a valid test point
             return _error("Execution", f"Your function failed on {t}: {type(exc).__name__}: {exc}")
-        tac_out = run(compiled.tac, t).outputs
-        orig_out = run_stmts(original, t)
-        opt_out = run_stmts(optimized, t)
+        tac_out = tac_res.outputs
         checks.append({"kind": kind, "inputs": t, "original": orig_out, "optimized": opt_out, "python": python_out,
                        "match": orig_out == opt_out == tac_out})
         if tac_out != python_out:
             return _error("Execution", f"The generated code disagrees with Python on {t} (Python: {python_out}, generated: {tac_out}). "
                                        "This usually means // was used on a negative number; use a positive input range.")
     check_ms = (time.perf_counter() - started) * 1000
-    n_orig, n_opt = len(original), len(optimized)
+    n_orig = sum(1 for s in original if s.op != "label")
+    n_opt = sum(1 for s in optimized if s.op != "label")
     removed = n_orig - n_opt
     by_tech: Dict[str, int] = {}
     for e in log:
@@ -536,7 +566,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
                       "changes": sum(1 for e in log if e["technique"] == t),
                       "instructions_removed": sum(e["instrs_removed"] for e in log if e["technique"] == t),
                       "cycles_saved": sum(e["cycles_saved"] for e in log if e["technique"] == t)}
-                     for t in TECHNIQUES]
+                     for t in techniques]
     result = {
         "ok": True,
         "function": compiled.name,
@@ -548,15 +578,17 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         "quadruples": quadruple_rows(optimized),
         "log": log,
         "pass_trace": trace,
-        "technique_order": TECHNIQUES,
-        "selection_views": selection_views(log, trace),
+        "technique_order": techniques,
+        "selection_views": selection_views(log, trace, techniques),
+        "flow": ({"control_flow": True, "original": flow_report(original), "optimized": flow_report(optimized)}
+                 if control else {"control_flow": False}),
         "summary": {
             "original_instructions": n_orig,
             "optimized_instructions": n_opt,
             "removed": removed,
             "optimizations": len(log),
-            "techniques": [t for t in TECHNIQUES if t in by_tech],
-            "by_technique": [{"technique": t, "count": by_tech[t]} for t in TECHNIQUES if t in by_tech],
+            "techniques": [t for t in techniques if t in by_tech],
+            "by_technique": [{"technique": t, "count": by_tech[t]} for t in techniques if t in by_tech],
             "reduction_pct": round(100.0 * removed / n_orig, 2) if n_orig else 0.0,
             "rounds": max([e["round"] for e in log] + [0]),
         },
