@@ -671,6 +671,13 @@ def optimize_program_json(params_json: str) -> str:
 
 
 SAMPLES = {
+    "Integer division (shows the Python-floor note)": (1, 20, """def quotient(a, b):
+    half = a // 2
+    k = 10
+    m = k + 5
+    same = a // 2
+    return half + same + m + b
+"""),
     "Mixed example (all six techniques)": (1, 20, """def demo(a, b):
     x = 10 * 5
     k = 10
