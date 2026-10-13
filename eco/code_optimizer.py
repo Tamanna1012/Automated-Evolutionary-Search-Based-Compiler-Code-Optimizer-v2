@@ -634,7 +634,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
                           "note": "one-time compile-time validation; the optimized program itself is never slowed down by this"},
         "verdict": _verdict(checks, equivalence["proved"]),
         "metrics": metrics,
-        "benefit_pct": -_change_pct(before["exec_time"], after["exec_time"]),
+        "benefit_pct": 0.0 - _change_pct(before["exec_time"], after["exec_time"]),
         "per_technique": per_technique,
         "checks": checks,
         "behaviour_preserved": all(c["match"] for c in checks),
