@@ -824,7 +824,7 @@ def test_optimizer_output_matches_the_original_on_many_random_inputs():
     prog = generate_kernel_program(TEMPLATE_NAMES.index("variance_of_values"), random.Random(5))
     comp = compile_function(prog.source_code)
     original = from_tac(comp.tac)
-    optimized, _ = optimize_stmts(original)
+    optimized, _, _ = optimize_stmts(original)
     rng = random.Random(1)
     for _ in range(200):
         inputs = {a: rng.randint(1, 50) for a in comp.arg_names}
@@ -887,3 +887,21 @@ def test_no_change_gives_zero_benefit():
     r = optimize_program("def plain(a, b):\n    s = a + b\n    return s\n")
     assert r["benefit_pct"] == 0
     assert all(m["change_pct"] == 0 for m in r["metrics"])
+
+
+def test_pass_trace_sums_equal_the_total_reduction():
+    r = optimize_program(SAMPLES["Mixed example (all six techniques)"][2], 1, 20)
+    removed_by_trace = sum(t["statements_before"] - t["statements_after"] for t in r["pass_trace"])
+    assert removed_by_trace == r["summary"]["removed"]
+    assert {t["technique"] for t in r["pass_trace"]} == set(TECHNIQUES)
+
+
+def test_selection_views_cover_all_subsets_and_union_is_additive():
+    r = optimize_program(SAMPLES["Mixed example (all six techniques)"][2], 1, 20)
+    views = r["selection_views"]
+    assert len(views) == 2 ** len(TECHNIQUES) - 1
+    single = {t: views[str(1 << i)]["bars"][0] for i, t in enumerate(TECHNIQUES)}
+    pair = views[str((1 << 0) | (1 << 5))]
+    assert pair["combined"]["removed"] == single["Constant Propagation"]["removed"] + single["Dead Code Elimination"]["removed"]
+    assert pair["combined"]["changes"] == single["Constant Propagation"]["changes"] + single["Dead Code Elimination"]["changes"]
+    assert len(pair["sno"]) == pair["combined"]["changes"]
