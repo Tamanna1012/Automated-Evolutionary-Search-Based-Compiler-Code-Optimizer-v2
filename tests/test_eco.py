@@ -1129,3 +1129,12 @@ def test_infinite_loop_is_reported_not_run_forever():
 def test_flow_report_is_empty_for_straight_line_code():
     assert optimize_program("def f(a):\n    return a + 1\n")["flow"] == {"control_flow": False}
     assert flow_report(from_tac(compile_function("def f(a):\n    return a + 1\n").tac))["control_flow"] is False
+
+
+def test_local_optimizer_misses_what_the_global_passes_find():
+    from eco.code_optimizer import FLOW_EXAMPLE, local_optimize
+    r = optimize_program(FLOW_EXAMPLE, 1, 9)
+    original = from_tac(compile_function(FLOW_EXAMPLE).tac)
+    local_text = [st.text() for st in local_optimize(original)]
+    assert "y = x + n" in local_text          # x is defined in another block, so local passes cannot see its value
+    assert r["flow"]["local_count"] > r["summary"]["optimized_instructions"]

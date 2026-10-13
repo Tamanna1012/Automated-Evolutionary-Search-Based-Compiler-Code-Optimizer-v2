@@ -248,11 +248,13 @@ nav button:focus-visible,.theme-pill:focus-visible,.btn:focus-visible,.plist tr:
 </header>
 <nav id="nav" role="tablist" aria-label="Dashboard sections">
   <button data-tab="optimize" class="active" role="tab" aria-selected="true">Code Optimization</button>
+  <button data-tab="flow" role="tab" aria-selected="false" tabindex="-1">Flow analysis</button>
   <button data-tab="overview" role="tab" aria-selected="false" tabindex="-1">Overview</button>
   <button data-tab="explorer" role="tab" aria-selected="false" tabindex="-1">Program explorer</button>
 </nav>
 <main>
   <section class="tab active" id="tab-optimize" role="tabpanel"></section>
+  <section class="tab" id="tab-flow" role="tabpanel"></section>
   <section class="tab" id="tab-overview" role="tabpanel"></section>
   <section class="tab" id="tab-explorer" role="tabpanel"></section>
 </main>
@@ -776,7 +778,7 @@ function codeOpt(){
         res = JSON.parse(eng.opt(JSON.stringify({source: ta.value, passes})));
         status.textContent = "";
       }
-      if (res.ok) { current = res; out.replaceChildren(renderOpt(res)); }
+      if (res.ok) { current = res; out.replaceChildren(renderOpt(res)); setFlowLive(res); }
       else { current = null; out.replaceChildren(); errHolder.replaceChildren(h("div",{class:"errbox", role:"alert"}, h("b",{}, (res.stage || "Error") + ": "), res.error)); }
     } catch (e) {
       current = null; status.textContent = "";
@@ -916,8 +918,154 @@ function renderOpt(r){
   return h("div",{}, summary, results, equivalenceCard, compare, original, analysis, optimized, quads);
 }
 
+// ------------------------------------------------------------------ flow analysis tab
+function mdToHtml(md){
+  const esc = t => t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const inl = t => esc(t).replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
+  const L = md.split("\n"), out = [];
+  const isBlock = s => /^(#{1,3} |- |\d+\. |\||```)/.test(s);
+  let i = 0;
+  while (i < L.length) {
+    const s = L[i];
+    if (!s.trim()) { i++; continue; }
+    if (s.startsWith("```")) {
+      const code = []; i++;
+      while (i < L.length && !L[i].startsWith("```")) code.push(L[i++]);
+      i++;
+      out.push(`<pre><code>${esc(code.join("\n"))}</code></pre>`);
+      continue;
+    }
+    const hm = s.match(/^(#{1,3}) (.*)$/);
+    if (hm) { const lv = hm[1].length + 1; out.push(`<h${lv}>${inl(hm[2])}</h${lv}>`); i++; continue; }
+    if (s.startsWith("|")) {
+      const rows = [];
+      while (i < L.length && L[i].startsWith("|")) rows.push(L[i++]);
+      const cells = r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+      const [head, , ...body] = rows;
+      out.push(`<div class="scroll"><table class="t left"><thead><tr>${cells(head).map(c => `<th>${inl(c)}</th>`).join("")}</tr></thead>` +
+        `<tbody>${body.map(r => `<tr>${cells(r).map(c => `<td>${inl(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`);
+      continue;
+    }
+    if (s.startsWith("- ")) {
+      const items = [];
+      while (i < L.length && L[i].startsWith("- ")) items.push(L[i++].slice(2));
+      out.push(`<ul>${items.map(x => `<li>${inl(x)}</li>`).join("")}</ul>`);
+      continue;
+    }
+    if (/^\d+\. /.test(s)) {
+      const items = [];
+      while (i < L.length && /^\d+\. /.test(L[i])) items.push(L[i++].replace(/^\d+\. /, ""));
+      out.push(`<ol>${items.map(x => `<li>${inl(x)}</li>`).join("")}</ol>`);
+      continue;
+    }
+    const para = [];
+    while (i < L.length && L[i].trim() && !isBlock(L[i])) para.push(L[i++]);
+    out.push(`<p>${inl(para.join(" "))}</p>`);
+  }
+  return out.join("\n");
+}
+
+let cfgSeq = 0;
+function cfgSvg(blocks){
+  const n = blocks.length, depth = new Array(n).fill(-1);
+  depth[0] = 0;
+  const q = [0];
+  while (q.length) { const b = q.shift(); for (const e of blocks[b].succ) if (depth[e.to] < 0) { depth[e.to] = depth[b] + 1; q.push(e.to); } }
+  const maxD = Math.max(0, ...depth);
+  blocks.forEach((b, i) => { if (depth[i] < 0) depth[i] = maxD + 1; });
+  const layers = [];
+  blocks.forEach((b, i) => { (layers[depth[i]] ||= []).push(i); });
+  const W = 250, GX = 34, PAD = 14, LH = 15, HEAD = 26, GY = 56;
+  const boxH = b => HEAD + Math.max(1, b.stmts.length) * LH + PAD;
+  const layerW = l => l.length * W + (l.length - 1) * GX;
+  const totalW = Math.max(...layers.map(layerW)) + PAD * 2;
+  const pos = {};
+  let y = PAD;
+  layers.forEach(l => {
+    const hmax = Math.max(...l.map(i => boxH(blocks[i])));
+    const x0 = (totalW - layerW(l)) / 2;
+    l.forEach((i, k) => { pos[i] = {x: x0 + k * (W + GX), y, w: W, h: boxH(blocks[i])}; });
+    y += hmax + GY;
+  });
+  const H = y - GY + PAD, id = ++cfgSeq;
+  const svg = sv("svg", {viewBox:`0 0 ${totalW} ${H}`, width:"100%", role:"img", "aria-label":"Control-flow graph"});
+  const mk = sv("marker", {id:`cfgArr${id}`, markerWidth:8, markerHeight:8, refX:7, refY:4, orient:"auto"}, sv("defs", {}, svg));
+  sv("path", {d:"M0,0 L8,4 L0,8 z", fill:"var(--muted)"}, mk);
+  const edges = sv("g", {}, svg);
+  blocks.forEach(b => b.succ.forEach(e => {
+    const p = pos[b.id], t = pos[e.to], col = e.kind === "true" ? "var(--good)" : (e.kind === "false" ? "var(--bad)" : "var(--muted)");
+    let d, lx, ly;
+    if (depth[e.to] > depth[b.id]) {
+      const x1 = p.x + p.w/2, y1 = p.y + p.h, x2 = t.x + t.w/2, y2 = t.y;
+      d = `M${x1},${y1} C${x1},${(y1+y2)/2} ${x2},${(y1+y2)/2} ${x2},${y2}`;
+      lx = (x1+x2)/2 + 6; ly = (y1+y2)/2;
+    } else {
+      const x1 = p.x + p.w, y1 = p.y + p.h/2, x2 = t.x + t.w, y2 = t.y + t.h/2, bulge = Math.max(x1, x2) + 46;
+      d = `M${x1},${y1} C${bulge},${y1} ${bulge},${y2} ${x2},${y2}`;
+      lx = bulge - 4; ly = (y1+y2)/2;
+    }
+    sv("path", {d, fill:"none", stroke:col, "stroke-width":1.6, "marker-end":`url(#cfgArr${id})`}, edges);
+    if (e.kind) sv("text", {x:lx, y:ly, fill:col, "font-weight":700}, edges).textContent = e.kind;
+  }));
+  blocks.forEach(b => {
+    const p = pos[b.id];
+    const attrs = {x:p.x, y:p.y, width:p.w, height:p.h, rx:10, fill:"var(--panel)", "stroke-width":1.5,
+      stroke: b.reachable ? "var(--accent)" : "var(--muted)"};
+    if (!b.reachable) attrs["stroke-dasharray"] = "5 4";
+    sv("rect", attrs, svg);
+    sv("text", {x:p.x+10, y:p.y+HEAD-8, class:"lbl", "font-weight":700}, svg).textContent = `B${b.id}${b.label ? "  " + b.label.replace(/^L\d+_/, "") : ""}`;
+    const lines = b.stmts.length ? b.stmts : ["(empty)"];
+    lines.forEach((t, k) => {
+      const tx = sv("text", {x:p.x+10, y:p.y+HEAD+(k+1)*LH-3, "font-family":"ui-monospace,Consolas,monospace", "font-size":11.5}, svg);
+      tx.textContent = t.length > 36 ? t.slice(0, 35) + "…" : t;
+    });
+  });
+  return h("div",{class:"scroll"}, svg);
+}
+
+function flowTable(blocks){
+  const cell = items => h("td",{}, items.length ? items.map(x => h("div",{class:"mono"}, x)) : h("span",{class:"muted"}, "—"));
+  return h("div",{class:"scroll"}, h("table",{class:"t left", style:"min-width:900px"},
+    h("thead",{}, h("tr",{}, ["Block","Reaching IN","Reaching OUT","Live IN","Live OUT","Available IN","Available OUT"].map(x => h("th",{}, x)))),
+    h("tbody",{}, blocks.map(b => h("tr",{},
+      h("td",{}, `B${b.id}`), cell(b.reaching_in), cell(b.reaching_out), cell(b.live_in), cell(b.live_out), cell(b.avail_in), cell(b.avail_out))))));
+}
+
+function flowPanel(res, title){
+  const f = res.flow;
+  if (!f || !f.control_flow) return optCard(title, null, h("div",{class:"emptystate"},
+    "This program has no branches or loops, so its control-flow graph is a single block. The worked example above shows the analyses on a program with branches."));
+  const s = res.summary;
+  const counts = optTable(["Version","Statements (labels not counted)","What it can see"], [
+    h("tr",{}, h("td",{}, "Original"), h("td",{}, s.original_instructions), h("td",{}, "the program as written, compiled to 3-address code")),
+    h("tr",{}, h("td",{}, "Local passes only"), h("td",{}, f.local_count), h("td",{}, "one block at a time: a value set in another block is unknown here")),
+    h("tr",{}, h("td",{}, "Global passes"), h("td",{}, s.optimized_instructions), h("td",{}, "whole program: reaching definitions, liveness, available expressions"))]);
+  return h("div",{},
+    optCard(`${title}: control-flow graph`, "Blocks are boxes and edges are arrows. A solid box is reachable from the entry; a dashed box is not.",
+      h("div",{class:"two"},
+        h("div",{}, h("p",{class:"hint"}, "Original"), cfgSvg(f.original.blocks)),
+        h("div",{}, h("p",{class:"hint"}, "Optimized"), cfgSvg(f.optimized.blocks)))),
+    optCard("Per-block IN and OUT sets (original program)",
+      "Values at the fixed point of each analysis. Reaching definitions and liveness are union; available expressions are intersection.",
+      flowTable(f.original.blocks)),
+    optCard("Local versus global", "The same program optimized two ways.", counts));
+}
+function setFlowLive(res){
+  const box = $("#flow-live");
+  if (box) box.replaceChildren(flowPanel(res, "Your program"));
+}
+function flowTab(){
+  const root = $("#tab-flow");
+  root.replaceChildren(
+    h("div",{class:"card chartcard flowdoc", html: mdToHtml(DATA.flow_doc)}),
+    h("div",{class:"charts-col", style:"margin-top:14px"},
+      h("div",{id:"flow-example"}, flowPanel(DATA.flow_example, "Worked example")),
+      h("div",{id:"flow-live"})));
+  setFlowLive(DATA.code_optimization);
+}
+
 // ------------------------------------------------------------------ boot
-codeOpt(); overview(); explorer();
+codeOpt(); flowTab(); overview(); explorer();
 (function tabs(){
   const btns = [...document.querySelectorAll("#nav button")];
   const select = (b, focus) => {

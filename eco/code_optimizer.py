@@ -41,7 +41,7 @@ import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
-from .cfg import GLOBAL_TECHNIQUES, execute as run_stmts, flow_report, global_optimize, has_control
+from .cfg import CONTROL, GLOBAL_TECHNIQUES, build_cfg, execute as run_stmts, flow_report, global_optimize, has_control
 from .equivalence import prove_equivalent
 from .frontend import UnsupportedSyntax, compile_function, run_source
 from .interpreter import CYCLE_COST, run
@@ -460,6 +460,40 @@ def quadruple_rows(stmts: Sequence[Stmt]) -> List[dict]:
 
 
 # ------------------------------------------------------------------ entry points
+def local_optimize(stmts: List[Stmt]) -> List[Stmt]:
+    """What a block-local optimizer can do: the straight-line passes, run inside each basic block.
+
+    Dead code elimination and algebraic simplification are left out here: the first needs
+    liveness across blocks, and the second's constant tracking assumes single assignment.
+    """
+    out: List[Stmt] = []
+    passes = [constant_propagation, constant_folding, copy_propagation, common_subexpression_elimination]
+    for block in build_cfg(stmts):
+        head = [st for st in block.stmts if st.op == "label"]
+        tail = [st for st in block.stmts if st.op in ("goto", "branch")]
+        body = [st for st in block.stmts if st.op not in CONTROL]
+        changed = True
+        while changed:
+            changed = False
+            for fn in passes:
+                body, events = fn(body)
+                changed = changed or bool(events)
+        out.extend(head + body + tail)
+    return out
+
+
+FLOW_EXAMPLE = """def example(n, k):
+    x = 2 * 3
+    if n < k:
+        y = x + n
+    else:
+        y = x + n
+    z = x + n
+    unused = 99
+    return y + z
+"""
+
+
 def _error(stage: str, message: str) -> dict:
     return {"ok": False, "stage": stage, "error": message}
 
@@ -580,7 +614,8 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         "pass_trace": trace,
         "technique_order": techniques,
         "selection_views": selection_views(log, trace, techniques),
-        "flow": ({"control_flow": True, "original": flow_report(original), "optimized": flow_report(optimized)}
+        "flow": ({"control_flow": True, "original": flow_report(original), "optimized": flow_report(optimized),
+                  "local_count": sum(1 for st in local_optimize(original) if st.op != "label")}
                  if control else {"control_flow": False}),
         "summary": {
             "original_instructions": n_orig,

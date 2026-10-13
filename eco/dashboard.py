@@ -11,12 +11,13 @@ import json
 import os
 from typing import Dict, List
 
-from .code_optimizer import DEFAULT_SOURCE, optimize_program
+from .code_optimizer import DEFAULT_SOURCE, FLOW_EXAMPLE, optimize_program
 from .report import program_report
 from .tac import tac_to_text
 
 HERE = os.path.dirname(__file__)
 TEMPLATE_PATH = os.path.join(HERE, "dashboard_template.html")
+FLOW_DOC_PATH = os.path.join(os.path.dirname(HERE), "docs", "FLOW_ANALYSIS.md")
 PLACEHOLDER = "/*__DASHBOARD_DATA__*/null"
 LIVE_PLACEHOLDER = "/*__LIVE_SOURCES__*/null"
 # The modules the Code Optimization tab runs in the browser (via Pyodide) on a visitor's
@@ -79,6 +80,9 @@ def write_dashboard(data: dict, out_path: str) -> str:
     # the Code Optimization tab opens with a precomputed example so it works before any engine is loaded
     data = dict(data)
     data.setdefault("code_optimization", optimize_program(DEFAULT_SOURCE))
+    data.setdefault("flow_example", optimize_program(FLOW_EXAMPLE, 1, 9))
+    with open(FLOW_DOC_PATH, encoding="utf-8") as f:
+        data.setdefault("flow_doc", f.read())
     if LIVE_PLACEHOLDER not in template:
         raise ValueError("dashboard template is missing its live-sources placeholder")
     safe = lambda obj: json.dumps(obj, separators=(",", ":")).replace("</", "<\\/")  # never close the script tag early
