@@ -21,6 +21,9 @@ CODE_SIZE_WEIGHT = {
     "copy": 3,
     "bin": 6,
     "output": 3,
+    "label": 0,
+    "jump": 2,
+    "branch": 4,
 }
 
 
