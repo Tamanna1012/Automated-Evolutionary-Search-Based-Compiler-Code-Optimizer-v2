@@ -640,6 +640,11 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
                           "saved_cycles_per_call": round(before["exec_time"] - after["exec_time"], 2),
                           "note": "one-time compile-time validation; the optimized program itself is never slowed down by this"},
         "verdict": _verdict(checks, equivalence["proved"], equivalence["bound"]),
+        "division_warning": (
+            "This program uses //. Python floors negative quotients while the generated code truncates, "
+            f"so the {sum(1 for c in checks if c['python'] is None)} negative-input checks were compared with the original "
+            "generated code, not with Python. Python is not a reference for them."
+            if has_division and any(c["python"] is None for c in checks) else None),
         "metrics": metrics,
         "benefit_pct": 0.0 - _change_pct(before["exec_time"], after["exec_time"]),
         "per_technique": per_technique,
