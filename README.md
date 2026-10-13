@@ -380,8 +380,11 @@ result; they only make the composition visible.
 A small compiler built on Python's `ast` module turns one function into TAC.
 It supports exactly what is needed: assignments and augmented assignments to
 names, integer literals, `+ - * //`, unary minus, and `return` of one or more
-values (each becomes an `output`). Anything else (true division, `**`, `%`,
-floats, branches, loops, undefined names) raises `UnsupportedSyntax`.
+values (each becomes an `output`). The Code Optimization tab also accepts
+`if`/`else` and `while` whose condition is a single comparison
+(`< <= > >= == !=`); see "Code Optimization tab" below. Anything else (true
+division, `**`, `%`, floats, `and`/`or`, `return` inside a branch or loop,
+undefined names) raises `UnsupportedSyntax` with a reason.
 `//` maps to the TAC `/`. Code generation is naive on purpose: no expression
 value is ever reused, so source-level redundancy survives for the optimizer;
 like any real compiler it pools literals (one `const` per distinct value) and
@@ -457,11 +460,48 @@ rely on a multiply-vs-add cost gap that CPython probably does not have (an
 extra statement costs about as much as the multiply it replaces), so their
 benefit should be expected in the model more than in measured time.
 
+## Code Optimization tab: what is proved and what is only tested
+
+The dashboard's Code Optimization tab runs the classic techniques on a visitor's
+own function, in the browser (Pyodide), and records why each change is safe.
+It is separate from the genetic search above, which still uses straight-line
+kernels only.
+
+* **Proved (static, primary evidence)** for straight-line code. Each output is
+  written as a polynomial in the inputs, with terms sorted and coefficients
+  merged. Division is an opaque atom, so two programs are PROVED only when every
+  output has the identical form. Division by 0 or 1 and division of two literals
+  are evaluated exactly. A rewrite that changes meaning is reported NOT PROVED
+  (`tests/test_eco.py` checks this on a deliberately wrong rewrite).
+* **Tested (compile-time, secondary)** for every program: the original and the
+  optimized code run on five random inputs plus boundary inputs (0, 1, a large
+  value, and -1 where the program has no `//`). The verdict says which of the two
+  it is: `Equivalent: proved symbolically and passed N/N` or
+  `Equivalent on N/N compile-time tests; not proved symbolically`.
+* Every change in the log lists its **rule** (for example `x + 0 = x`) and the
+  **precondition** that was checked (for example "y is a copy of x and neither is
+  reassigned before this use").
+* **Control flow** (`if`/`else`, `while`): global constant propagation, global
+  common subexpression elimination, global dead code elimination, constant
+  folding (including branches on constant conditions) and unreachable-block
+  removal, all driven by iterative data-flow analysis (`eco/cfg.py`). These
+  programs are **not** proved symbolically; they are only tested, and a
+  non-terminating loop is reported after a step limit instead of hanging. The
+  written analysis, with the worked tables, is in
+  [`docs/FLOW_ANALYSIS.md`](docs/FLOW_ANALYSIS.md) and in the Flow analysis tab.
+* The manual mode runs the chosen techniques once each, in the chosen order, and
+  compares the result with the automatic pipeline. It applies to straight-line
+  code only.
+
 ## Limitations
 
-* The kernels are **straight-line integer arithmetic**: no loops, branches,
-  memory, floating point or function calls, so none of the classic
-  loop/inlining/vectorization trade-offs exist here.
+* The search kernels are **straight-line integer arithmetic**: no loops,
+  branches, memory, floating point or function calls, so none of the classic
+  loop/inlining/vectorization trade-offs exist in the GA part.
+* The Code Optimization tab has no dominator computation: loops are found from
+  back edges, which is enough for the data-flow analyses used here. Aliasing,
+  function calls, arrays and loops whose trip count a symbolic proof would need
+  are not handled.
 * **GA fitness uses a cycle model.** Real time is measured only afterwards, as
   validation, and only through a Python backend (no C/native code); the model
   and CPython disagree on per-operation costs (see above).
