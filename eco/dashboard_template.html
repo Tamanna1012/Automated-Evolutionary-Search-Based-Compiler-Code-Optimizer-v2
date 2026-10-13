@@ -792,6 +792,25 @@ function renderOpt(r){
     h("h3",{style:"margin:12px 0 2px;font-size:13px"},"Instruction count: original vs optimized"),
     chartHost(w => barsH(cmp, {w, metric:"Instructions", unit:"", dec:0, rowH:34, xl:"instructions"}), "Instruction count, original versus optimized"));
 
+  const dec = m => m.key === "exec_time" ? 1 : 0;
+  const pctColour = c => c < 0 ? "var(--good)" : (c > 0 ? "var(--bad)" : "var(--muted)");
+  const results = optCard("Results: original vs optimized",
+    "Measured with the same cost model as the search (eco/metrics.py). exec_time is simulated cycles averaged over the test inputs; lower is better.",
+    h("div",{class:"sumgrid"}, h("div",{class:"box"},
+      h("div",{class:"v", style:`color:${r.benefit_pct > 0 ? "var(--good)" : "var(--muted)"}`}, (r.benefit_pct > 0 ? "+" : "") + fmt(r.benefit_pct, 2) + "%"),
+      h("div",{class:"l"}, "overall % benefit (exec_time)"))),
+    h("div",{class:"scroll"}, h("table",{class:"t"},
+      h("thead",{}, h("tr",{}, ["Objective","Original","Optimized","Change (%)"].map(x => h("th",{}, x)))),
+      h("tbody",{}, r.metrics.map(m => h("tr",{},
+        h("td",{}, m.objective), h("td",{}, fmt(m.original, dec(m))), h("td",{}, fmt(m.optimized, dec(m))),
+        h("td",{style:`color:${pctColour(m.change_pct)}`}, (m.change_pct > 0 ? "+" : "") + fmt(m.change_pct, 1) + "%")))))),
+    h("h3",{style:"margin:14px 0 2px;font-size:13px"}, "Per-technique contribution"),
+    h("p",{class:"hint"}, "Each change is credited to the technique that made it. Cycles are attributed per statement, so the column totals can differ slightly from the whole-program figure above."),
+    h("div",{class:"scroll"}, h("table",{class:"t"},
+      h("thead",{}, h("tr",{}, ["Technique","Changes applied","Instructions removed","Cycles saved"].map(x => h("th",{}, x)))),
+      h("tbody",{}, r.per_technique.map(t => h("tr",{},
+        h("td",{}, t.technique), h("td",{}, t.changes), h("td",{}, t.instructions_removed), h("td",{}, t.cycles_saved)))))));
+
   const original = optCard("Original 3-Address Code", null, optTable(["S.No","Operation","Arg1","Arg2"], codeRows(r.original)));
 
   const analysis = optCard("Optimization Analysis", "Each change the optimizer made, in order, and why. Only optimizations that were actually applied are listed.",
@@ -806,7 +825,7 @@ function renderOpt(r){
     optTable(["S.No","Operation","Arg1","Arg2","Result"], r.quadruples.map(x => h("tr",{},
       h("td",{},x.sno), h("td",{class:"mono"},x.op), h("td",{class:"mono"},x.arg1), h("td",{class:"mono"},x.arg2), h("td",{class:"mono"},x.result)))));
 
-  return h("div",{}, summary, original, analysis, optimized, quads);
+  return h("div",{}, summary, results, original, analysis, optimized, quads);
 }
 
 // ------------------------------------------------------------------ boot
