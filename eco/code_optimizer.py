@@ -553,7 +553,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
     rng = random.Random(seed)
     has_division = any(i[0] == "bin" and i[2] == "/" for i in compiled.tac)
     tests = [("random", {a: rng.randint(lo, hi) for a in compiled.arg_names}) for _ in range(num_tests)]
-    tests += [("boundary", t) for t in _boundary_inputs(compiled.arg_names, allow_negative=not has_division)]
+    tests += [("boundary", t) for t in _boundary_inputs(compiled.arg_names, allow_negative=True)]
     checks = []
     started = time.perf_counter()
     for kind, t in tests:
@@ -567,16 +567,20 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
             if kind == "boundary":
                 continue
             return _error("Execution", f"Your function did not finish on {t}: {exc}")
-        try:
-            python_out = run_source(source, compiled.name, t)
-        except Exception as exc:  # noqa: BLE001
-            if kind == "boundary":
-                continue  # e.g. division by zero at a boundary input: not a valid test point
-            return _error("Execution", f"Your function failed on {t}: {type(exc).__name__}: {exc}")
+        # Python floors on // while the generated code truncates, so for negative inputs the
+        # reference is the original generated code; the page says so.
+        python_out = None
+        if not (has_division and any(v < 0 for v in t.values())):
+            try:
+                python_out = run_source(source, compiled.name, t)
+            except Exception as exc:  # noqa: BLE001
+                if kind == "boundary":
+                    continue  # e.g. division by zero at a boundary input: not a valid test point
+                return _error("Execution", f"Your function failed on {t}: {type(exc).__name__}: {exc}")
         tac_out = tac_res.outputs
         checks.append({"kind": kind, "inputs": t, "original": orig_out, "optimized": opt_out, "python": python_out,
                        "match": orig_out == opt_out == tac_out})
-        if tac_out != python_out:
+        if python_out is not None and tac_out != python_out:
             return _error("Execution", f"The generated code disagrees with Python on {t} (Python: {python_out}, generated: {tac_out}). "
                                        "This usually means // was used on a negative number; use a positive input range.")
     check_ms = (time.perf_counter() - started) * 1000

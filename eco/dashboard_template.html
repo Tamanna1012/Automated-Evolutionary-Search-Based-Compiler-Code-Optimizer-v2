@@ -898,7 +898,7 @@ function renderOpt(r){
     h("p",{class:"hint"}, "Every change in the Optimization Analysis below lists the algebraic rule that guarantees it and the precondition that was checked."),
     h("h3",{style:"margin:14px 0 2px;font-size:13px"}, "c) Compile-time function testing (secondary)"),
     h("p",{class:"hint"}, `One-time compile-time validation; the optimized program itself is never slowed down by this. The check took ${fmt(cc.ms, 2)} ms once, and the optimization saves ${fmt(cc.saved_cycles_per_call, 1)} simulated cycles on every call.`),
-    h("p",{class:"hint"}, "Boundary inputs are 0, 1, a large value and -1. -1 is skipped for programs that use //, because Python floors while the generated code truncates."),
+    h("p",{class:"hint"}, "Boundary inputs are 0, 1, -1 and a large value. For a program that uses //, a negative input is compared with the original generated code, not with Python: Python floors while the generated code truncates, so Python is not a reference for those inputs."),
     optTable(["Input","Original output","Optimized output","Match"],
       r.checks.map(c => h("tr",{}, h("td",{class:"mono"}, inputsText(c.inputs) + (c.kind === "boundary" ? "  (boundary)" : "")),
         h("td",{class:"mono"}, c.original.join(", ")), h("td",{class:"mono"}, c.optimized.join(", ")),

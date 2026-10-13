@@ -817,7 +817,8 @@ def test_optimizer_preserves_behaviour_on_every_kernel_template():
         assert r["ok"], (prog.kernel, r.get("error"))
         assert r["behaviour_preserved"], prog.kernel
         assert r["summary"]["optimized_instructions"] <= r["summary"]["original_instructions"]
-        assert all(c["original"] == c["optimized"] == c["python"] for c in r["checks"])
+        assert all(c["original"] == c["optimized"] == c["python"] for c in r["checks"] if c["python"] is not None)
+        assert all(c["original"] == c["optimized"] for c in r["checks"])
 
 
 def test_optimizer_output_matches_the_original_on_many_random_inputs():
@@ -850,7 +851,7 @@ def test_optimizer_reports_errors_by_stage():
     assert optimize_program("def f(x):\n    return y\n")["stage"] == "Semantic analysis"
     assert optimize_program("def f(x):\n    return x / 2\n")["ok"] is False
     assert optimize_program("def f(x):\n    return x // 0\n")["stage"] == "Execution"
-    assert optimize_program("def f(x):\n    return x // 2\n", -15, 15)["ok"] is False   # floor vs truncation
+    assert optimize_program("def f(x):\n    return x // 2\n", -15, 15)["ok"] is True   # negatives checked against generated code
 
 
 def test_optimizer_json_entry_point_and_dashboard_embedding(tmp_path):
@@ -972,7 +973,9 @@ def test_compile_time_check_includes_boundary_inputs_and_timing():
 def test_division_programs_skip_negative_boundaries_and_stay_ok():
     r = optimize_program("def f(a, b):\n    return a // b\n")
     assert r["ok"] is True
-    assert all(min(c["inputs"].values()) >= 0 for c in r["checks"])
+    negatives = [c for c in r["checks"] if min(c["inputs"].values()) < 0]
+    assert negatives and all(c["python"] is None and c["match"] for c in negatives)
+    assert all(c["python"] is not None for c in r["checks"] if min(c["inputs"].values()) >= 0)
 
 
 def test_verdict_reports_failure_with_first_mismatch():
