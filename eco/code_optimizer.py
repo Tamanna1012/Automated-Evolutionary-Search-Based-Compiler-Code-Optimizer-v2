@@ -41,7 +41,8 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 from .frontend import UnsupportedSyntax, compile_function, run_source
-from .interpreter import _safe_div, run
+from .interpreter import CYCLE_COST, _safe_div, run
+from .metrics import evaluate
 from .tac import dest_of, tac_to_text
 
 Operand = Union[str, int, None]
@@ -154,11 +155,55 @@ def run_stmts(stmts: Sequence[Stmt], inputs: Dict[str, int]) -> List[int]:
     return outputs
 
 
+def stmts_to_tac(stmts: Sequence[Stmt]) -> TAC:
+    """Lower 3-address statements back to the TAC the shared metrics code runs.
+
+    Integer literal operands are pooled into one ``const`` each, as the front end does.
+    """
+    tac: TAC = []
+    pool: Dict[int, str] = {}
+
+    def operand(x):
+        if isinstance(x, str):
+            return x
+        if x not in pool:
+            pool[x] = f"_lit{len(pool) + 1}"
+            tac.append(("const", pool[x], x))
+        return pool[x]
+
+    for s in stmts:
+        if s.op == "input":
+            tac.append(("input", s.dest, s.a))
+        elif s.op == "=":
+            tac.append(("const", s.dest, s.a) if isinstance(s.a, int) else ("copy", s.dest, s.a))
+        elif s.op == "print":
+            tac.append(("output", operand(s.a)))
+        else:
+            tac.append(("bin", s.dest, s.op, operand(s.a), operand(s.b)))
+    return tac
+
+
+def _stmt_cycles(s: Stmt) -> int:
+    if s.op == "input":
+        return CYCLE_COST["input"]
+    if s.op == "=":
+        return CYCLE_COST["copy"] if isinstance(s.a, str) else CYCLE_COST["const"]
+    if s.op == "print":
+        return CYCLE_COST["output"]
+    return CYCLE_COST["bin" + s.op]
+
+
+def _change_pct(old: float, new: float) -> float:
+    return round(100.0 * (new - old) / old, 2) if old else 0.0
+
+
 # ------------------------------------------------------------------ passes
 def _event(technique: str, before: Stmt, after: Optional[Stmt], reason: str) -> dict:
     return {"technique": technique, "original": before.text(),
             "optimized": after.text() if after is not None else "(removed)",
-            "reason": reason, "origin": before.origin}
+            "reason": reason, "origin": before.origin,
+            "cycles_saved": _stmt_cycles(before) - (_stmt_cycles(after) if after is not None else 0),
+            "instrs_removed": 1 if after is None else 0}
 
 
 def constant_propagation(stmts: List[Stmt]):
@@ -389,6 +434,23 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
     by_tech: Dict[str, int] = {}
     for e in log:
         by_tech[e["technique"]] = by_tech.get(e["technique"], 0) + 1
+
+    before = evaluate(compiled.tac, tests).fitness.as_dict()
+    after_tac = stmts_to_tac(optimized)
+    after = evaluate(after_tac, tests).fitness.as_dict()
+    temps = lambda tac: len({dest_of(i) for i in tac if dest_of(i) is not None})
+    metrics = [{"key": k, "objective": label, "original": before[k], "optimized": after[k],
+                "change_pct": _change_pct(before[k], after[k])}
+               for k, label in (("exec_time", "exec_time (simulated cycles)"), ("instr_count", "instr_count"),
+                                ("code_size", "code_size"), ("arith_ops", "arith_ops"))]
+    metrics.append({"key": "temporaries", "objective": "temporaries/variables used",
+                    "original": temps(compiled.tac), "optimized": temps(after_tac),
+                    "change_pct": _change_pct(temps(compiled.tac), temps(after_tac))})
+    per_technique = [{"technique": t,
+                      "changes": sum(1 for e in log if e["technique"] == t),
+                      "instructions_removed": sum(e["instrs_removed"] for e in log if e["technique"] == t),
+                      "cycles_saved": sum(e["cycles_saved"] for e in log if e["technique"] == t)}
+                     for t in TECHNIQUES]
     return {
         "ok": True,
         "function": compiled.name,
@@ -410,6 +472,9 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
             "rounds": max([e["round"] for e in log] + [0]),
         },
         "no_optimization": not log,
+        "metrics": metrics,
+        "benefit_pct": -_change_pct(before["exec_time"], after["exec_time"]),
+        "per_technique": per_technique,
         "checks": checks,
         "behaviour_preserved": all(c["match"] for c in checks),
         "settings": {"lo": lo, "hi": hi, "seed": seed, "tests": num_tests},

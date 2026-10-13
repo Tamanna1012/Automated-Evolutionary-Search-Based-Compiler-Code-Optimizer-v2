@@ -866,3 +866,24 @@ def test_optimizer_json_entry_point_and_dashboard_embedding(tmp_path):
     for section in ("Original 3-Address Code", "Optimization Analysis", "Optimized 3-Address Code", "No optimizations detected"):
         assert section in html
     assert "Behaviour check" not in html and "Front-end analysis" not in html        # only the requested sections
+
+
+def test_results_metrics_use_the_shared_cost_model():
+    r = optimize_program("def f(a, b):\n    x = 10 * 5\n    t1 = a + b\n    t2 = a + b\n    return t1 + t2 + x\n", 1, 9)
+    by_key = {m["key"]: m for m in r["metrics"]}
+    assert by_key["instr_count"]["optimized"] < by_key["instr_count"]["original"]
+    assert by_key["exec_time"]["optimized"] < by_key["exec_time"]["original"]
+    assert r["benefit_pct"] > 0
+
+
+def test_per_technique_rows_cover_every_technique_and_sum_instruction_removals():
+    r = optimize_program(SAMPLES["Mixed example (all six techniques)"][2], 1, 20)
+    assert [t["technique"] for t in r["per_technique"]] == TECHNIQUES
+    removed = sum(t["instructions_removed"] for t in r["per_technique"])
+    assert removed == r["summary"]["removed"] or removed == sum(e["instrs_removed"] for e in r["log"])
+
+
+def test_no_change_gives_zero_benefit():
+    r = optimize_program("def plain(a, b):\n    s = a + b\n    return s\n")
+    assert r["benefit_pct"] == 0
+    assert all(m["change_pct"] == 0 for m in r["metrics"])

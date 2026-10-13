@@ -21,7 +21,7 @@ PLACEHOLDER = "/*__DASHBOARD_DATA__*/null"
 LIVE_PLACEHOLDER = "/*__LIVE_SOURCES__*/null"
 # The modules the Code Optimization tab runs in the browser (via Pyodide) on a visitor's
 # own program. They have no third-party dependencies.
-LIVE_FILES = ["__init__", "tac", "interpreter", "frontend", "code_optimizer"]
+LIVE_FILES = ["__init__", "tac", "interpreter", "metrics", "frontend", "code_optimizer"]
 
 
 def live_sources() -> dict:
