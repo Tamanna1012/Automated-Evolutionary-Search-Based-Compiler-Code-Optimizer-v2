@@ -1477,11 +1477,20 @@ def test_common_subexpression_rewrites_name_the_line_they_were_merged_into():
     merged = [x for x in r["line_changes"] if x["merged_into"]]
     assert merged and all(x["removed"] for x in merged)                      # copy propagation + dead code removal finish the job
     for x in merged:
-        assert x["merged_into"] < x["line"] and ops(listing[x["merged_into"]]) == ops(listing[x["line"]]) == ["*"]
+        assert all(k < x["line"] and ops(listing[k]) == ops(listing[x["line"]]) == ["*"] for k in x["merged_into"])
     # with only CSE the merged line stays, and the row says what it became and where it was merged
     r = optimize_program(SAMPLES["Common subexpressions"][2], passes=["Common Subexpression Elimination"])
     kept = [x for x in r["line_changes"] if x["merged_into"]]
     assert kept and all(not x["removed"] and x["final"].startswith(x["original"].split(" = ")[0] + " = t") for x in kept)
+
+
+def test_global_cse_names_every_branch_line_that_computed_the_reused_value():
+    r = optimize_program(IF_SRC)
+    listing = {row["sno"]: row["stmt"] for row in r["original"]}
+    (row,) = [x for x in r["line_changes"] if x["techniques"] == ["Global Common Subexpression Elimination"]]
+    assert row["original"] == "z = x + n" and row["final"] == "z = y"
+    assert len(row["merged_into"]) == 2                                      # y was computed in both arms of the if
+    assert all(listing[k] == "y = x + n" and k < row["line"] for k in row["merged_into"])
 
 
 def test_step_cap_stops_a_runaway_program_without_changing_the_default():

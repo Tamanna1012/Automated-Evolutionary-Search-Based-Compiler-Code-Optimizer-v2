@@ -199,9 +199,9 @@ def available_expressions(blocks: List[Block]):
     return ain, aout
 
 
-def _rule(technique, before, after, reason, rule, precondition) -> dict:
+def _rule(technique, before, after, reason, rule, precondition, merged_into=()) -> dict:
     return {"technique": technique, "before": before, "after": after,
-            "reason": reason, "rule": rule, "precondition": precondition}
+            "reason": reason, "rule": rule, "precondition": precondition, "merged_into": list(merged_into)}
 
 
 def _unreachable(stmts):
@@ -299,6 +299,13 @@ def _fold(stmts):
 def _cse(stmts):
     blocks = build_cfg(stmts)
     ain, _ = available_expressions(blocks)
+    # original lines that compute an expression into a variable: a reused value may come from several
+    # (one per branch), and those are the lines a rewrite is merged into
+    computed_at: Dict[tuple, set] = {}
+    for b in blocks:
+        for s in b.stmts:
+            if s.op in ARITH and defined(s) is not None:
+                computed_at.setdefault((expr_key(s), defined(s)), set()).add(s.origin)
     records, out = [], []
     for b in blocks:
         state = ain[b.id]
@@ -314,7 +321,8 @@ def _cse(stmts):
                     records.append(_rule("Global Common Subexpression Elimination", s, new,
                                          f"{s.a} {s.op} {s.b} is already held in {v} on every path here",
                                          f"reuse {v} instead of computing {s.a} {s.op} {s.b} again",
-                                         f"{v} holds the value of {s.a} {s.op} {s.b} on every path into this point and is not reassigned"))
+                                         f"{v} holds the value of {s.a} {s.op} {s.b} on every path into this point and is not reassigned",
+                                         merged_into=computed_at.get((key, v), ())))
             out.append(new)
             state = _avail_transfer(state, new)
     return out, records

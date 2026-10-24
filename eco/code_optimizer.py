@@ -222,13 +222,13 @@ AS_RULES = {
 
 
 def _event(technique: str, before: Stmt, after: Optional[Stmt], reason: str, rule: str, precondition: str,
-           merged_into: Optional[int] = None) -> dict:
-    """One logged change. ``origin`` is the original line number; ``merged_into`` is the original
-    line whose result a common-subexpression rewrite reuses, when the pass knows it."""
+           merged_into: Sequence[int] = ()) -> dict:
+    """One logged change. ``origin`` is the original line number; ``merged_into`` lists the original
+    lines whose result a common-subexpression rewrite reuses (several when each branch computed it)."""
     return {"technique": technique, "original": before.text(),
             "optimized": after.text() if after is not None else "(removed)",
             "reason": reason, "rule": rule, "precondition": precondition, "origin": before.origin,
-            "merged_into": merged_into,
+            "merged_into": sorted(set(merged_into)),
             "cycles_saved": _stmt_cycles(before) - (_stmt_cycles(after) if after is not None else 0),
             "instrs_removed": 1 if after is None else 0}
 
@@ -352,7 +352,7 @@ def common_subexpression_elimination(stmts: List[Stmt]):
                                      f"Expression {s.a} {s.op} {s.b} was already calculated in {available[k]}",
                                      f"{s.a} {s.op} {s.b} was already computed into {available[k]}, so reuse {available[k]}",
                                      "same operator and operands (order ignored for + and *), and no operand is reassigned in between",
-                                     merged_into=holder_line.get(k)))
+                                     merged_into=[holder_line[k]] if k in holder_line else []))
         d = new.dest
         if d is not None:
             for k2 in [k2 for k2, v in available.items() if v == d or d in k2[1:]]:
@@ -514,7 +514,7 @@ def line_change_rows(original: Sequence[Stmt], log: Sequence[dict]) -> List[dict
     for e in log:
         chains.setdefault(e["origin"], []).append(
             {"sno": e["sno"], "technique": e["technique"], "before": e["original"], "after": e["optimized"],
-             "round": e["round"], "reason": e["reason"], "merged_into": e.get("merged_into")})
+             "round": e["round"], "reason": e["reason"], "merged_into": e.get("merged_into") or []})
     rows = []
     for origin in sorted(chains):
         steps = chains[origin]
@@ -526,8 +526,8 @@ def line_change_rows(original: Sequence[Stmt], log: Sequence[dict]) -> List[dict
             "original": text_of.get(origin, steps[0]["before"]),
             "final": None if removed else last["after"],
             "removed": removed,
-            # the original line whose result a common-subexpression step reused, even if the line was deleted later
-            "merged_into": next((st["merged_into"] for st in reversed(steps) if st["merged_into"]), None),
+            # the original lines whose result a common-subexpression step reused, even if this line was deleted later
+            "merged_into": sorted({n for st in steps for n in st["merged_into"]}),
             "techniques": list(dict.fromkeys(st["technique"] for st in steps)),
             "steps": steps,
             "sentences": [_sentence(st) for st in steps],
@@ -647,7 +647,8 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         if passes is not None:
             return _error("Input", "The manual pipeline applies to straight-line code only")
         optimized, records, trace = global_optimize(original)
-        log = [dict(_event(r["technique"], r["before"], r["after"], r["reason"], r["rule"], r["precondition"]),
+        log = [dict(_event(r["technique"], r["before"], r["after"], r["reason"], r["rule"], r["precondition"],
+                           merged_into=r.get("merged_into", ())),
                     round=r["round"]) for r in records]
     else:
         optimized, log, trace = optimize_stmts(original, passes)

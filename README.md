@@ -564,7 +564,7 @@ Things to know when reading it:
 
 The **Lines changed** box in the Optimization Summary is a button (mouse, Enter or Space). It opens a panel with
 one row per original line the optimizer touched: line number, basic block, original instruction, new instruction
-(or "removed", with the line it was merged into when common subexpression elimination did that), the techniques,
+(or "removed", with the line or lines it was merged into when common subexpression elimination did that; in branching code the value may have been computed on both branches), the techniques,
 and a plain-English reason such as `t1 = 2 * 3 became t1 = 6 because both operands are constants`. A line touched
 by several techniques shows its whole chain (`x = 2 * 3 -> x = 6 -> removed`). The rows are built only from the
 optimization log (`line_change_rows`), the count equals the number of rows (`summary.lines_changed`, enforced by
