@@ -491,6 +491,31 @@ def flow_report(stmts) -> dict:
     return {"blocks": rows, "control_flow": has_control(stmts), "loops": natural_loops(blocks)}
 
 
+def cfg_graph(stmts) -> dict:
+    """Drawable control-flow graph of any statement list, straight-line code included.
+
+    Every block lists its instructions (the label that starts it is the block's title, not an
+    instruction) with the statement's ``origin`` so a drawing can match a block of the optimized
+    program to the original. An edge is a back edge when its target dominates its source, the same
+    test ``natural_loops`` uses. Straight-line code is one block that is both entry and exit.
+    """
+    blocks = build_cfg(stmts)
+    reach = reachable(blocks)
+    dom = dominators(blocks)
+    rows = []
+    for b in blocks:
+        rows.append({
+            "id": b.id,
+            "label": b.label,
+            "stmts": [{"text": s.text(), "origin": s.origin} for s in b.stmts if s.op != "label"],
+            "succ": [{"to": t, "kind": kind, "back": t in dom.get(b.id, [])} for t, kind in b.succ],
+            "reachable": b.id in reach,
+            "entry": b.id == 0,
+            "exit": b.id in reach and not b.succ,
+        })
+    return {"blocks": rows, "control_flow": has_control(stmts)}
+
+
 def backward_jumps(stmts) -> List[Tuple[int, int]]:
     """(header index, jump index) for every goto that jumps back to an earlier label, i.e. every loop."""
     pos = {s.a: i for i, s in enumerate(stmts) if s.op == "label"}

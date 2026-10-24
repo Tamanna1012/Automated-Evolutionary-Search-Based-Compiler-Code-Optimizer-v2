@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Sequence
 
-from .interpreter import run
+from .interpreter import MAX_STEPS, run
 from .tac import Instr
 
 # Weighted "bytes" per opcode, standing in for a naive bytecode emitter.
@@ -61,7 +61,7 @@ def static_metrics(tac: Sequence[Instr]):
 
 
 def evaluate(tac: Sequence[Instr], test_input_sets: Sequence[Dict[str, int]],
-             expected_outputs: Sequence[List[int]] = None) -> EvalResult:
+             expected_outputs: Sequence[List[int]] = None, max_steps: int = MAX_STEPS) -> EvalResult:
     """Run the TAC on every test-input set and compute its fitness record.
 
     `valid` is True iff the program runs without error on every test set and
@@ -74,7 +74,7 @@ def evaluate(tac: Sequence[Instr], test_input_sets: Sequence[Dict[str, int]],
     outputs_per_test: List[List[int]] = []
     valid = True
     for idx, test_inputs in enumerate(test_input_sets):
-        result = run(tac, test_inputs)
+        result = run(tac, test_inputs, max_steps)
         if not result.ok:
             valid = False
             outputs_per_test.append([])

@@ -1229,3 +1229,291 @@ def test_division_program_with_negative_checks_carries_a_warning():
     r = optimize_program("def f(x):\n    return x // 2\n", -15, 15)
     assert r["ok"] is True and r["division_warning"] and "floors" in r["division_warning"]
     assert optimize_program("def f(x):\n    return x + 2\n", -15, 15)["division_warning"] is None
+
+
+# ---------------------------------------------------------------------------
+# Control-flow graph data, comparison with other methods, details of changed lines
+# ---------------------------------------------------------------------------
+import json as _json
+import subprocess
+import sys as _sys
+
+from eco import comparison as _cmp
+from eco.cfg import cfg_graph
+from eco.code_optimizer import DEFAULT_SOURCE, FLOW_EXAMPLE
+from eco.interpreter import MAX_STEPS
+
+STRAIGHT_SRC = SAMPLES["Mixed example (all six techniques)"][2]
+DEAD_BRANCH_SRC = "def f(a):\n    if 1 < 2:\n        y = a + 1\n    else:\n        y = a + 2\n    return y\n"
+ARGS = {STRAIGHT_SRC: ["a", "b"], IF_SRC: ["n", "k"], WHILE_SRC: ["n"], NESTED_SRC: ["a", "b"], ARRAY_SRC: ["a", "b"], DEAD_BRANCH_SRC: ["a"]}
+EVERY_PROGRAM = [v[2] for v in SAMPLES.values()] + [FLOW_EXAMPLE, IF_SRC, WHILE_SRC, NESTED_SRC, ARRAY_SRC, DEAD_BRANCH_SRC]
+METRIC_KEYS = [k for k, _ in _cmp.METRICS]
+
+
+def _back_edges(graph):
+    return {(b["id"], e["to"]) for b in graph["blocks"] for e in b["succ"] if e["back"]}
+
+
+def test_cfg_data_for_straight_line_code_is_one_drawn_block():
+    r = optimize_program(STRAIGHT_SRC)
+    for g, rows in ((r["cfg"]["original"], r["original"]), (r["cfg"]["optimized"], r["optimized"])):
+        assert g["control_flow"] is False and len(g["blocks"]) == 1
+        (b,) = g["blocks"]
+        assert b["entry"] and b["exit"] and b["reachable"] and b["succ"] == []
+        assert [st["text"] for st in b["stmts"]] == [row["stmt"] for row in rows]
+    assert r["cfg"]["removed_blocks"] == 0
+
+
+def test_cfg_data_for_if_else_has_a_branch_and_a_merge():
+    g = optimize_program(IF_SRC)["cfg"]["original"]
+    assert g["control_flow"] is True and len(g["blocks"]) == 4
+    branch = [b for b in g["blocks"] if len(b["succ"]) == 2]
+    assert len(branch) == 1 and branch[0]["entry"]
+    assert {e["kind"] for e in branch[0]["succ"]} == {"true", "false"}
+    merge = [b for b in g["blocks"] if sum(e["to"] == b["id"] for x in g["blocks"] for e in x["succ"]) == 2]
+    assert len(merge) == 1 and merge[0]["exit"] and merge[0]["succ"] == []
+    assert not _back_edges(g)
+    assert sum(b["entry"] for b in g["blocks"]) == 1 and sum(b["exit"] for b in g["blocks"]) == 1
+
+
+@pytest.mark.parametrize("src", [WHILE_SRC, NESTED_SRC])
+def test_cfg_data_for_while_loops_marks_the_back_edge(src):
+    r = optimize_program(src)
+    for g, stmts in ((r["cfg"]["original"], from_tac(compile_function(src).tac)), ):
+        blocks = build_cfg(stmts)
+        from_loops = {(l["back_edge"], l["header"]) for l in natural_loops(blocks)}
+        assert from_loops and _back_edges(g) == from_loops          # same loops as the dominator analysis finds
+        dom = dominators(blocks)
+        assert all(h in dom[t] for t, h in _back_edges(g))          # a back edge goes to a dominator
+    assert _back_edges(r["cfg"]["optimized"])                       # the loop survives optimization
+
+
+def test_cfg_marks_changed_and_removed_statements_and_blocks():
+    r = optimize_program(DEAD_BRANCH_SRC)
+    before, after = r["cfg"]["original"], r["cfg"]["optimized"]
+    removed = [b for b in before["blocks"] if b["status"] == "removed"]
+    assert len(removed) == 1 == r["cfg"]["removed_blocks"]
+    assert removed[0]["label"] not in {b["label"] for b in after["blocks"]}
+    assert all(st["status"] == "removed" for st in removed[0]["stmts"])
+    rows = {x["line"]: x for x in r["line_changes"]}
+    kept = {st["origin"] for b in after["blocks"] for st in b["stmts"]}
+    for b in before["blocks"]:
+        for st in b["stmts"]:
+            assert (st["status"] == "removed") == (rows.get(st["origin"], {}).get("removed", False))
+            assert (st["origin"] in kept) == (st["status"] != "removed")
+    for b in after["blocks"]:
+        for st in b["stmts"]:
+            assert (st["status"] == "changed") == (st["origin"] in rows)
+
+
+@pytest.mark.parametrize("src", EVERY_PROGRAM)
+def test_cfg_is_recomputed_for_every_program(src):
+    r = optimize_program(src)
+    assert r["ok"]
+    for g in (r["cfg"]["original"], r["cfg"]["optimized"]):
+        ids = {b["id"] for b in g["blocks"]}
+        assert g["blocks"][0]["entry"] and all(e["to"] in ids for b in g["blocks"] for e in b["succ"])
+
+
+@pytest.mark.parametrize("src", EVERY_PROGRAM)
+def test_every_compared_method_is_equivalent_to_the_original(src):
+    r = optimize_program(src)
+    mc = r["method_comparison"]
+    assert [m["verified"] for m in mc["methods"]] == [True] * len(mc["methods"])
+    assert sum(m["is_ours"] for m in mc["methods"]) == 1 and mc["methods"][0]["group"] == "baseline"
+    # independent of the report: rebuild every method's program and run it against the original
+    compiled = compile_function(src)
+    original = from_tac(compiled.tac)
+    names = ARGS.get(src) or compiled.arg_names
+    grid = _grid(names, 0, 6)
+    runnable = [t for t in grid if _run_tac(compiled.tac, t).ok]
+    for cand in _cmp.build_candidates(compiled.tac, original, runnable):
+        for t in runnable:
+            want = execute(original, t)
+            got = _run_tac(cand["tac"], t).outputs if "tac" in cand else execute(cand["stmts"], t)
+            assert got == want, (cand["label"], t)
+
+
+def test_every_kernel_template_compares_cleanly_and_ours_never_loses_to_no_optimization():
+    for name, make in TEMPLATES.items():
+        inst = make(random.Random(1))
+        r = optimize_program(inst.source, *inst.domain)
+        mc = r["method_comparison"]
+        assert all(m["verified"] for m in mc["methods"]), name
+        base = next(m for m in mc["methods"] if m["group"] == "baseline")
+        ours = next(m for m in mc["methods"] if m["is_ours"])
+        for k in METRIC_KEYS:
+            assert ours[k] <= base[k] + 1e-9, (name, k, ours[k], base[k])
+
+
+@pytest.mark.parametrize("src", EVERY_PROGRAM)
+def test_ours_is_never_worse_than_no_optimization(src):
+    r = optimize_program(src)
+    mc = r["method_comparison"]
+    base = next(m for m in mc["methods"] if m["group"] == "baseline")
+    ours = next(m for m in mc["methods"] if m["is_ours"])
+    for k in METRIC_KEYS:
+        assert ours[k] <= base[k] + 1e-9, (k, ours[k], base[k])
+    # the comparison's baseline and ours are the numbers in the Results table, not a second measurement
+    results = {m["key"]: m for m in r["metrics"]}
+    for k in METRIC_KEYS:
+        assert base[k] == pytest.approx(results[k]["original"], abs=1e-3)
+        assert ours[k] == pytest.approx(results[k]["optimized"], abs=1e-3)
+
+
+@pytest.mark.parametrize("src", [STRAIGHT_SRC, IF_SRC, WHILE_SRC])
+def test_comparison_is_deterministic(src):
+    first = _json.dumps(optimize_program(src)["method_comparison"], sort_keys=True)
+    random.seed(1)
+    second = _json.dumps(optimize_program(src)["method_comparison"], sort_keys=True)
+    random.seed(99)
+    third = _json.dumps(optimize_program(src)["method_comparison"], sort_keys=True)
+    assert first == second == third
+
+
+def test_comparison_covers_every_method_and_reports_live_numbers():
+    mc = optimize_program(STRAIGHT_SRC)["method_comparison"]
+    groups = [m["group"] for m in mc["methods"]]
+    assert groups == ["baseline"] + ["single"] * 6 + ["sweep", "local", "ga", "ours"]
+    assert [m["label"] for m in mc["methods"] if m["group"] == "single"] == [f"{t} only" for t in TECHNIQUES]
+    # a different program gives different numbers: nothing is stored
+    other = optimize_program(SAMPLES["Common subexpressions"][2])["method_comparison"]
+    assert [m["instr_count"] for m in other["methods"]] != [m["instr_count"] for m in mc["methods"]]
+    ga = next(m for m in mc["methods"] if m["group"] == "ga")
+    assert all(g in OPTIMIZATION_NAMES for g in ga["genome"])
+    control = optimize_program(IF_SRC)["method_comparison"]
+    assert control["scope"] == "global" and sum(m["group"] == "single" for m in control["methods"]) == 5
+
+
+def test_a_method_that_changes_the_output_is_flagged_and_can_never_be_best():
+    original = _stmts("def f(a, b):\n    x = a + b\n    y = x * 2\n    return y\n")
+    inputs = [{"a": 1, "b": 2}, {"a": 5, "b": 3}]
+    want = [execute(original, t) for t in inputs]
+    broken = [s.copy_with(op="+") if s.op == "*" else s for s in original]          # * became +
+    bad = _cmp._verify_stmts(original, broken, inputs, want)
+    assert bad["status"] == "failed" and "original printed" in bad["detail"]
+    assert _cmp._verify_stmts(original, original, inputs, want)["status"] in ("proved", "tested")
+    numbers = lambda v: dict(instr_count=v, exec_time=float(v), arith_ops=v, code_size=v)
+    methods = [dict(key="a", label="a", is_ours=False, group="baseline", verified=True, **numbers(9)),
+               dict(key="b", label="b", is_ours=False, group="ga", verified=False, **numbers(1)),   # lowest numbers, but it breaks the program
+               dict(key="c", label="c", is_ours=True, group="ours", verified=True, **numbers(5))]
+    _cmp.mark_best(methods)
+    assert methods[1]["best"] == dict.fromkeys(METRIC_KEYS, False)
+    assert methods[2]["best"] == dict.fromkeys(METRIC_KEYS, True)
+    for w in _cmp._wins(methods):                        # ours is compared with "a", never with the failed "b"
+        assert w["verdict"] == "best" and w["compared_with"] == ["a"] and w["other"] == 9 and w["diff"] == 4
+
+
+@pytest.mark.parametrize("src", EVERY_PROGRAM)
+def test_wins_summary_is_computed_from_the_table(src):
+    mc = optimize_program(src)["method_comparison"]
+    ours = next(m for m in mc["methods"] if m["is_ours"])
+    base = next(m for m in mc["methods"] if m["group"] == "baseline")
+    others = [m for m in mc["methods"] if not m["is_ours"] and m["verified"]]
+    assert [w["metric"] for w in mc["wins"]] == METRIC_KEYS
+    for w in mc["wins"]:
+        k = w["metric"]
+        best = min(m[k] for m in others)
+        assert w["ours"] == ours[k] and w["other"] == best
+        assert w["diff"] == pytest.approx(best - ours[k], abs=1e-3)
+        assert w["pct"] == (pytest.approx(100 * (best - ours[k]) / best, abs=0.01) if best else None)
+        assert w["verdict"] == ("tied" if abs(best - ours[k]) < 1e-9 else ("best" if ours[k] < best else "behind"))
+        assert set(w["compared_with"]) == {m["label"] for m in others if abs(m[k] - best) < 1e-9}
+        assert w["vs_baseline"] == pytest.approx(base[k] - ours[k], abs=1e-3)
+
+
+def test_wins_summary_reports_a_loss_plainly():
+    wins = {w["metric"]: w for w in optimize_program(FLOW_EXAMPLE)["method_comparison"]["wins"]}
+    assert wins["instr_count"]["verdict"] == "behind" and wins["instr_count"]["diff"] < 0 and wins["instr_count"]["pct"] < 0
+    assert wins["arith_ops"]["verdict"] == "tied" and wins["arith_ops"]["diff"] == 0
+
+
+def test_comparison_handles_code_with_nothing_to_optimize():
+    r = optimize_program(SAMPLES["Already optimal (nothing to change)"][2])
+    assert r["no_optimization"] and r["summary"]["lines_changed"] == 0 and r["line_changes"] == []
+    assert all(w["verdict"] == "tied" for w in r["method_comparison"]["wins"])
+    assert len({m["instr_count"] for m in r["method_comparison"]["methods"]}) == 1
+    assert [b["status"] for b in r["cfg"]["original"]["blocks"]] == ["same"]
+
+
+@pytest.mark.parametrize("src", EVERY_PROGRAM)
+def test_lines_changed_count_matches_the_summary_and_the_panel_rows(src):
+    r = optimize_program(src)
+    rows = r["line_changes"]
+    assert r["summary"]["lines_changed"] == len(rows)                       # the count the page shows is the panel's row count
+    assert len(rows) == len({e["origin"] for e in r["log"]})                # one row per original line the log touched
+    assert [x["line"] for x in rows] == sorted({x["line"] for x in rows})   # no line listed twice
+    assert len(rows) <= r["summary"]["optimizations"]                       # a line can be rewritten many times, never the reverse
+    listing = {row["sno"]: row["stmt"] for row in r["original"]}
+    for x in rows:
+        assert x["original"] == listing[x["line"]]
+        assert x["steps"][0]["before"] == x["original"]                      # the chain starts at the original instruction
+        assert all(a["after"] == b["before"] for a, b in zip(x["steps"], x["steps"][1:]))   # and every step continues the last
+        assert x["removed"] == (x["steps"][-1]["after"] == "(removed)") == (x["final"] is None)
+        assert x["final"] is None or x["final"] == x["steps"][-1]["after"]
+        assert len(x["sentences"]) == len(x["steps"]) and x["techniques"] == list(dict.fromkeys(st["technique"] for st in x["steps"]))
+        assert set(x["techniques"]) <= set(r["technique_order"])
+    assert sorted(sno for x in rows for sno in (st["sno"] for st in x["steps"])) == [e["sno"] for e in r["log"]]   # every logged change is in exactly one chain
+
+
+def test_lines_changed_in_manual_mode_also_matches():
+    r = optimize_program(STRAIGHT_SRC, passes=["Constant Folding", "Dead Code Elimination"])
+    assert r["summary"]["lines_changed"] == len(r["line_changes"]) == len({e["origin"] for e in r["log"]})
+
+
+def test_a_line_touched_by_several_techniques_shows_its_whole_chain():
+    r = optimize_program("def f(a):\n    k = 10\n    m = k + 5\n    n = m + 0\n    return n + a\n")
+    row = next(x for x in r["line_changes"] if x["original"] == "m = k + 5")
+    assert row["techniques"] == ["Constant Propagation", "Constant Folding"] or "Constant Folding" in row["techniques"]
+    assert [st["after"] for st in row["steps"]][:2] == ["m = 10 + 5", "m = 15"]
+    assert "because both operands are constants" in row["reason"]
+    assert "because it reads a variable that always holds a known constant (k = 10)" in row["reason"]
+
+
+def test_common_subexpression_rewrites_name_the_line_they_were_merged_into():
+    ops = lambda text: [c for c in "+-*/" if f" {c} " in text]
+    r = optimize_program(SAMPLES["Common subexpressions"][2])
+    listing = {row["sno"]: row["stmt"] for row in r["original"]}
+    merged = [x for x in r["line_changes"] if x["merged_into"]]
+    assert merged and all(x["removed"] for x in merged)                      # copy propagation + dead code removal finish the job
+    for x in merged:
+        assert x["merged_into"] < x["line"] and ops(listing[x["merged_into"]]) == ops(listing[x["line"]]) == ["*"]
+    # with only CSE the merged line stays, and the row says what it became and where it was merged
+    r = optimize_program(SAMPLES["Common subexpressions"][2], passes=["Common Subexpression Elimination"])
+    kept = [x for x in r["line_changes"] if x["merged_into"]]
+    assert kept and all(not x["removed"] and x["final"].startswith(x["original"].split(" = ")[0] + " = t") for x in kept)
+
+
+def test_step_cap_stops_a_runaway_program_without_changing_the_default():
+    loop = [("input", "n", "n"), ("label", "L"), ("jump", "L"), ("output", "n")]
+    assert _run_tac(loop, {"n": 1}).ok is False
+    res = _run_tac(loop, {"n": 1}, max_steps=50)
+    assert res.ok is False and "step limit" in res.error
+    ok = compile_function("def f(a):\n    return a + 1\n").tac
+    assert _run_tac(ok, {"a": 1}, max_steps=3).ok is False and _run_tac(ok, {"a": 1}).ok is True
+    assert GAConfig().max_steps == MAX_STEPS
+
+
+def test_the_bundle_for_the_browser_runs_the_whole_comparison_on_its_own(tmp_path):
+    """Everything the page ships to Pyodide must be enough for optimize_program, comparison included."""
+    for name in ("individual", "pareto", "optimizations", "ga", "comparison"):
+        assert name in LIVE_FILES
+    pkg = tmp_path / "eco"
+    pkg.mkdir()
+    for name, text in live_sources().items():
+        (pkg / name).write_text(text, encoding="utf-8")
+    code = ("import sys, json; sys.path.insert(0, %r)\n"
+            "from eco.code_optimizer import optimize_program_json\n"
+            "r = json.loads(optimize_program_json(json.dumps({'source': %r})))\n"
+            "assert r['ok'] and len(r['method_comparison']['methods']) == 10 and r['cfg'] and 'lines_changed' in r['summary']\n"
+            "print('bundle ok')\n") % (str(tmp_path), IF_SRC)
+    out = subprocess.run([_sys.executable, "-I", "-c", code], cwd=str(tmp_path), capture_output=True, text=True)
+    assert out.returncode == 0 and "bundle ok" in out.stdout, out.stderr
+
+
+def test_precomputed_dashboard_results_carry_the_new_sections(tmp_path):
+    r = optimize_program(DEFAULT_SOURCE)
+    assert {"line_changes", "cfg", "method_comparison"} <= set(r)
+    html = open(TEMPLATE_PATH, encoding="utf-8").read()
+    for text in ("Control flow graph", "Comparison with other methods", "Where ours wins", "Lines changed", "aria-expanded", "data-bit"):
+        assert text in html
