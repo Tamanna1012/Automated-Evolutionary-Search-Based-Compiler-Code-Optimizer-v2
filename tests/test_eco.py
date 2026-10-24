@@ -1526,3 +1526,25 @@ def test_precomputed_dashboard_results_carry_the_new_sections(tmp_path):
     html = open(TEMPLATE_PATH, encoding="utf-8").read()
     for text in ("Control flow graph", "Comparison with other methods", "Where ours wins", "Lines changed", "aria-expanded", "data-bit"):
         assert text in html
+
+
+def test_front_end_records_the_source_line_of_every_instruction():
+    for src in (STRAIGHT_SRC, IF_SRC, WHILE_SRC, NESTED_SRC, ARRAY_SRC):
+        c = compile_function(src)
+        assert len(c.lines) == len(c.tac) and all(1 <= n <= len(src.splitlines()) for n in c.lines)
+    c = compile_function(IF_SRC)
+    src = IF_SRC.splitlines()
+    branch = next(i for i, ins in enumerate(c.tac) if ins[0] == "branch")
+    assert src[c.lines[branch] - 1].strip() == "if n < k:"          # the condition belongs to the if
+    assert all(src[n - 1].startswith("def ") for ins, n in zip(c.tac, c.lines) if ins[0] == "input")
+
+
+@pytest.mark.parametrize("src", EVERY_PROGRAM)
+def test_every_changed_line_names_the_python_line_it_came_from(src):
+    rows = optimize_program(src)["line_changes"]
+    lines = src.splitlines()
+    for x in rows:
+        assert 1 <= x["source_line"] <= len(lines) and x["source_text"] == lines[x["source_line"] - 1].strip()
+    if src == IF_SRC:
+        by_text = {(x["original"], x["source_text"]) for x in rows}
+        assert ("x = 2 * 3", "x = 2 * 3") in by_text and ("unused = 99", "unused = 99") in by_text

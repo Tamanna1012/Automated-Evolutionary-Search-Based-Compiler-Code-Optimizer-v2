@@ -1000,13 +1000,15 @@ function renderOpt(r){
       h("div",{class:"head"},
         h("h3",{}, `${plural(changedRows.length)} changed` + (sel.size ? `, ${shown.length} shown` : "")),
         h("button",{class:"chip", type:"button", onclick:closeLines}, "Close")),
-      h("p",{class:"hint"}, "Line is the instruction's number in the Original 3-Address Code table (the front end does not record Python source lines). " +
+      h("p",{class:"hint"}, "Line is the instruction's number in the Original 3-Address Code table; Python line is the line of your source it was compiled from. " +
         "Block is its basic block. A line that several techniques touched shows its whole chain, from the original to the final form. " +
         (sel.size ? `Showing only lines touched by: ${[...sel].join(", ")}. Clear the selection to see all ${changedRows.length}.` : "Select technique tags to show only the lines they touched.")),
       !changedRows.length ? h("div",{class:"empty"}, h("b",{}, "No lines changed"), " - the code is already as simple as these techniques can make it.")
-        : shown.length ? optTable(["Line", "Block", "Original instruction", "New instruction", "Technique", "Reason"],
+        : shown.length ? optTable(["Line", "Python line", "Block", "Original instruction", "New instruction", "Technique", "Reason"],
             shown.map(x => h("tr",{},
-              h("td",{}, x.line), h("td",{}, "B" + x.block), h("td",{class:"mono"}, x.original), h("td",{}, newInstruction(x)),
+              h("td",{}, x.line),
+              h("td",{}, x.source_line ? [h("div",{}, String(x.source_line)), h("div",{class:"chain", style:"white-space:nowrap"}, x.source_text || "")] : h("span",{class:"muted"}, "—")),
+              h("td",{}, "B" + x.block), h("td",{class:"mono"}, x.original), h("td",{}, newInstruction(x)),
               h("td",{}, x.techniques.map(t => h("span",{class:"rowtag"}, t))),
               h("td",{}, x.sentences.map(sn => h("div",{class:"stepline"}, sn))))))
         : h("div",{class:"emptystate"}, "No changed line was touched by the selected techniques.")));

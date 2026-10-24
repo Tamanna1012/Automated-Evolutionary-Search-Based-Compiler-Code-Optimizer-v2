@@ -32,7 +32,7 @@ A comparison is an ordinary ``bin`` instruction whose result is 0 or 1.
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
 from .tac import TAC
@@ -50,6 +50,7 @@ class CompiledFunction:
     name: str
     arg_names: List[str]
     tac: TAC
+    lines: List[int] = field(default_factory=list)   # source line of each TAC instruction (same length as tac)
 
 
 class _Compiler:
@@ -67,6 +68,7 @@ class _Compiler:
         self._const = 0
         self._label = 0
         self._pool: Dict[int, str] = {}  # literal value -> the const variable holding it
+        self.lines: Dict[int, int] = {}  # TAC index -> line of the Python statement that emitted it
 
     # -- naming -----------------------------------------------------------
     def _fresh_temp(self) -> str:
@@ -240,6 +242,14 @@ class _Compiler:
         self.env[py_name] = dest
 
     def statement(self, stmt: ast.stmt, in_block: bool = False):
+        """Compile one statement. Its instructions get its source line; a nested statement has already
+        claimed its own, so an if/while keeps only its condition, jumps and labels."""
+        start = len(self.tac)
+        self._statement(stmt, in_block)
+        for i in range(start, len(self.tac)):
+            self.lines.setdefault(i, stmt.lineno)
+
+    def _statement(self, stmt: ast.stmt, in_block: bool = False):
         if isinstance(stmt, ast.Assign):
             if len(stmt.targets) != 1:
                 raise UnsupportedSyntax("only simple 'name = expr' assignments are supported")
@@ -374,7 +384,8 @@ def compile_function(source: str) -> CompiledFunction:
         comp.statement(stmt)
     if not any(i[0] == "output" for i in comp.tac):
         raise UnsupportedSyntax("function must return at least one value")
-    return CompiledFunction(name=fn.name, arg_names=arg_names, tac=comp.tac)
+    lines = [comp.lines.get(i, fn.lineno) for i in range(len(comp.tac))]   # parameters: the def line
+    return CompiledFunction(name=fn.name, arg_names=arg_names, tac=comp.tac, lines=lines)
 
 
 def run_source(source: str, func_name: str, inputs: Dict[str, int]) -> List[int]:
