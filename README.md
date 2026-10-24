@@ -14,7 +14,7 @@ four competing compiler metrics: **execution time**, **instruction count**,
 pip install -r requirements.txt
 python -m eco.main          # runs the full experiment end-to-end (real kernels)
 python -m eco.main --synthetic   # same, on the old random synthetic TAC (-> eco/outputs_synthetic/)
-python -m pytest tests/ -q  # unit / correctness tests (207; plus 4 browser tests if Playwright is installed)
+python -m pytest tests/ -q  # unit / correctness tests (220; plus 4 browser tests if Playwright is installed)
 ```
 
 `tests/test_dashboard_browser.py` also drives the generated page in a real browser. It is skipped unless
@@ -563,15 +563,17 @@ Things to know when reading it:
 ### Lines changed
 
 The **Lines changed** box in the Optimization Summary is a button (mouse, Enter or Space). It opens a panel with
-one row per original line the optimizer touched: line number, basic block, original instruction, new instruction
+one row per original line the optimizer touched: line number, the Python source line it came from (and its text),
+basic block, original instruction, new instruction
 (or "removed", with the line or lines it was merged into when common subexpression elimination did that; in branching code the value may have been computed on both branches), the techniques,
 and a plain-English reason such as `t1 = 2 * 3 became t1 = 6 because both operands are constants`. A line touched
 by several techniques shows its whole chain (`x = 2 * 3 -> x = 6 -> removed`). The rows are built only from the
 optimization log (`line_change_rows`), the count equals the number of rows (`summary.lines_changed`, enforced by
 `tests/test_eco.py`), and the technique tags above filter the panel (none selected = every line).
 "Optimizations applied" counts every rewrite, "Lines changed" counts the original lines they touched, so a line
-rewritten three times counts once. The front end does not record Python source lines, so there is no
-source-line column; the line number is the instruction's number in the Original 3-Address Code table.
+rewritten three times counts once. The line number is the instruction's number in the Original 3-Address Code
+table; the front end records, for every instruction, the line of the Python statement that produced it
+(`CompiledFunction.lines`), and an `if`/`while` owns its condition and jumps.
 
 ## Limitations
 

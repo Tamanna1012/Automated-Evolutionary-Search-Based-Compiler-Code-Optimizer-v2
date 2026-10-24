@@ -65,14 +65,16 @@ class Stmt:
 
     ``op`` is one of ``input``, ``=``, ``+``, ``-``, ``*``, ``/`` or ``print``.
     Operands are variable names (``str``) or integer literals (``int``).
-    ``origin`` is the statement's number in the original listing; it stays
-    attached to the statement through optimization so changes can be traced.
+    ``origin`` is the statement's number in the original listing and ``line`` the
+    Python source line it was compiled from (0 if unknown); both stay attached to
+    the statement through optimization so changes can be traced.
     """
     dest: Optional[str]
     op: str
     a: Operand = None
     b: Operand = None
     origin: int = 0
+    line: int = 0
 
     def text(self) -> str:
         if self.op == "input":
@@ -95,13 +97,15 @@ class Stmt:
         return [x for x in (self.a, self.b) if isinstance(x, str)]
 
     def copy_with(self, **kw) -> "Stmt":
-        d = {"dest": self.dest, "op": self.op, "a": self.a, "b": self.b, "origin": self.origin}
+        d = {"dest": self.dest, "op": self.op, "a": self.a, "b": self.b, "origin": self.origin, "line": self.line}
         d.update(kw)
         return Stmt(**d)
 
 
-def from_tac(tac) -> List[Stmt]:
+def from_tac(tac, lines: Optional[Sequence[int]] = None) -> List[Stmt]:
     """Convert the front end's TAC into textbook 3-address statements.
+
+    ``lines`` (the front end's source line per TAC instruction) is copied onto the statements.
 
     Literal constants the front end pooled (``_k1 = 5``) become inline operands
     (``t1 = a + 5``) and ``_e1`` temporaries are renamed ``t1``; variables the
@@ -123,8 +127,9 @@ def from_tac(tac) -> List[Stmt]:
         return rename.get(v, v)
 
     out: List[Stmt] = []
-    for ins in tac:
+    for idx, ins in enumerate(tac):
         op = ins[0]
+        before = len(out)
         if op == "input":
             out.append(Stmt(rename.get(ins[1], ins[1]), "input", ins[2]))
         elif op == "const":
@@ -144,6 +149,8 @@ def from_tac(tac) -> List[Stmt]:
             out.append(Stmt(None, "goto", ins[1]))
         elif op == "branch":
             out.append(Stmt(None, "branch", rename.get(ins[1], ins[1]), (ins[2], ins[3])))
+        if len(out) > before and lines:
+            out[-1].line = lines[idx]
     for n, s in enumerate(out, 1):
         s.origin = n
     return out
@@ -500,15 +507,17 @@ def _sentence(step: dict) -> str:
     return f"{step['before']} became {step['after']} because {_because(step)}"
 
 
-def line_change_rows(original: Sequence[Stmt], log: Sequence[dict]) -> List[dict]:
+def line_change_rows(original: Sequence[Stmt], log: Sequence[dict], source: str = "") -> List[dict]:
     """One row per original line the optimizer touched, built only from the change log.
 
     A line touched by several passes keeps its whole chain (original -> intermediate -> final).
     ``origin`` is the line's number in the original listing, which is its position in the
-    "Original 3-Address Code" table. The front end does not track Python source lines, so there
-    is no source-line column.
+    "Original 3-Address Code" table; ``source_line`` is the Python line it was compiled from,
+    and ``source_text`` that line of ``source``.
     """
     text_of = {s.origin: s.text() for s in original}
+    py_line = {s.origin: s.line for s in original}
+    src = source.splitlines()
     block_of = {s.origin: b.id for b in build_cfg(original) for s in b.stmts}
     chains: Dict[int, List[dict]] = {}
     for e in log:
@@ -522,6 +531,8 @@ def line_change_rows(original: Sequence[Stmt], log: Sequence[dict]) -> List[dict
         removed = last["after"] == "(removed)"
         rows.append({
             "line": origin,
+            "source_line": py_line.get(origin) or None,
+            "source_text": src[py_line[origin] - 1].strip() if 0 < py_line.get(origin, 0) <= len(src) else None,
             "block": block_of.get(origin, 0),
             "original": text_of.get(origin, steps[0]["before"]),
             "final": None if removed else last["after"],
@@ -641,7 +652,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
 
     if passes is not None and any(name not in BY_NAME for name in passes):
         return _error("Input", f"Unknown optimization in {passes}")
-    original = from_tac(compiled.tac)
+    original = from_tac(compiled.tac, compiled.lines)
     control = has_control(original)
     if control:
         if passes is not None:
@@ -654,7 +665,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         optimized, log, trace = optimize_stmts(original, passes)
     techniques = GLOBAL_TECHNIQUES if control else TECHNIQUES
     log = [dict(e, sno=i) for i, e in enumerate(log, 1)]
-    line_changes = line_change_rows(original, log)
+    line_changes = line_change_rows(original, log, source)
 
     lo, hi =(int(lo), int(hi)) if int(lo) <= int(hi) else (int(hi), int(lo))
     rng = random.Random(seed)
