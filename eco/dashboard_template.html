@@ -979,14 +979,15 @@ function renderOpt(r){
   let linesOpen = false;
   const linesSlot = h("div");
   const plural = n => `${n} line${n === 1 ? "" : "s"}`;
+  const lineWord = ls => `line${ls.length === 1 ? "" : "s"} ${ls.join(" and ")}`;
   const closeLines = () => { linesOpen = false; renderLines(); linesBox.focus(); };
   const linesBox = h("button",{class:"box", type:"button", "aria-expanded":"false", "aria-controls":"lines-panel",
     onclick:() => { linesOpen = !linesOpen; renderLines(); },
     onkeydown:e => { if (e.key === "Escape" && linesOpen) closeLines(); }},
     h("div",{class:"v"}, String(s.lines_changed)), h("div",{class:"l"}, "Lines changed"));
   const newInstruction = x => h("div",{},
-    x.removed ? h("span",{class:"rmtext"}, "removed" + (x.merged_into ? ` (it was first merged into line ${x.merged_into})` : ""))
-      : h("span",{class:"mono"}, x.final + (x.merged_into ? `   (merged into line ${x.merged_into})` : "")),
+    x.removed ? h("span",{class:"rmtext"}, "removed" + (x.merged_into.length ? ` (it was first merged into ${lineWord(x.merged_into)})` : ""))
+      : h("span",{class:"mono"}, x.final + (x.merged_into.length ? `   (merged into ${lineWord(x.merged_into)})` : "")),
     x.steps.length > 1 ? h("div",{class:"chain"}, [x.original, ...x.steps.map(st => st.after)].join("  →  ")) : null);
   function renderLines(){
     linesBox.setAttribute("aria-expanded", String(linesOpen));
