@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Sequence
 
 from .individual import Individual
+from .interpreter import MAX_STEPS
 from .metrics import evaluate
 from .optimizations import OPTIMIZATION_NAMES, apply_genome
 from .pareto import pareto_front
@@ -28,6 +29,7 @@ class GAConfig:
     mutation_add_prob: float = 0.7
     weights: Dict[str, float] = field(default_factory=lambda: dict(DEFAULT_WEIGHTS))
     seed: int = 0
+    max_steps: int = MAX_STEPS   # per-run step cap; a variant that needs more counts as invalid
 
 
 @dataclass
@@ -82,9 +84,9 @@ def _tournament_select(population: List[Individual], rng: random.Random, k: int)
 
 
 def build_individual(original_tac: TAC, genome: List[str], test_input_sets, expected_outputs,
-                      baseline_fitness, weights: Dict[str, float]) -> Individual:
+                      baseline_fitness, weights: Dict[str, float], max_steps: int = MAX_STEPS) -> Individual:
     tac = apply_genome(original_tac, genome)
-    result = evaluate(tac, test_input_sets, expected_outputs)
+    result = evaluate(tac, test_input_sets, expected_outputs, max_steps)
     ind = Individual(genome=genome, tac=tac, fitness=result.fitness, valid=result.valid)
     ind.cost = weighted_cost(ind, baseline_fitness, weights)
     return ind
@@ -107,12 +109,12 @@ def run_ga(original_tac: TAC, test_input_sets, expected_outputs, config: GAConfi
     config = config or GAConfig()
     rng = random.Random(config.seed)
 
-    baseline_eval = evaluate(original_tac, test_input_sets, expected_outputs)
+    baseline_eval = evaluate(original_tac, test_input_sets, expected_outputs, config.max_steps)
     baseline_fitness = baseline_eval.fitness
 
     def make(genome: List[str]) -> Individual:
         return build_individual(original_tac, genome, test_input_sets, expected_outputs,
-                                 baseline_fitness, config.weights)
+                                 baseline_fitness, config.weights, config.max_steps)
 
     population: List[Individual] = [make([])]  # original always kept
     while len(population) < config.pop_size:

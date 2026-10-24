@@ -14,8 +14,12 @@ four competing compiler metrics: **execution time**, **instruction count**,
 pip install -r requirements.txt
 python -m eco.main          # runs the full experiment end-to-end (real kernels)
 python -m eco.main --synthetic   # same, on the old random synthetic TAC (-> eco/outputs_synthetic/)
-python -m pytest tests/ -q  # unit / correctness tests
+python -m pytest tests/ -q  # unit / correctness tests (220; plus 4 browser tests if Playwright is installed)
 ```
+
+`tests/test_dashboard_browser.py` also drives the generated page in a real browser. It is skipped unless
+Playwright and a Chromium are installed (`pip install playwright`, then `playwright install chromium`)
+and `docs/index.html` is current (`python -m eco.main`).
 
 `python -m eco.main` will:
 
@@ -213,9 +217,11 @@ are embedded as JSON and drawn with inline SVG; light/dark follows the system).
   elimination. The tab shows the optimization summary (original and optimized
   instruction counts, instructions removed, optimizations applied, techniques
   used, reduction percentage, and a bar comparison of the instruction counts),
-  the original 3-address code, the optimization analysis (every change with the
-  reason; "No optimizations detected" when there is nothing to do), the
-  optimized 3-address code and the 4-address code. Everything is computed from
+  a clickable **Lines changed** count, the control-flow graph, a comparison with
+  other optimization methods, the original 3-address code, the optimization
+  analysis (every change with the reason; "No optimizations detected" when there
+  is nothing to do), the optimized 3-address code and the 4-address code (details
+  in "Control-flow graph, method comparison and changed lines" below). Everything is computed from
   the source you type (`eco/code_optimizer.py`); a built-in example is
   precomputed so the tab opens with a result, and your own code is optimized in
   your browser through a Python engine (Pyodide). Only the
@@ -305,7 +311,9 @@ eco/
   visualize.py                the six required plots
   dashboard.py            builds eco/outputs/dashboard.html (data + template)
   dashboard_template.html the interactive results page
-  code_optimizer.py        classic optimization techniques with a log, 3-/4-address code tables
+  code_optimizer.py        classic optimization techniques with a log, 3-/4-address code tables,
+                            changed-line rows and the drawable control-flow graphs
+  comparison.py            runs every other optimization method on the same program
   main.py                      end-to-end experiment driver
   outputs/
     plots/                  generated PNGs
@@ -313,6 +321,7 @@ eco/
       all_programs/         report for each of the 300 programs + summary CSV
 tests/
   test_eco.py              correctness + regression tests
+  test_dashboard_browser.py  optional real-browser check of the Code Optimization tab
 ```
 
 ## Dataset and measurement methodology
@@ -501,13 +510,77 @@ kernels only.
   compares the result with the automatic pipeline. It applies to straight-line
   code only.
 
+## Control-flow graph, method comparison and changed lines
+
+Three parts of the Code Optimization tab are recomputed every time **Optimize** is pressed. Nothing in them
+is stored or typed in.
+
+### Control flow graph (`cfg_graph` in `eco/cfg.py`, `cfg_views` in `eco/code_optimizer.py`)
+
+The graph of the original and of the optimized code is drawn for every program that compiles. Straight-line
+code is one block (still drawn), `if`/`else` shows the branch and the merge, and a `while` shows its back edge.
+Each box is a basic block listing its three-address instructions; edges are labelled `true` / `false`; the entry
+and exit blocks are tagged; a **back edge** (its target dominates its source, the same test the loop analysis
+uses) is purple and dashed. Instructions the optimizer rewrote are bold, deleted ones are struck through, and a
+block that the optimized program no longer has (for example code after a branch on a constant condition) has a
+dashed red outline. The two graphs can be shown side by side or one at a time. The flowchart is inline SVG drawn
+by one function (`cfgSvg`) that the Flow analysis tab shares, so the page still works offline as one file.
+
+### Comparison with other methods (`eco/comparison.py`)
+
+Every method runs on the same program, is lowered to the same TAC, and is measured by `eco/metrics.py`
+(instruction count, simulated cycles, arithmetic operations, code size):
+
+| Method | What it is |
+|---|---|
+| No optimization | the generated code (the baseline; identical to the "original" column of Results) |
+| Each technique alone | one technique, repeated until it changes nothing |
+| One sweep | every technique once, in textbook order, with no second round |
+| Local only | the straight-line passes inside each basic block, no data flow between blocks |
+| Genetic algorithm | the best pass order the project's GA finds (population 16, 12 generations, seed 0) |
+| Our method | global analysis, all techniques repeated until a full round changes nothing |
+
+For code with branches or loops the techniques are the five global ones in `cfg.py` (there is no global
+algebraic simplification or copy propagation). Every method is checked against the original on the test inputs
+plus six **hold-out inputs** that the GA never sees, and by the symbolic proof when one exists; a method that
+changes the output is marked FAILED and can never be counted as best. A table marks the best verified value in
+each column, a grouped bar chart shows every metric as a percentage of the unoptimized code, and **Where ours
+wins** says for each metric whether ours is best, tied or behind, against which method, and by how much:
+`other - ours` and `(other - ours) / other`. Ties are reported as ties and losses as losses.
+
+Things to know when reading it:
+
+* Ours does **not** win everywhere. On branching code the cost model emits one `const` instruction per literal
+  operand, so propagating a constant into several uses can cost an instruction even though a statement is
+  deleted. `FLOW_EXAMPLE` (the if/else program in `eco/code_optimizer.py`, also the Flow analysis tab's worked example) shows this: ours ties on cycles and arithmetic operations but needs
+  15 instructions and code size 48 against 14 and 44 for a single sweep and for the GA.
+* The GA's passes were written for straight-line, single-assignment code. On a loop some orderings change the
+  meaning or never terminate; the comparison caps each GA run at 20x the original's cycles (`max_steps`, an
+  optional argument that defaults to the old behaviour) and the verification flags anything that breaks.
+* The GA budget is small and fixed so the result is fast and repeatable (the same program always gives the
+  same table). A larger budget could find a better pass order.
+
+### Lines changed
+
+The **Lines changed** box in the Optimization Summary is a button (mouse, Enter or Space). It opens a panel with
+one row per original line the optimizer touched: line number, the Python source line it came from (and its text),
+basic block, original instruction, new instruction
+(or "removed", with the line or lines it was merged into when common subexpression elimination did that; in branching code the value may have been computed on both branches), the techniques,
+and a plain-English reason such as `t1 = 2 * 3 became t1 = 6 because both operands are constants`. A line touched
+by several techniques shows its whole chain (`x = 2 * 3 -> x = 6 -> removed`). The rows are built only from the
+optimization log (`line_change_rows`), the count equals the number of rows (`summary.lines_changed`, enforced by
+`tests/test_eco.py`), and the technique tags above filter the panel (none selected = every line).
+"Optimizations applied" counts every rewrite, "Lines changed" counts the original lines they touched, so a line
+rewritten three times counts once. The line number is the instruction's number in the Original 3-Address Code
+table; the front end records, for every instruction, the line of the Python statement that produced it
+(`CompiledFunction.lines`), and an `if`/`while` owns its condition and jumps.
+
 ## Limitations
 
 * The search kernels are **straight-line integer arithmetic**: no loops,
   branches, memory, floating point or function calls, so none of the classic
   loop/inlining/vectorization trade-offs exist in the GA part.
-* The Code Optimization tab has no dominator computation: loops are found from
-  back edges, which is enough for the data-flow analyses used here. Aliasing,
+* The data-flow analyses and the drawn back edges use dominators (`eco/cfg.py`). Aliasing,
   dynamic array indexing (only literal indices are supported) and loop proofs
   beyond the unrolling bound
   are not handled.

@@ -65,8 +65,10 @@ def compare(op: str, a: int, b: int) -> int:
     return int(a != b)
 
 
-def run(tac: Sequence[Instr], input_values: Dict[str, int]) -> RunResult:
-    """Execute a TAC program and return outputs + cycle count."""
+def run(tac: Sequence[Instr], input_values: Dict[str, int], max_steps: int = MAX_STEPS) -> RunResult:
+    """Execute a TAC program and return outputs + cycle count.
+
+    ``max_steps`` caps the work: a run that needs more is reported as failed, never run on."""
     labels = {ins[1]: i for i, ins in enumerate(tac) if ins[0] == "label"}
     env: Dict[str, int] = {}
     outputs: List[int] = []
@@ -76,7 +78,7 @@ def run(tac: Sequence[Instr], input_values: Dict[str, int]) -> RunResult:
     try:
         while pc < len(tac):
             steps += 1
-            if steps > MAX_STEPS:
+            if steps > max_steps:
                 raise RuntimeError("step limit exceeded (the program may loop forever)")
             instr = tac[pc]
             pc += 1

@@ -21,8 +21,10 @@ FLOW_DOC_PATH = os.path.join(os.path.dirname(HERE), "docs", "FLOW_ANALYSIS.md")
 PLACEHOLDER = "/*__DASHBOARD_DATA__*/null"
 LIVE_PLACEHOLDER = "/*__LIVE_SOURCES__*/null"
 # The modules the Code Optimization tab runs in the browser (via Pyodide) on a visitor's
-# own program. They have no third-party dependencies.
-LIVE_FILES = ["__init__", "tac", "interpreter", "metrics", "frontend", "equivalence", "cfg", "code_optimizer"]
+# own program. They have no third-party dependencies. ``comparison`` runs the genetic algorithm
+# (``ga`` and what it imports) on the visitor's program for the "Comparison with other methods" card.
+LIVE_FILES = ["__init__", "tac", "interpreter", "metrics", "frontend", "equivalence", "cfg", "code_optimizer",
+              "individual", "pareto", "optimizations", "ga", "comparison"]
 
 
 def live_sources() -> dict:

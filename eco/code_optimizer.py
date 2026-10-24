@@ -41,7 +41,7 @@ import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
-from .cfg import CONTROL, GLOBAL_TECHNIQUES, build_cfg, execute as run_stmts, flow_report, global_optimize, has_control
+from .cfg import CONTROL, GLOBAL_TECHNIQUES, build_cfg, cfg_graph, execute as run_stmts, flow_report, global_optimize, has_control
 from .equivalence import prove_equivalent
 from .frontend import UnsupportedSyntax, compile_function, run_source
 from .interpreter import CYCLE_COST, run
@@ -65,14 +65,16 @@ class Stmt:
 
     ``op`` is one of ``input``, ``=``, ``+``, ``-``, ``*``, ``/`` or ``print``.
     Operands are variable names (``str``) or integer literals (``int``).
-    ``origin`` is the statement's number in the original listing; it stays
-    attached to the statement through optimization so changes can be traced.
+    ``origin`` is the statement's number in the original listing and ``line`` the
+    Python source line it was compiled from (0 if unknown); both stay attached to
+    the statement through optimization so changes can be traced.
     """
     dest: Optional[str]
     op: str
     a: Operand = None
     b: Operand = None
     origin: int = 0
+    line: int = 0
 
     def text(self) -> str:
         if self.op == "input":
@@ -95,13 +97,15 @@ class Stmt:
         return [x for x in (self.a, self.b) if isinstance(x, str)]
 
     def copy_with(self, **kw) -> "Stmt":
-        d = {"dest": self.dest, "op": self.op, "a": self.a, "b": self.b, "origin": self.origin}
+        d = {"dest": self.dest, "op": self.op, "a": self.a, "b": self.b, "origin": self.origin, "line": self.line}
         d.update(kw)
         return Stmt(**d)
 
 
-def from_tac(tac) -> List[Stmt]:
+def from_tac(tac, lines: Optional[Sequence[int]] = None) -> List[Stmt]:
     """Convert the front end's TAC into textbook 3-address statements.
+
+    ``lines`` (the front end's source line per TAC instruction) is copied onto the statements.
 
     Literal constants the front end pooled (``_k1 = 5``) become inline operands
     (``t1 = a + 5``) and ``_e1`` temporaries are renamed ``t1``; variables the
@@ -123,8 +127,9 @@ def from_tac(tac) -> List[Stmt]:
         return rename.get(v, v)
 
     out: List[Stmt] = []
-    for ins in tac:
+    for idx, ins in enumerate(tac):
         op = ins[0]
+        before = len(out)
         if op == "input":
             out.append(Stmt(rename.get(ins[1], ins[1]), "input", ins[2]))
         elif op == "const":
@@ -144,6 +149,8 @@ def from_tac(tac) -> List[Stmt]:
             out.append(Stmt(None, "goto", ins[1]))
         elif op == "branch":
             out.append(Stmt(None, "branch", rename.get(ins[1], ins[1]), (ins[2], ins[3])))
+        if len(out) > before and lines:
+            out[-1].line = lines[idx]
     for n, s in enumerate(out, 1):
         s.origin = n
     return out
@@ -221,10 +228,14 @@ AS_RULES = {
 }
 
 
-def _event(technique: str, before: Stmt, after: Optional[Stmt], reason: str, rule: str, precondition: str) -> dict:
+def _event(technique: str, before: Stmt, after: Optional[Stmt], reason: str, rule: str, precondition: str,
+           merged_into: Sequence[int] = ()) -> dict:
+    """One logged change. ``origin`` is the original line number; ``merged_into`` lists the original
+    lines whose result a common-subexpression rewrite reuses (several when each branch computed it)."""
     return {"technique": technique, "original": before.text(),
             "optimized": after.text() if after is not None else "(removed)",
             "reason": reason, "rule": rule, "precondition": precondition, "origin": before.origin,
+            "merged_into": sorted(set(merged_into)),
             "cycles_saved": _stmt_cycles(before) - (_stmt_cycles(after) if after is not None else 0),
             "instrs_removed": 1 if after is None else 0}
 
@@ -335,6 +346,7 @@ def common_subexpression_elimination(stmts: List[Stmt]):
         return (s.op,) + ops
 
     available: Dict[tuple, str] = {}
+    holder_line: Dict[tuple, int] = {}   # expression -> original line that computed it
     out, events = [], []
     for s in stmts:
         new = s
@@ -346,13 +358,15 @@ def common_subexpression_elimination(stmts: List[Stmt]):
                 events.append(_event("Common Subexpression Elimination", s, new,
                                      f"Expression {s.a} {s.op} {s.b} was already calculated in {available[k]}",
                                      f"{s.a} {s.op} {s.b} was already computed into {available[k]}, so reuse {available[k]}",
-                                     "same operator and operands (order ignored for + and *), and no operand is reassigned in between"))
+                                     "same operator and operands (order ignored for + and *), and no operand is reassigned in between",
+                                     merged_into=[holder_line[k]] if k in holder_line else []))
         d = new.dest
         if d is not None:
             for k2 in [k2 for k2, v in available.items() if v == d or d in k2[1:]]:
                 del available[k2]
             if is_bin and new.op != "=" and d not in s.uses():
                 available[key(s)] = d
+                holder_line[key(s)] = s.origin
         out.append(new)
     return out, events
 
@@ -459,6 +473,104 @@ def quadruple_rows(stmts: Sequence[Stmt]) -> List[dict]:
     return rows
 
 
+# ------------------------------------------------------------------ changed lines
+# Reasons the passes log start with a capital letter; these first words are plain English, so a
+# reason that begins with one can be lowercased to read as a clause. Anything else (a variable name)
+# is left alone.
+_CLAUSE_WORDS = {"Adding", "Subtracting", "Multiplying", "Dividing", "Known", "Copy", "Expression", "Evaluated"}
+
+
+def _clause(text: str) -> str:
+    first = text.split(" ", 1)[0]
+    return text[0].lower() + text[1:] if first in _CLAUSE_WORDS else text
+
+
+def _because(step: dict) -> str:
+    """The plain-English 'because ...' clause for one logged change."""
+    tech, reason = step["technique"], step["reason"]
+    if tech == "Constant Folding":
+        if step["after"].startswith("goto"):
+            return "the branch condition is a known constant, so the branch always goes the same way"
+        return "both operands are constants, so the result can be computed once at compile time"
+    if tech in ("Constant Propagation", "Global Constant Propagation"):
+        detail = reason[reason.find("(") + 1:reason.rfind(")")] if "(" in reason else reason
+        return f"it reads a variable that always holds a known constant ({detail}), so the constant is used directly"
+    if tech == "Copy Propagation":
+        detail = reason[reason.find("(") + 1:reason.rfind(")")] if "(" in reason else reason
+        return f"it reads a copy of another variable ({detail}), so the original variable is used instead"
+    return _clause(reason)
+
+
+def _sentence(step: dict) -> str:
+    if step["after"] == "(removed)":
+        return f"{step['before']} was removed because {_because(step)}"
+    return f"{step['before']} became {step['after']} because {_because(step)}"
+
+
+def line_change_rows(original: Sequence[Stmt], log: Sequence[dict], source: str = "") -> List[dict]:
+    """One row per original line the optimizer touched, built only from the change log.
+
+    A line touched by several passes keeps its whole chain (original -> intermediate -> final).
+    ``origin`` is the line's number in the original listing, which is its position in the
+    "Original 3-Address Code" table; ``source_line`` is the Python line it was compiled from,
+    and ``source_text`` that line of ``source``.
+    """
+    text_of = {s.origin: s.text() for s in original}
+    py_line = {s.origin: s.line for s in original}
+    src = source.splitlines()
+    block_of = {s.origin: b.id for b in build_cfg(original) for s in b.stmts}
+    chains: Dict[int, List[dict]] = {}
+    for e in log:
+        chains.setdefault(e["origin"], []).append(
+            {"sno": e["sno"], "technique": e["technique"], "before": e["original"], "after": e["optimized"],
+             "round": e["round"], "reason": e["reason"], "merged_into": e.get("merged_into") or []})
+    rows = []
+    for origin in sorted(chains):
+        steps = chains[origin]
+        last = steps[-1]
+        removed = last["after"] == "(removed)"
+        rows.append({
+            "line": origin,
+            "source_line": py_line.get(origin) or None,
+            "source_text": src[py_line[origin] - 1].strip() if 0 < py_line.get(origin, 0) <= len(src) else None,
+            "block": block_of.get(origin, 0),
+            "original": text_of.get(origin, steps[0]["before"]),
+            "final": None if removed else last["after"],
+            "removed": removed,
+            # the original lines whose result a common-subexpression step reused, even if this line was deleted later
+            "merged_into": sorted({n for st in steps for n in st["merged_into"]}),
+            "techniques": list(dict.fromkeys(st["technique"] for st in steps)),
+            "steps": steps,
+            "sentences": [_sentence(st) for st in steps],
+            "reason": "; then ".join(_sentence(st) for st in steps),
+        })
+    return rows
+
+
+def cfg_views(original: Sequence[Stmt], optimized: Sequence[Stmt], rows: Sequence[dict]) -> dict:
+    """The original and the optimized control-flow graph, with changed and removed parts marked.
+
+    A statement keeps its ``origin`` through optimization, so ``rows`` (the changed lines) say
+    which drawn statements were rewritten or deleted. A block of the original is 'removed' when the
+    optimized program has no block with the same label.
+    """
+    changed = {r["line"] for r in rows if not r["removed"]}
+    deleted = {r["line"] for r in rows if r["removed"]}
+    before, after = cfg_graph(original), cfg_graph(optimized)
+    kept = {b["label"] for b in after["blocks"] if b["label"] is not None}
+    for b in before["blocks"]:
+        for st in b["stmts"]:
+            st["status"] = "removed" if st["origin"] in deleted else ("changed" if st["origin"] in changed else "same")
+        gone = b["label"] is not None and b["label"] not in kept
+        b["status"] = "removed" if gone else ("changed" if any(st["status"] != "same" for st in b["stmts"]) else "same")
+    for b in after["blocks"]:
+        for st in b["stmts"]:
+            st["status"] = "changed" if st["origin"] in changed else "same"
+        b["status"] = "changed" if any(st["status"] != "same" for st in b["stmts"]) else "same"
+    return {"original": before, "optimized": after,
+            "removed_blocks": sum(1 for b in before["blocks"] if b["status"] == "removed")}
+
+
 # ------------------------------------------------------------------ entry points
 def local_optimize(stmts: List[Stmt]) -> List[Stmt]:
     """What a block-local optimizer can do: the straight-line passes, run inside each basic block.
@@ -520,8 +632,12 @@ def _verdict(checks: List[dict], proved: bool, bound: Optional[int] = None) -> d
 
 
 def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_tests: int = 5,
-                     passes: Optional[List[str]] = None) -> dict:
-    """Run the whole workflow on a user's function and return everything the tab shows."""
+                     passes: Optional[List[str]] = None, compare: bool = True) -> dict:
+    """Run the whole workflow on a user's function and return everything the tab shows.
+
+    ``compare`` runs every other optimization method on the same program for the comparison card;
+    the manual-vs-automatic call below turns it off because it only needs two numbers.
+    """
     if not source or not source.strip():
         return _error("Input", "The source code is empty. Write a function and press Optimize.")
     try:
@@ -536,20 +652,22 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
 
     if passes is not None and any(name not in BY_NAME for name in passes):
         return _error("Input", f"Unknown optimization in {passes}")
-    original = from_tac(compiled.tac)
+    original = from_tac(compiled.tac, compiled.lines)
     control = has_control(original)
     if control:
         if passes is not None:
             return _error("Input", "The manual pipeline applies to straight-line code only")
         optimized, records, trace = global_optimize(original)
-        log = [dict(_event(r["technique"], r["before"], r["after"], r["reason"], r["rule"], r["precondition"]),
+        log = [dict(_event(r["technique"], r["before"], r["after"], r["reason"], r["rule"], r["precondition"],
+                           merged_into=r.get("merged_into", ())),
                     round=r["round"]) for r in records]
     else:
         optimized, log, trace = optimize_stmts(original, passes)
     techniques = GLOBAL_TECHNIQUES if control else TECHNIQUES
     log = [dict(e, sno=i) for i, e in enumerate(log, 1)]
+    line_changes = line_change_rows(original, log, source)
 
-    lo, hi = (int(lo), int(hi)) if int(lo) <= int(hi) else (int(hi), int(lo))
+    lo, hi =(int(lo), int(hi)) if int(lo) <= int(hi) else (int(hi), int(lo))
     rng = random.Random(seed)
     has_division = any(i[0] == "bin" and i[2] == "/" for i in compiled.tac)
     tests = [("random", {a: rng.randint(lo, hi) for a in compiled.arg_names}) for _ in range(num_tests)]
@@ -618,6 +736,8 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
         "optimized": three_address_rows(optimized),
         "quadruples": quadruple_rows(optimized),
         "log": log,
+        "line_changes": line_changes,
+        "cfg": cfg_views(original, optimized, line_changes),
         "pass_trace": trace,
         "technique_order": techniques,
         "selection_views": selection_views(log, trace, techniques),
@@ -629,6 +749,7 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
             "optimized_instructions": n_opt,
             "removed": removed,
             "optimizations": len(log),
+            "lines_changed": len(line_changes),
             "techniques": [t for t in techniques if t in by_tech],
             "by_technique": [{"technique": t, "count": by_tech[t]} for t in techniques if t in by_tech],
             "reduction_pct": round(100.0 * removed / n_orig, 2) if n_orig else 0.0,
@@ -654,8 +775,13 @@ def optimize_program(source: str, lo: int = 1, hi: int = 20, seed: int = 7, num_
     }
     result["mode"] = "manual" if passes is not None else "automatic"
     result["passes"] = list(passes) if passes is not None else None
+    if compare:
+        from .comparison import compare_methods   # imported here: comparison.py imports this module
+        hold = random.Random(seed + 1000)   # hold-out inputs: used only to verify, never to search
+        holdout = [{a: hold.randint(lo - 3, hi + 3) for a in compiled.arg_names} for _ in range(6)]
+        result["method_comparison"] = compare_methods(compiled.tac, original, [t for _, t in tests], holdout)
     if passes is not None:
-        auto = optimize_program(source, lo, hi, seed, num_tests)
+        auto = optimize_program(source, lo, hi, seed, num_tests, compare=False)
         result["comparison"] = {
             "custom_benefit_pct": result["benefit_pct"], "custom_optimized_instructions": n_opt,
             "automatic_benefit_pct": auto["benefit_pct"], "automatic_optimized_instructions": auto["summary"]["optimized_instructions"],
